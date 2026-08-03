@@ -10,9 +10,9 @@ All contributors must follow the approved GitHub workflow and project ownership 
 4. Create a new task branch from `develop`.
 
 ```bash
-git checkout develop
+git switch develop
 git pull origin develop
-git checkout -b feature/task-name
+git switch -c feature/task-name
 ```
 
 ## Branch Naming
@@ -42,6 +42,17 @@ Example:
 feat(auth): add employer registration validation
 ```
 
+## Folder Placement
+
+- Put route-level React pages in `client/src/pages/` or the approved feature directory.
+- Put module-specific frontend code inside `client/src/features/<module>/`.
+- Put reusable UI components in `client/src/components/` only when they are genuinely shared.
+- Put Axios and API service code in `client/src/services/`.
+- Put Mongoose models in `server/src/models/` only when you are the approved primary owner.
+- Keep business logic in `server/src/services/`, not directly inside route files.
+- Put authentication, authorization, validation and error handling in `server/src/middleware/`.
+- Put API routes under `/api/v1`.
+
 ## Pull Requests
 
 - Normal pull requests must target `develop`.
@@ -55,7 +66,7 @@ feat(auth): add employer registration validation
 
 ## Shared Ownership
 
-Do not create duplicate shared models, APIs, status values or layout components. Changes affecting another member's owned area require coordination with the primary owner and Team Lead approval.
+Read `docs/ownership/README.md` before changing shared resources. Do not create duplicate shared models, APIs, status values or layout components. Changes affecting another member's owned area require coordination with the primary owner and Team Lead approval.
 
 ## Security
 

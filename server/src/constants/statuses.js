@@ -1,0 +1,40 @@
+export const USER_ROLES = Object.freeze({
+  JOB_SEEKER: 'job_seeker',
+  EMPLOYER: 'employer',
+  ADMIN: 'admin',
+});
+
+export const ACCOUNT_STATUSES = Object.freeze({
+  ACTIVE: 'active',
+  SUSPENDED: 'suspended',
+  INACTIVE: 'inactive',
+});
+
+export const EMPLOYER_VERIFICATION_STATUSES = Object.freeze({
+  PENDING: 'pending',
+  VERIFIED: 'verified',
+  REJECTED: 'rejected',
+});
+
+export const JOB_STATUSES = Object.freeze({
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
+  CLOSED: 'closed',
+  SUSPENDED: 'suspended',
+});
+
+export const APPLICATION_STATUSES = Object.freeze({
+  APPLIED: 'applied',
+  UNDER_REVIEW: 'under_review',
+  SHORTLISTED: 'shortlisted',
+  SELECTED: 'selected',
+  REJECTED: 'rejected',
+  WITHDRAWN: 'withdrawn',
+});
+
+export const REPORT_STATUSES = Object.freeze({
+  PENDING: 'pending',
+  UNDER_REVIEW: 'under_review',
+  RESOLVED: 'resolved',
+  DISMISSED: 'dismissed',
+});
