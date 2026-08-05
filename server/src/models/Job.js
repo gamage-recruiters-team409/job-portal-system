@@ -1,18 +1,10 @@
 import mongoose from 'mongoose';
+import { JOB_STATUSES } from '../constants/statuses.js';
+import { JOB_TYPES, WORK_MODES } from '../constants/jobOptions.js';
 
 const { Schema, model } = mongoose;
 
-// Status values
-export const JOB_STATUS = {
-  DRAFT: 'draft',
-  PENDING_REVIEW: 'pending_review',
-  PUBLISHED: 'published',
-  CLOSED: 'closed',
-  SUSPENDED: 'suspended',
-  REJECTED: 'rejected',
-};
-
-const JOB_STATUS_VALUES = Object.values(JOB_STATUS);
+const JOB_STATUS_VALUES = Object.values(JOB_STATUSES);
 
 const statusHistoryEntrySchema = new Schema(
   {
@@ -79,10 +71,12 @@ const jobSchema = new Schema(
     },
     jobType: {
       type: String,
+      enum: Object.values(JOB_TYPES),
       required: true,
     },
     workMode: {
       type: String,
+      enum: Object.values(WORK_MODES),
       required: true,
     },
     experienceYears: {
@@ -102,17 +96,31 @@ const jobSchema = new Schema(
     salaryMax: {
       type: Number,
       min: 0,
+      validate: {
+        validator: function (value) {
+          if (value == null || this.salaryMin == null) return true;
+          return value >= this.salaryMin;
+        },
+        message: 'salaryMax cannot be lower than salaryMin.',
+      },
     },
 
     deadline: {
       type: Date,
       required: true,
+      validate: {
+        validator: function (value) {
+          if (!this.isNew) return true; // only enforce on creation, not on every edit
+          return value > new Date();
+        },
+        message: 'Deadline must be a future date.',
+      },
     },
 
     status: {
       type: String,
       enum: JOB_STATUS_VALUES,
-      default: JOB_STATUS.DRAFT,
+      default: JOB_STATUSES.DRAFT,
       required: true,
     },
 
@@ -151,13 +159,10 @@ const jobSchema = new Schema(
 
     statusHistory: [statusHistoryEntrySchema],
 
-    applicationsCount: {
-      type: Number,
-      default: 0,
-    },
     viewsCount: {
       type: Number,
       default: 0,
+      min: 0,
     },
   },
   { timestamps: true }
