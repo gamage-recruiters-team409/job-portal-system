@@ -5,16 +5,28 @@ import { APPLICATION_STATUSES } from '../constants/statuses.js';
 
 const { Schema } = mongoose;
 
-const APPLICATION_STATUS_VALUES = Object.values(APPLICATION_STATUSES);
+// Only the statuses currently active in this model. WITHDRAWN is
+// intentionally excluded until the withdrawal flow is approved by
+// the Team Lead — still sourced from the shared constants file so
+// the values themselves stay in sync with the rest of the project.
+const APPLICATION_STATUS_VALUES = Object.values(APPLICATION_STATUSES).filter(
+  (status) => status !== APPLICATION_STATUSES.WITHDRAWN
+);
 
 // Records each status change so the frontend Status Timeline can be
 // rendered directly from stored data.
 //
-// IMPORTANT: status updates must go through a service function that
-// calls document.save() (not findOneAndUpdate/updateOne), so this
-// pre-save hook always fires and statusHistory stays accurate.
-// Confirmed with Kalana on 06 Aug 2026 — Applicant Management APIs
-// (Shortlist/Reject actions) will follow this pattern.
+// IMPORTANT: all future Application status changes must use a
+// dedicated service flow that loads the document, updates status,
+// and calls save() — e.g.:
+//   const application = await Application.findById(id);
+//   application.status = newStatus;
+//   await application.save();
+// Do NOT use findOneAndUpdate()/updateOne() for status changes, since
+// that bypasses this pre-save hook and statusHistory will not be
+// recorded. Confirmed with Kalana on 06 Aug 2026 — the Applicant
+// Management APIs (Shortlist/Reject actions) will follow this
+// save()-based contract.
 const statusHistorySchema = new Schema(
   {
     status: {
@@ -87,7 +99,7 @@ const applicationSchema = new Schema(
 applicationSchema.index({ job: 1, jobSeeker: 1 }, { unique: true });
 
 // Auto-tracks statusHistory on creation and on any status change.
-// Only fires when .save() is used (see note above statusHistorySchema).
+// Only fires when .save() is used — see the contract documented above.
 applicationSchema.pre('save', function () {
   if (this.isNew) {
     this.statusHistory.push({ status: this.status, changedAt: new Date() });
