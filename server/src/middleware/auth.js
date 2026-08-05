@@ -33,6 +33,10 @@ export async function protect(req, _res, next) {
       throw new ApiError(403, 'This account is not active.');
     }
 
+    if (!user.emailVerified) {
+      throw new ApiError(403, 'Please verify your email before continuing.');
+    }
+
     req.user = user;
     return next();
   } catch (error) {
@@ -50,9 +54,7 @@ export function requireRole(...allowedRoles) {
       return next(new ApiError(401, 'Not authorized. Please log in.'));
     }
     if (!allowedRoles.includes(req.user.role)) {
-      return next(
-        new ApiError(403, 'You do not have permission to perform this action.')
-      );
+      return next(new ApiError(403, 'You do not have permission to perform this action.'));
     }
     return next();
   };

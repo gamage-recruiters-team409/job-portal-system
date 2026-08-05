@@ -40,12 +40,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    // Used by employer registration until company verification is handled.
-    company: {
-      type: String,
-      trim: true,
-      default: null,
-    },
   },
   {
     timestamps: true,
