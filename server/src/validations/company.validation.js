@@ -31,13 +31,7 @@ export const companySchema = z.object({
     .string({ required_error: 'Company location is required' })
     .trim()
     .min(1, 'Company location is required'),
-  website: z
-    .string()
-    .trim()
-    .url('Invalid URL format')
-    .or(z.literal(''))
-    .optional()
-    .nullable(),
+  website: z.string().trim().url('Invalid URL format').or(z.literal('')).optional().nullable(),
   companyDescription: z
     .string()
     .trim()
