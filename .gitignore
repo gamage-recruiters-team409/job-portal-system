@@ -69,3 +69,6 @@ desktop.ini
 
 # Local overrides
 *.local
+*.txt
+*.png
+past_logs/
