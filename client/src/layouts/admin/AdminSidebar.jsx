@@ -22,7 +22,7 @@ import {
   LogoIcon
 } from '../../components/common/AdminIcons.jsx';
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ isOpen, setIsOpen }) => {
   const sections = [
     {
       title: 'GENERAL',
@@ -52,7 +52,17 @@ const AdminSidebar = () => {
   ];
 
   return (
-    <aside className="w-[280px] bg-[#F8FAFC] border-r border-slate-200 flex flex-col h-full">
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-40 md:hidden transition-opacity" 
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-[#F8FAFC] border-r border-slate-200 flex flex-col h-full transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       {/* Logo Area */}
       <div className="p-6 shrink-0">
         <div className="flex items-center gap-2 mb-3">
@@ -82,6 +92,7 @@ const AdminSidebar = () => {
                     <NavLink
                       to={item.path}
                       end={item.path === '/admin'}
+                      onClick={() => setIsOpen(false)}
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-[14px] font-medium ${isActive
                           ? 'bg-blue-50 text-blue-600'
@@ -113,6 +124,7 @@ const AdminSidebar = () => {
         </div>
       </div>
     </aside>
+    </>
   );
 };
 

@@ -6,11 +6,22 @@
  */
 
 import { SearchIcon as Search, MailIcon as Mail, SettingsIcon as Settings } from '../../components/common/AdminIcons.jsx';
-const AdminTopbar = () => {
+const AdminTopbar = ({ onMenuClick }) => {
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
-      <div className="flex items-center gap-8 flex-1">
-        <h2 className="text-xl font-bold text-slate-800">Admin Console</h2>
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shrink-0 z-40 relative">
+      <div className="flex items-center gap-4 md:gap-8 flex-1">
+        <button 
+          onClick={onMenuClick}
+          className="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+          aria-label="Open Menu"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h2 className="text-xl font-bold text-slate-800 hidden md:block">Admin Console</h2>
         
         {/* Search Bar */}
         <div className="flex-1 max-w-xl relative flex items-center">
