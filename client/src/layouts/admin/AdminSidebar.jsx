@@ -114,11 +114,12 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
       {/* User Profile */}
       <div className="p-5 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-[42px] h-[42px] bg-white border-2 border-slate-900 rounded-full flex items-center justify-center overflow-hidden">
-            <img src="/ProfileImg/Profile.png" alt="Profile" className="w-full h-full object-cover" />
+          <div className="w-[42px] h-[42px] bg-slate-100 border-2 border-slate-200 rounded-full flex items-center justify-center overflow-hidden text-slate-400">
+            {/* Fallback avatar until Bimsara's Auth is ready */}
+            <ImageIcon className="w-5 h-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[14px] font-bold text-slate-900 leading-tight">Sahan Viduranga</span>
+            <span className="text-[14px] font-bold text-slate-900 leading-tight">Admin User</span>
             <span className="text-[12px] text-slate-500 font-medium">System Admin</span>
           </div>
         </div>
