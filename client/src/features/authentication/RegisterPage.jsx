@@ -8,6 +8,7 @@ import { USER_ROLES } from '../../constants/statuses.js';
 import AuthLayout from './components/AuthLayout.jsx';
 import FormInput from './components/FormInput.jsx';
 import { getErrorMessage } from './utils/getErrorMessage.js';
+import { resendVerification } from '../../services/authService.js';
 
 const registerSchema = z
   .object({
@@ -38,6 +39,22 @@ export default function RegisterPage() {
   const [serverError, setServerError] = useState(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
+  const [resendError, setResendError] = useState(null);
+
+  async function handleResend() {
+    setResendStatus('sending');
+    setResendError(null);
+    try {
+      await resendVerification(registeredEmail);
+      setResendStatus('sent');
+      // Reset back to idle after 60 s so the user can resend again if needed
+      setTimeout(() => setResendStatus('idle'), 60_000);
+    } catch (error) {
+      setResendError(getErrorMessage(error));
+      setResendStatus('idle');
+    }
+  }
 
   const {
     register,
@@ -58,6 +75,7 @@ export default function RegisterPage() {
         name: values.name,
         email: values.email,
         password: values.password,
+        confirmPassword: values.confirmPassword,
         role: values.role,
       });
       setRegisteredEmail(values.email);
@@ -95,13 +113,30 @@ export default function RegisterPage() {
             <strong className="text-slate-900">{registeredEmail}</strong> for a verification link to
             activate your account.
           </p>
-          <p className="mt-8 text-sm text-slate-500">
-            Didn't receive the email? Check your spam folder or try logging in to resend the
-            verification link.
+          <p className="mt-6 text-sm text-slate-500">
+            Didn't receive the email? Check your spam folder, then try resending below.
           </p>
+
+          {resendError && (
+            <p className="mt-3 text-sm text-red-600">{resendError}</p>
+          )}
+
+          {resendStatus === 'sent' ? (
+            <p className="mt-4 text-sm font-medium text-green-600">Email resent — check your inbox.</p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendStatus === 'sending'}
+              className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {resendStatus === 'sending' ? 'Sending…' : 'Resend verification email'}
+            </button>
+          )}
+
           <Link
             to="/login"
-            className="mt-8 flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 text-base font-semibold text-white transition-colors hover:bg-blue-700"
+            className="mt-6 flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 text-base font-semibold text-white transition-colors hover:bg-blue-700"
           >
             Go to sign in
           </Link>
