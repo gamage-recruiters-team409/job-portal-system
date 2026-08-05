@@ -110,7 +110,9 @@ const jobSchema = new Schema(
       required: true,
       validate: {
         validator: function (value) {
-          if (!this.isNew) return true; // only enforce on creation, not on every edit
+          // Only enforce "must be future" when creating, or when deadline is being changed.
+          // Unrelated edits to a job with an already-passed deadline are allowed through.
+          if (!this.isNew && !this.isModified('deadline')) return true;
           return value > new Date();
         },
         message: 'Deadline must be a future date.',
