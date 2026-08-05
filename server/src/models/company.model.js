@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { EMPLOYER_VERIFICATION_STATUSES } from '../constants/statuses.js';
 
 const companySchema = new mongoose.Schema(
   {
@@ -9,6 +10,10 @@ const companySchema = new mongoose.Schema(
       trim: true,
     },
     companyLogo: {
+      type: String,
+      default: null,
+    },
+    companyLogoPublicId: {
       type: String,
       default: null,
     },
@@ -55,6 +60,11 @@ const companySchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 500,
+    },
+    verificationStatus: {
+      type: String,
+      enum: Object.values(EMPLOYER_VERIFICATION_STATUSES),
+      default: EMPLOYER_VERIFICATION_STATUSES.PENDING,
     },
     employerUserId: {
       type: mongoose.Schema.Types.ObjectId,
