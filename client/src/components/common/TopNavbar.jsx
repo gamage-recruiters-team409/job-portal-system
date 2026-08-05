@@ -3,6 +3,20 @@ import { useState, useRef, useEffect } from "react";
 /**
  * TopNavbar
  * Shared non-admin top navigation bar — owned by Kalana.
+ * Used across all authenticated non-admin pages (Job Seeker & Employer).
+ *
+ * Other members: import this component instead of building your own navbar.
+ * Example:
+ *   import TopNavbar from "../components/common/TopNavbar";
+ *   <TopNavbar
+ *     userName="John Smith"
+ *     userRole="Employer"
+ *     avatarUrl="/uploads/avatar.jpg"
+ *     notificationCount={3}
+ *     onMenuClick={() => setSidebarOpen(true)}
+ *     onSearch={(query) => console.log(query)}
+ *     onLogout={() => handleLogout()}
+ *   />
  */
 export default function TopNavbar({
   userName = "User",
@@ -16,6 +30,7 @@ export default function TopNavbar({
 }) {
   const [searchValue, setSearchValue] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   // Close the profile dropdown when clicking outside it
@@ -47,7 +62,8 @@ export default function TopNavbar({
     .toUpperCase();
 
   return (
-    <header className="w-full h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 gap-4">
+    <header className="w-full bg-white border-b border-gray-200">
+    <div className="h-16 flex items-center justify-between px-4 md:px-6 gap-4">
       {/* Left: mobile menu button + logo */}
       <div className="flex items-center gap-3 shrink-0">
         <button
@@ -109,6 +125,26 @@ export default function TopNavbar({
 
       {/* Right: notifications + profile */}
       <div className="flex items-center gap-3 md:gap-5 shrink-0">
+        <button
+          type="button"
+          onClick={() => setMobileSearchOpen((open) => !open)}
+          aria-label={mobileSearchOpen ? "Close search" : "Open search"}
+          aria-expanded={mobileSearchOpen}
+          className="md:hidden p-2 rounded-full text-gray-600 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        >
+          {mobileSearchOpen ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          )}
+        </button>
+
         <button
           type="button"
           aria-label="Notifications"
@@ -179,6 +215,41 @@ export default function TopNavbar({
           )}
         </div>
       </div>
+    </div>
+
+    {/* Mobile search row: only shown on small screens when toggled open */}
+    {mobileSearchOpen && (
+      <form
+        onSubmit={handleSearchSubmit}
+        className="md:hidden flex items-center bg-gray-100 rounded-full px-4 h-10 mx-4 mb-3"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400 shrink-0">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          type="text"
+          autoFocus
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          placeholder={searchPlaceholder}
+          className="flex-1 bg-transparent border-none outline-none px-3 text-sm text-gray-700 placeholder-gray-400"
+        />
+        {searchValue && (
+          <button
+            type="button"
+            onClick={clearSearch}
+            aria-label="Clear search"
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        )}
+      </form>
+    )}
     </header>
   );
 }
