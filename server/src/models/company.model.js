@@ -6,6 +6,7 @@ const companySchema = new mongoose.Schema(
     companyName: {
       type: String,
       required: true,
+      unique: true,
       trim: true,
     },
     companyLogo: {
@@ -19,7 +20,8 @@ const companySchema = new mongoose.Schema(
     },
     companySize: {
       type: String,
-      trim: true,
+      required: true,
+      enum: ['1-10', '11-50', '51-200', '200+'],
     },
     website: {
       type: String,
@@ -28,19 +30,23 @@ const companySchema = new mongoose.Schema(
     companyEmail: {
       type: String,
       required: true,
+      unique: true,
       trim: true,
       lowercase: true,
     },
     companyTelephone: {
       type: String,
+      required: true,
       trim: true,
     },
     companyAddress: {
       type: String,
+      required: true,
       trim: true,
     },
     companyLocation: {
       type: String,
+      required: true,
       trim: true,
     },
     companyDescription: {
