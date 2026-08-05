@@ -43,10 +43,6 @@ function SettingsIcon(props) {
   );
 }
 
-function TempLogo() {
-  return <span className="text-lg font-bold text-blue-600">GR Portal</span>;
-}
-
 function FoundationPage() {
   const employerNavItems = [
     { label: 'Dashboard', icon: <DashboardIcon />, path: '/employer/dashboard' },
@@ -59,7 +55,7 @@ function FoundationPage() {
   return (
     <div className="flex min-h-screen">
       <Sidebar
-        brand={<TempLogo />}
+        brand={<></>}
         navItems={employerNavItems}
         onLogout={() => alert('logout clicked')}
       />

@@ -3,44 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 
 /* ─── Default SVG icons (used only when callers don't supply their own) ──── */
 
-function ChevronLeftIcon(props) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="m15 18-6-6 6-6" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon(props) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}
-
 function MenuIcon(props) {
   return (
     <svg
@@ -144,26 +106,8 @@ function renderIcon(icon) {
 function Sidebar({ navItems = [], brand, onLogout }) {
   const location = useLocation();
 
-  // Desktop collapsed state — persisted in localStorage
-  const [collapsed, setCollapsed] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('sidebar_collapsed') ?? 'false');
-    } catch {
-      return false;
-    }
-  });
-
   // Mobile drawer open state
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Persist collapsed preference
-  useEffect(() => {
-    try {
-      localStorage.setItem('sidebar_collapsed', JSON.stringify(collapsed));
-    } catch {
-      /* storage unavailable */
-    }
-  }, [collapsed]);
 
   // Disable body scroll when mobile drawer is open
   useEffect(() => {
@@ -204,44 +148,23 @@ function Sidebar({ navItems = [], brand, onLogout }) {
       {/* ── Sidebar panel ──────────────────────────────────────────────── */}
       <aside
         className={[
-          'fixed inset-y-0 left-0 z-50 flex h-screen flex-col border-r border-[#E2E8F0] bg-white font-[Inter,ui-sans-serif,system-ui,sans-serif] transition-all duration-300 ease-in-out',
-          // Desktop: static positioning & collapsible width
+          'fixed inset-y-0 left-0 z-50 flex h-screen w-[240px] flex-col border-r border-[#E2E8F0] bg-white font-[Inter,ui-sans-serif,system-ui,sans-serif] transition-transform duration-300 ease-in-out',
           'md:static',
-          collapsed ? 'md:w-[72px]' : 'md:w-[240px]',
-          // Mobile: always 240 px, slide in/out
-          'w-[240px]',
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
         ].join(' ')}
       >
         {/* ── Brand header ───────────────────────────────────────────── */}
-        <div
-          className={[
-            'flex h-16 shrink-0 items-center border-b border-[#E2E8F0] px-4',
-            collapsed ? 'md:justify-center' : 'justify-between',
-          ].join(' ')}
-        >
+        <div className="flex h-16 shrink-0 items-center border-b border-[#E2E8F0] px-4">
           <div className="flex items-center gap-3 overflow-hidden">
             {brand || (
               <>
                 <DefaultBrandLogo />
-                {!collapsed && (
-                  <span className="whitespace-nowrap text-lg font-semibold tracking-tight text-[#0F172A]">
-                    Job Portal
-                  </span>
-                )}
+                <span className="whitespace-nowrap text-lg font-semibold tracking-tight text-[#0F172A]">
+                  Job Portal
+                </span>
               </>
             )}
           </div>
-
-          {/* Desktop collapse toggle */}
-          <button
-            type="button"
-            onClick={() => setCollapsed((v) => !v)}
-            className="hidden rounded-lg p-1.5 text-[#475569] transition-colors hover:bg-[#F8FAFC] hover:text-[#0F172A] md:flex"
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-          </button>
         </div>
 
         {/* ── Navigation items ───────────────────────────────────────── */}
@@ -254,10 +177,8 @@ function Sidebar({ navItems = [], brand, onLogout }) {
                 key={item.path}
                 to={item.path}
                 onClick={() => setMobileOpen(false)}
-                title={collapsed ? item.label : undefined}
                 className={[
                   'flex h-[44px] items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors',
-                  collapsed ? 'md:justify-center md:px-0' : '',
                   active
                     ? 'bg-[#EFF6FF] text-[#2563EB]'
                     : 'text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]',
@@ -272,14 +193,7 @@ function Sidebar({ navItems = [], brand, onLogout }) {
                   {renderIcon(item.icon)}
                 </span>
 
-                <span
-                  className={[
-                    'whitespace-nowrap transition-opacity duration-200',
-                    collapsed ? 'md:hidden' : '',
-                  ].join(' ')}
-                >
-                  {item.label}
-                </span>
+                <span className="whitespace-nowrap">{item.label}</span>
               </Link>
             );
           })}
@@ -291,18 +205,12 @@ function Sidebar({ navItems = [], brand, onLogout }) {
             <button
               type="button"
               onClick={onLogout}
-              title={collapsed ? 'Logout' : undefined}
-              className={[
-                'flex h-[44px] w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-[#475569] transition-colors hover:bg-[#FEF2F2] hover:text-[#DC2626]',
-                collapsed ? 'md:justify-center md:px-0' : '',
-              ].join(' ')}
+              className="flex h-[44px] w-full items-center gap-2 rounded-lg px-3 text-sm font-medium text-[#475569] transition-colors hover:bg-[#FEF2F2] hover:text-[#DC2626]"
             >
               <span className="flex h-5 w-5 shrink-0 items-center justify-center">
                 <LogOutIcon />
               </span>
-              <span className={['whitespace-nowrap', collapsed ? 'md:hidden' : ''].join(' ')}>
-                Logout
-              </span>
+              <span className="whitespace-nowrap">Logout</span>
             </button>
           </div>
         )}
