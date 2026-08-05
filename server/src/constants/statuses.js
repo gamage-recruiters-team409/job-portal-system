@@ -18,9 +18,11 @@ export const EMPLOYER_VERIFICATION_STATUSES = Object.freeze({
 
 export const JOB_STATUSES = Object.freeze({
   DRAFT: 'draft',
+  PENDING_REVIEW: 'pending_review',
   PUBLISHED: 'published',
   CLOSED: 'closed',
   SUSPENDED: 'suspended',
+  REJECTED: 'rejected',
 });
 
 export const APPLICATION_STATUSES = Object.freeze({
