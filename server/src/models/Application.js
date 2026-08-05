@@ -1,18 +1,20 @@
+// server/src/models/Application.js
+
 import mongoose from 'mongoose';
+import { APPLICATION_STATUSES } from '../constants/statuses.js';
 
 const { Schema } = mongoose;
 
-export const APPLICATION_STATUS = {
-  APPLIED: 'applied',
-  UNDER_REVIEW: 'under_review',
-  SHORTLISTED: 'shortlisted',
-  SELECTED: 'selected',
-  REJECTED: 'rejected',
-  WITHDRAWN: 'withdrawn',
-};
+const APPLICATION_STATUS_VALUES = Object.values(APPLICATION_STATUSES);
 
-const APPLICATION_STATUS_VALUES = Object.values(APPLICATION_STATUS);
-
+// Records each status change so the frontend Status Timeline can be
+// rendered directly from stored data.
+//
+// IMPORTANT: status updates must go through a service function that
+// calls document.save() (not findOneAndUpdate/updateOne), so this
+// pre-save hook always fires and statusHistory stays accurate.
+// Confirmed with Kalana on 06 Aug 2026 — Applicant Management APIs
+// (Shortlist/Reject actions) will follow this pattern.
 const statusHistorySchema = new Schema(
   {
     status: {
@@ -37,20 +39,20 @@ const applicationSchema = new Schema(
   {
     job: {
       type: Schema.Types.ObjectId,
-      ref: 'Job',
+      ref: 'Job', // Job model owned by Disura
       required: true,
       index: true,
     },
     jobSeeker: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'User', // User model owned by Bimsara
       required: true,
       index: true,
     },
     status: {
       type: String,
       enum: APPLICATION_STATUS_VALUES,
-      default: APPLICATION_STATUS.APPLIED,
+      default: APPLICATION_STATUSES.APPLIED,
       required: true,
     },
     coverLetter: {
@@ -58,14 +60,14 @@ const applicationSchema = new Schema(
       trim: true,
       maxlength: 3000,
     },
+    // Snapshot of the CV at the time of application (confirmed with
+    // Hiba on 06 Aug 2026) — intentionally NOT a reference to
+    // JobSeekerProfile, so the Application still shows the original
+    // CV even if the job seeker later replaces their profile CV.
     resume: {
       fileName: { type: String, required: true },
       fileUrl: { type: String, required: true },
       fileSize: { type: Number },
-    },
-    emailCopyRequested: {
-      type: Boolean,
-      default: false,
     },
     statusHistory: {
       type: [statusHistorySchema],
@@ -76,39 +78,23 @@ const applicationSchema = new Schema(
       trim: true,
       maxlength: 1000,
     },
-    withdrawnAt: {
-      type: Date,
-    },
-    withdrawReason: {
-      type: String,
-      trim: true,
-      maxlength: 300,
-    },
   },
   { timestamps: true }
 );
 
+// Duplicate-application prevention: one job seeker cannot apply to
+// the same job twice.
 applicationSchema.index({ job: 1, jobSeeker: 1 }, { unique: true });
 
-applicationSchema.pre('save', function (next) {
+// Auto-tracks statusHistory on creation and on any status change.
+// Only fires when .save() is used (see note above statusHistorySchema).
+applicationSchema.pre('save', function () {
   if (this.isNew) {
     this.statusHistory.push({ status: this.status, changedAt: new Date() });
   } else if (this.isModified('status')) {
     this.statusHistory.push({ status: this.status, changedAt: new Date() });
-
-    if (this.status === APPLICATION_STATUS.WITHDRAWN) {
-      this.withdrawnAt = new Date();
-    }
   }
-  next();
 });
-
-applicationSchema.methods.canBeWithdrawn = function () {
-  return [
-    APPLICATION_STATUS.APPLIED,
-    APPLICATION_STATUS.UNDER_REVIEW,
-  ].includes(this.status);
-};
 
 const Application = mongoose.model('Application', applicationSchema);
 
