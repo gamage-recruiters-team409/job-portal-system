@@ -38,3 +38,8 @@ export const REPORT_STATUSES = Object.freeze({
   RESOLVED: 'resolved',
   DISMISSED: 'dismissed',
 });
+
+export const NOTIFICATION_STATUSES = Object.freeze({
+  READ: 'Read',
+  UNREAD: 'Unread',
+});

@@ -1,10 +1,11 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+import { NOTIFICATION_STATUSES } from '../constants/statuses.js';
 
 const notificationSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     type: {
@@ -17,15 +18,15 @@ const notificationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Read", "Unread"],
-      default: "Unread",
+      enum: Object.values(NOTIFICATION_STATUSES),
+      default: NOTIFICATION_STATUSES.UNREAD,
     },
     relatedJob: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Job",
+      ref: 'Job',
     },
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Notification", notificationSchema);
+export default mongoose.model('Notification', notificationSchema);
