@@ -1,35 +1,14 @@
-import { useState, useEffect, isValidElement } from 'react';
+import { useEffect, isValidElement } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 /* ─── Default SVG icons (used only when callers don't supply their own) ──── */
-
-function MenuIcon(props) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <line x1="4" x2="20" y1="12" y2="12" />
-      <line x1="4" x2="20" y1="6" y2="6" />
-      <line x1="4" x2="20" y1="18" y2="18" />
-    </svg>
-  );
-}
 
 function CloseIcon(props) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -98,24 +77,28 @@ function renderIcon(icon) {
 /**
  * Reusable sidebar navigation for non-admin dashboards.
  *
+ * Mobile visibility is controlled by the parent authenticated layout, not by
+ * internal state — this keeps a single source of truth shared with TopNavbar's
+ * hamburger trigger (`onMenuClick` there should set `isOpen` true here).
+ * Breakpoint is `lg` to match TopNavbar's `lg:hidden` menu button.
+ *
  * @param {Object} props
  * @param {Array<{ label: string, icon: any, path: string }>} props.navItems
  * @param {React.ReactNode} [props.brand] - Brand logo / identity element
  * @param {Function} [props.onLogout] - Logout handler (button hidden when absent)
+ * @param {boolean} [props.isOpen] - Mobile drawer open state, owned by the parent layout
+ * @param {Function} [props.onClose] - Called to close the mobile drawer (overlay, close button, nav click)
  */
-function Sidebar({ navItems = [], brand, onLogout }) {
+function Sidebar({ navItems = [], brand, onLogout, isOpen = false, onClose = () => {} }) {
   const location = useLocation();
 
-  // Mobile drawer open state
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Disable body scroll when mobile drawer is open
+  // Disable body scroll when the mobile drawer is open
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
-  }, [mobileOpen]);
+  }, [isOpen]);
 
   /** Is the given path active? */
   function isActive(path) {
@@ -126,21 +109,11 @@ function Sidebar({ navItems = [], brand, onLogout }) {
 
   return (
     <>
-      {/* ── Mobile hamburger button ────────────────────────────────────── */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen((v) => !v)}
-        className="fixed top-4 left-4 z-50 rounded-lg border border-[#E2E8F0] bg-white p-2 text-[#475569] shadow-sm hover:bg-[#F8FAFC] md:hidden"
-        aria-label="Toggle navigation menu"
-      >
-        {mobileOpen ? <CloseIcon /> : <MenuIcon />}
-      </button>
-
       {/* ── Mobile overlay ─────────────────────────────────────────────── */}
-      {mobileOpen && (
+      {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
-          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={onClose}
           aria-hidden="true"
         />
       )}
@@ -149,12 +122,12 @@ function Sidebar({ navItems = [], brand, onLogout }) {
       <aside
         className={[
           'fixed inset-y-0 left-0 z-50 flex h-screen w-[240px] flex-col border-r border-[#E2E8F0] bg-white font-[Inter,ui-sans-serif,system-ui,sans-serif] transition-transform duration-300 ease-in-out',
-          'md:static',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+          'lg:static',
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         ].join(' ')}
       >
         {/* ── Brand header ───────────────────────────────────────────── */}
-        <div className="flex h-16 shrink-0 items-center border-b border-[#E2E8F0] px-4">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-[#E2E8F0] px-4">
           <div className="flex items-center gap-3 overflow-hidden">
             {brand || (
               <>
@@ -165,6 +138,16 @@ function Sidebar({ navItems = [], brand, onLogout }) {
               </>
             )}
           </div>
+
+          {/* Mobile-only close button — desktop closes via TopNavbar/overlay only */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A] lg:hidden"
+            aria-label="Close navigation menu"
+          >
+            <CloseIcon />
+          </button>
         </div>
 
         {/* ── Navigation items ───────────────────────────────────────── */}
@@ -176,7 +159,7 @@ function Sidebar({ navItems = [], brand, onLogout }) {
               <Link
                 key={item.path}
                 to={item.path}
-                onClick={() => setMobileOpen(false)}
+                onClick={onClose}
                 className={[
                   'flex h-[44px] items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors',
                   active
