@@ -89,6 +89,46 @@ const validateDateRange = (data, context) => {
   }
 };
 
+const validateCurrentRole = (data, context) => {
+  if (data.isCurrentRole === true && data.endDate != null) {
+    context.addIssue({
+      code: 'custom',
+      path: ['endDate'],
+      message: 'A current role cannot contain an end date.',
+    });
+  }
+};
+
+const validateExperienceRecord = (data, context) => {
+  validateDateRange(data, context);
+  validateCurrentRole(data, context);
+};
+
+const skillsArraySchema = z
+  .array(objectIdSchema)
+  .max(50, 'A profile cannot contain more than 50 skills.')
+  .superRefine((skills, context) => {
+    const existingSkillIds = new Set();
+
+    skills.forEach((skillId, index) => {
+      const normalizedSkillId = skillId.toLowerCase();
+
+      if (existingSkillIds.has(normalizedSkillId)) {
+        context.addIssue({
+          code: 'custom',
+          path: [index],
+          message: 'Duplicate skills are not allowed.',
+        });
+      }
+
+      existingSkillIds.add(normalizedSkillId);
+    });
+  });
+
+export const educationRecordSchema = educationBaseSchema.superRefine(validateDateRange);
+
+export const experienceRecordSchema = experienceBaseSchema.superRefine(validateExperienceRecord);
+
 export const updateJobSeekerProfileSchema = z
   .object({
     currentPosition: z
@@ -112,11 +152,11 @@ export const updateJobSeekerProfileSchema = z
 
 export const updateProfileSkillsSchema = z
   .object({
-    skills: z.array(objectIdSchema).max(50, 'A profile cannot contain more than 50 skills.'),
+    skills: skillsArraySchema,
   })
   .strict();
 
-export const createEducationSchema = educationBaseSchema.superRefine(validateDateRange);
+export const createEducationSchema = educationRecordSchema;
 
 export const updateEducationSchema = educationBaseSchema
   .partial()
@@ -125,11 +165,11 @@ export const updateEducationSchema = educationBaseSchema
     message: 'At least one education field must be provided.',
   });
 
-export const createExperienceSchema = experienceBaseSchema.superRefine(validateDateRange);
+export const createExperienceSchema = experienceRecordSchema;
 
 export const updateExperienceSchema = experienceBaseSchema
   .partial()
-  .superRefine(validateDateRange)
+  .superRefine(validateExperienceRecord)
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one experience field must be provided.',
   });
