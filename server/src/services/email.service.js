@@ -1,10 +1,9 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
+import { ApiError } from '../utils/apiError.js';
 
 /**
- * Whether real SMTP credentials are configured. In development the server may
- * run without them, in which case messages are logged instead of sent so the
- * verification flow can be exercised end-to-end locally.
+ * Whether real SMTP credentials are configured.
  */
 const hasSmtpConfig = Boolean(env.brevoHost && env.brevoUser && env.brevoPassword);
 
@@ -21,24 +20,29 @@ const transporter = hasSmtpConfig
   : null;
 
 /**
- * Send an email. Falls back to logging the rendered message (including any
- * link) to the console when no SMTP credentials are configured.
+ * Send an email.
+ *
+ * When SMTP is not configured the rendered message (which includes the
+ * verification link + token) is logged to the console in DEVELOPMENT only.
+ * In production a missing SMTP configuration raises a controlled error and the
+ * message is never logged, so the verification token is not exposed.
  */
 async function sendMail({ to, subject, html, text }) {
-  const payload = {
+  if (!transporter) {
+    if (env.nodeEnv === 'development') {
+      console.log(`\n[dev-email] To: ${to}\nSubject: ${subject}\n\n${text}\n`);
+      return;
+    }
+    throw new ApiError(503, 'Email service is not configured. Please try again later.');
+  }
+
+  await transporter.sendMail({
     from: `"${env.emailFromName}" <${env.emailFromAddress}>`,
     to,
     subject,
     text,
     html,
-  };
-
-  if (!transporter) {
-    console.log(`\n[dev-email] To: ${to}\nSubject: ${subject}\n\n${text}\n`);
-    return;
-  }
-
-  await transporter.sendMail(payload);
+  });
 }
 
 /**
