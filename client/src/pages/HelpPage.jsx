@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { BookOpen, User, Briefcase, Info, AlertCircle, Search } from 'lucide-react';
 
 const USER_GUIDES = [
@@ -331,22 +332,27 @@ function HelpPage() {
             Still need help?
           </p>
 
-          <button
+          <Link
+            to="/support"
             className="
-              bg-blue-600
-              text-white
-              px-7
-              py-3
-              rounded-xl
-              font-semibold
-              transition-all
-              duration-300
-              hover:bg-blue-700
-              hover:shadow-lg
-            "
+    inline-flex
+    items-center
+    justify-center
+    bg-blue-600
+    text-white
+    px-7
+    py-3
+    rounded-xl
+    font-semibold
+    transition-all
+    duration-300
+    hover:bg-blue-700
+    hover:-translate-y-1
+    hover:shadow-lg
+  "
           >
-            Go to Contact Page →
-          </button>
+            Submit a Support Request →
+          </Link>
         </section>
       </main>
     </div>

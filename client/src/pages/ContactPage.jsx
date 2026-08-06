@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Mail, Phone, Clock, MapPin, ArrowRight } from 'lucide-react';
 
 // Reusable contact information row component
@@ -210,26 +211,28 @@ function ContactPage() {
 
         {/* Navigation to support form */}
         <div className="text-center mt-8">
-          <button
+          <Link
+            to="/support"
             className="
-              inline-flex
-              items-center
-              gap-2
-              bg-blue-600
-              hover:bg-blue-700
-              text-white
-              px-6
-              py-3
-              rounded-xl
-              font-semibold
-              transition-all
-              duration-300
-              hover:shadow-md
-            "
+                  inline-flex
+                  items-center
+                  gap-2 
+                  bg-blue-600
+                 hover:bg-blue-700
+                 text-white
+                 px-6
+                  py-3
+                 rounded-xl
+                 font-semibold
+                 transition-all
+                 duration-300
+                 hover:-translate-y-1
+                 hover:shadow-lg
+       "
           >
             Go to Contact Form
             <ArrowRight size={18} />
-          </button>
+          </Link>
         </div>
       </main>
     </div>
