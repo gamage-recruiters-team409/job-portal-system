@@ -27,6 +27,8 @@ export const env = Object.freeze({
   brevoPort: Number(process.env.BREVO_PORT) || 587,
   brevoUser: process.env.BREVO_USER || '',
   brevoPassword: process.env.BREVO_PASSWORD || '',
+  emailFromName: process.env.EMAIL_FROM_NAME || 'Gamage Recruiters',
+  emailFromAddress: process.env.EMAIL_FROM_ADDRESS || 'no-reply@gamagerecruiters.local',
   // Cloudinary credentials for company logo and media uploads
   cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || '',

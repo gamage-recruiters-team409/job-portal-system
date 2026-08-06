@@ -64,8 +64,18 @@ export async function getMyCompany(userId) {
   return company;
 }
 
+// Approved public-facing fields for the public company endpoint.
+// companyEmail, companyTelephone and companyAddress are pending Team Lead
+// confirmation and must stay excluded until approved.
+// employerUserId and companyLogoPublicId are internal and must never be exposed.
+const PUBLIC_COMPANY_FIELDS =
+  'companyName companyLogo industry companySize website companyDescription companyLocation verificationStatus';
+
 /**
  * Get a company profile by ID (public view).
+ * Only verified companies are visible publicly, and only approved fields
+ * are returned — internal fields (employerUserId, companyLogoPublicId) are
+ * never exposed.
  *
  * @param {string} id - Company ID
  * @returns {Promise<import('mongoose').Document>}
@@ -75,7 +85,10 @@ export async function getCompanyById(id) {
     throw new ApiError(400, 'Invalid company ID format.');
   }
 
-  const company = await Company.findById(id);
+  const company = await Company.findOne(
+    { _id: id, verificationStatus: EMPLOYER_VERIFICATION_STATUSES.VERIFIED },
+    PUBLIC_COMPANY_FIELDS
+  );
   if (!company) {
     throw new ApiError(404, 'Company not found.');
   }
