@@ -20,6 +20,7 @@ export const env = Object.freeze({
   jwtSecret,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   emailVerificationExpiresIn: process.env.EMAIL_VERIFICATION_EXPIRES_IN || '24h',
+  resetPasswordExpiresIn: process.env.RESET_PASSWORD_EXPIRES_IN || '30m',
   bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
   // Brevo SMTP — used by the email service; optional in development.
   brevoHost: process.env.BREVO_HOST || '',

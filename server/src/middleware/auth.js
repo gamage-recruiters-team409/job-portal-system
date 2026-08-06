@@ -24,7 +24,9 @@ export async function protect(req, _res, next) {
       throw new ApiError(401, 'Session expired or invalid. Please log in again.');
     }
 
-    const user = await User.findById(decoded.id);
+    // tokenVersion is select:false by default but is needed here to enforce
+    // session invalidation after a password change.
+    const user = await User.findById(decoded.id).select('+tokenVersion');
     if (!user) {
       throw new ApiError(401, 'The user for this session no longer exists.');
     }
@@ -35,6 +37,12 @@ export async function protect(req, _res, next) {
 
     if (!user.emailVerified) {
       throw new ApiError(403, 'Please verify your email before continuing.');
+    }
+
+    // Reject any session token issued before the user last changed their
+    // password (tokenVersion is bumped on password reset).
+    if ((decoded.tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) {
+      throw new ApiError(401, 'Your session has expired. Please log in again.');
     }
 
     req.user = user;
