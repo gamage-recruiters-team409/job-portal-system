@@ -43,3 +43,11 @@ export const updateJobSchema = jobBaseSchema.partial().refine(salaryRangeRefinem
 export const jobIdParamSchema = z.object({
   jobId: objectId,
 });
+
+export const closeJobSchema = z.object({
+  reason: z.string().trim().max(300).optional(),
+});
+
+export const reopenJobSchema = z.object({
+  deadline: z.coerce.date().optional(),
+});

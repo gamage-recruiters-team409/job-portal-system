@@ -71,3 +71,70 @@ export async function updateJob({ jobId, employerId, updates }) {
 
   return job;
 }
+
+export async function submitJobForReview({ jobId, employerId }) {
+  const job = await Job.findOne({ _id: jobId, createdBy: employerId, isDeleted: false });
+
+  if (!job) {
+    throw new ApiError(404, 'Job not found.');
+  }
+
+  if (![JOB_STATUSES.DRAFT, JOB_STATUSES.REJECTED].includes(job.status)) {
+    throw new ApiError(400, `Cannot submit for review from status "${job.status}".`);
+  }
+
+  job.status = JOB_STATUSES.PENDING_REVIEW;
+  job.reviewNote = undefined;
+  job.reviewedBy = undefined;
+  job.reviewedAt = undefined;
+  job.statusHistory.push({ status: JOB_STATUSES.PENDING_REVIEW, changedBy: employerId });
+
+  await job.save();
+  return job;
+}
+
+export async function closeJob({ jobId, employerId, reason }) {
+  const job = await Job.findOne({ _id: jobId, createdBy: employerId, isDeleted: false });
+
+  if (!job) {
+    throw new ApiError(404, 'Job not found.');
+  }
+
+  if (job.status !== JOB_STATUSES.PUBLISHED) {
+    throw new ApiError(400, `Cannot close a job with status "${job.status}".`);
+  }
+
+  job.status = JOB_STATUSES.CLOSED;
+  job.statusHistory.push({ status: JOB_STATUSES.CLOSED, changedBy: employerId, note: reason });
+
+  await job.save();
+  return job;
+}
+
+export async function reopenJob({ jobId, employerId, newDeadline }) {
+  const job = await Job.findOne({ _id: jobId, createdBy: employerId, isDeleted: false });
+
+  if (!job) {
+    throw new ApiError(404, 'Job not found.');
+  }
+
+  if (job.status !== JOB_STATUSES.CLOSED) {
+    throw new ApiError(400, `Cannot reopen a job with status "${job.status}".`);
+  }
+
+  const isExpired = job.deadline < new Date();
+
+  if (isExpired && !newDeadline) {
+    throw new ApiError(400, 'This posting has expired. A new deadline is required to reopen it.');
+  }
+
+  if (newDeadline) {
+    job.deadline = newDeadline;
+  }
+
+  job.status = JOB_STATUSES.PUBLISHED;
+  job.statusHistory.push({ status: JOB_STATUSES.PUBLISHED, changedBy: employerId });
+
+  await job.save();
+  return job;
+}
