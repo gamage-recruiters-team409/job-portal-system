@@ -119,3 +119,75 @@ export const updateExperienceEntryByUserId = async (userId, entryId, experienceU
 
   return experienceEntry;
 };
+
+export const saveProfileImageByUserId = async (userId, profileImage) => {
+  return JobSeekerProfile.findOneAndUpdate(
+    {
+      user: userId,
+    },
+    {
+      $set: {
+        profileImage,
+      },
+    },
+    {
+      new: true,
+      upsert: true,
+      runValidators: true,
+      setDefaultsOnInsert: true,
+    }
+  ).exec();
+};
+
+export const removeProfileImageByUserId = async (userId) => {
+  return JobSeekerProfile.findOneAndUpdate(
+    {
+      user: userId,
+    },
+    {
+      $set: {
+        profileImage: {},
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).exec();
+};
+
+export const saveCvByUserId = async (userId, cv) => {
+  return JobSeekerProfile.findOneAndUpdate(
+    {
+      user: userId,
+    },
+    {
+      $set: {
+        cv,
+      },
+    },
+    {
+      new: true,
+      upsert: true,
+      runValidators: true,
+      setDefaultsOnInsert: true,
+    }
+  ).exec();
+};
+
+export const removeCvByUserId = async (userId) => {
+  return JobSeekerProfile.findOneAndUpdate(
+    {
+      user: userId,
+    },
+    {
+      $set: {
+        cv: {},
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).exec();
+};
