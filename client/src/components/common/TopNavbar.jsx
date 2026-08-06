@@ -1,37 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-/**
- * TopNavbar
- * Shared non-admin top navigation bar — owned by Kalana.
- * Used across all authenticated non-admin pages (Job Seeker & Employer).
- *
- * Other members: import this component instead of building your own navbar.
- * Example:
- *   import TopNavbar from "../components/common/TopNavbar";
- *   <TopNavbar
- *     userName="John Smith"
- *     userRole="Employer"
- *     avatarUrl="/uploads/avatar.jpg"
- *     notificationCount={3}
- *     onMenuClick={() => setSidebarOpen(true)}
- *     onSearch={(query) => console.log(query)}
- *     onLogout={() => handleLogout()}
- *     onNotificationsClick={() => setNotificationsOpen(true)}
- *     profilePath="/employer/profile"
- *   />
- *
- * Notification integration:
- *   This component does not render a notification dropdown itself. It only
- *   exposes onNotificationsClick so the consuming page can open Danaja's
- *   shared Notification Dropdown component.
- *
- * Profile navigation:
- *   Pass profilePath with the route approved for the current module
- *   (Job Seeker and Employer have different profile destinations), or pass
- *   onProfileClick if the consuming page needs custom handling instead of
- *   direct navigation.
- */
 export default function TopNavbar({
   userName = 'User',
   userRole = '',
@@ -83,11 +52,17 @@ export default function TopNavbar({
       <div className="h-16 flex items-center justify-between px-4 md:px-6 gap-4">
         {/* Left: mobile menu button + logo */}
         <div className="flex items-center gap-3 shrink-0">
+          {/*
+            Breakpoint coordinated with Injas's shared Sidebar (per TL review,
+            2026-08-06): the Sidebar becomes permanently visible at `md`, so
+            this trigger must hide at the same point. Injas confirmed he is
+            fine with either breakpoint, so this matches the Sidebar branch.
+          */}
           <button
             type="button"
             onClick={onMenuClick}
             aria-label="Open menu"
-            className="lg:hidden p-2 -ml-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="md:hidden p-2 -ml-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <svg
               width="22"
