@@ -3,26 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 
 /* ─── Default SVG icons (used only when callers don't supply their own) ──── */
 
-function CloseIcon(props) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
-  );
-}
-
 function LogOutIcon(props) {
   return (
     <svg
@@ -44,25 +24,6 @@ function LogOutIcon(props) {
   );
 }
 
-function DefaultBrandLogo() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="28"
-      height="28"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#2563EB"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="20" height="14" x="2" y="7" rx="2" ry="2" />
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-    </svg>
-  );
-}
-
 /* ─── Icon renderer ──────────────────────────────────────────────────────── */
 
 function renderIcon(icon) {
@@ -77,6 +38,9 @@ function renderIcon(icon) {
 /**
  * Reusable sidebar navigation for non-admin dashboards.
  *
+ * No brand/logo header — TopNavbar owns identity/branding at the top of the
+ * page. This renders nav items and logout only.
+ *
  * Mobile visibility is controlled by the parent authenticated layout, not by
  * internal state — this keeps a single source of truth shared with TopNavbar's
  * hamburger trigger (`onMenuClick` there should set `isOpen` true here).
@@ -84,12 +48,11 @@ function renderIcon(icon) {
  *
  * @param {Object} props
  * @param {Array<{ label: string, icon: any, path: string }>} props.navItems
- * @param {React.ReactNode} [props.brand] - Brand logo / identity element
  * @param {Function} [props.onLogout] - Logout handler (button hidden when absent)
  * @param {boolean} [props.isOpen] - Mobile drawer open state, owned by the parent layout
- * @param {Function} [props.onClose] - Called to close the mobile drawer (overlay, close button, nav click)
+ * @param {Function} [props.onClose] - Called to close the mobile drawer (overlay, nav click)
  */
-function Sidebar({ navItems = [], brand, onLogout, isOpen = false, onClose = () => {} }) {
+function Sidebar({ navItems = [], onLogout, isOpen = false, onClose = () => {} }) {
   const location = useLocation();
 
   // Disable body scroll when the mobile drawer is open
@@ -126,30 +89,6 @@ function Sidebar({ navItems = [], brand, onLogout, isOpen = false, onClose = () 
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         ].join(' ')}
       >
-        {/* ── Brand header ───────────────────────────────────────────── */}
-        <div className="flex h-16 shrink-0 items-center justify-between border-b border-[#E2E8F0] px-4">
-          <div className="flex items-center gap-3 overflow-hidden">
-            {brand || (
-              <>
-                <DefaultBrandLogo />
-                <span className="whitespace-nowrap text-lg font-semibold tracking-tight text-[#0F172A]">
-                  Job Portal
-                </span>
-              </>
-            )}
-          </div>
-
-          {/* Mobile-only close button — desktop closes via TopNavbar/overlay only */}
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A] lg:hidden"
-            aria-label="Close navigation menu"
-          >
-            <CloseIcon />
-          </button>
-        </div>
-
         {/* ── Navigation items ───────────────────────────────────────── */}
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
           {navItems.map((item) => {
