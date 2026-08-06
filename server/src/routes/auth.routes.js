@@ -5,11 +5,15 @@ import {
   getMe,
   verifyEmailController,
   resendVerificationController,
+  forgotPassword,
+  resetPasswordController,
 } from '../controllers/auth.controller.js';
 import {
   registerSchema,
   loginSchema,
   resendVerificationSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from '../validations/auth.validation.js';
 import { validate } from '../middleware/validate.js';
 import { protect } from '../middleware/auth.js';
@@ -24,6 +28,8 @@ authRouter.post(
   validate(resendVerificationSchema),
   resendVerificationController
 );
+authRouter.post('/forgot-password', validate(forgotPasswordSchema), forgotPassword);
+authRouter.post('/reset-password', validate(resetPasswordSchema), resetPasswordController);
 authRouter.get('/me', protect, getMe);
 
 export default authRouter;

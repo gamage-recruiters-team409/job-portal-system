@@ -3,13 +3,20 @@ import User from '../models/User.js';
 import { ApiError } from '../utils/apiError.js';
 import { env } from '../config/env.js';
 import { ACCOUNT_STATUSES, USER_ROLES } from '../constants/statuses.js';
-import { sendVerificationEmail } from './email.service.js';
+import { sendVerificationEmail, sendResetPasswordEmail } from './email.service.js';
 
 const VERIFY_EMAIL_PURPOSE = 'verify-email';
+const RESET_PASSWORD_PURPOSE = 'reset-password';
 
 function signVerificationToken(userId) {
   return jwt.sign({ sub: userId, purpose: VERIFY_EMAIL_PURPOSE }, env.jwtSecret, {
     expiresIn: env.emailVerificationExpiresIn,
+  });
+}
+
+function signResetToken(userId) {
+  return jwt.sign({ sub: userId, purpose: RESET_PASSWORD_PURPOSE }, env.jwtSecret, {
+    expiresIn: env.resetPasswordExpiresIn,
   });
 }
 
@@ -106,5 +113,49 @@ export async function resendVerification(email) {
 
   const token = signVerificationToken(user.id);
   await sendVerificationEmail(user.email, token);
+  return { user };
+}
+
+/**
+ * Send a password-reset email with a short-lived signed token.
+ *
+ * The response is intentionally identical whether or not the account exists
+ * (a 200 "if an account exists, an email has been sent") so that this endpoint
+ * cannot be used to probe which email addresses are registered.
+ */
+export async function requestPasswordReset(email) {
+  const user = await User.findOne({ email });
+
+  if (user) {
+    const token = signResetToken(user.id);
+    await sendResetPasswordEmail(user.email, token);
+  }
+
+  return { sent: true };
+}
+
+/**
+ * Reset the account password using a valid reset token.
+ * Throws if the token is invalid/expired or was issued for the wrong purpose.
+ */
+export async function resetPassword(token, newPassword) {
+  let decoded;
+  try {
+    decoded = jwt.verify(token, env.jwtSecret);
+  } catch {
+    throw new ApiError(400, 'The reset link is invalid or has expired.');
+  }
+
+  if (decoded.purpose !== RESET_PASSWORD_PURPOSE || !decoded.sub) {
+    throw new ApiError(400, 'The reset link is invalid or has expired.');
+  }
+
+  const user = await User.findById(decoded.sub);
+  if (!user) {
+    throw new ApiError(400, 'The account for this reset link no longer exists.');
+  }
+
+  user.password = newPassword;
+  await user.save();
   return { user };
 }
