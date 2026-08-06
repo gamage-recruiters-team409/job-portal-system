@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { verifyEmail } from '../../services/authService.js';
+import { verifyEmail, resendVerification } from '../../services/authService.js';
 import AuthLayout from './components/AuthLayout.jsx';
+import { getErrorMessage } from './utils/getErrorMessage.js';
 
 const STATUS = {
   LOADING: 'loading',
@@ -9,6 +10,65 @@ const STATUS = {
   INVALID: 'invalid',
   EXPIRED: 'expired',
 };
+
+/**
+ * Inline resend form shared by the expired and invalid states.
+ * Lets users get a new verification email without having to attempt
+ * a login that the backend will reject for unverified accounts.
+ */
+function ResendForm() {
+  const [email, setEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
+  const [resendError, setResendError] = useState(null);
+
+  async function handleResend(e) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setResendStatus('sending');
+    setResendError(null);
+    try {
+      await resendVerification(email.trim());
+      setResendStatus('sent');
+    } catch (error) {
+      setResendError(getErrorMessage(error));
+      setResendStatus('idle');
+    }
+  }
+
+  if (resendStatus === 'sent') {
+    return (
+      <p className="mt-4 text-sm font-medium text-green-600">
+        Verification email sent — check your inbox.
+      </p>
+    );
+  }
+
+  return (
+    <form onSubmit={handleResend} className="mt-6 w-full">
+      <p className="mb-3 text-sm text-slate-500">
+        Enter your email address below to receive a new verification link.
+      </p>
+      {resendError && (
+        <p className="mb-2 text-sm text-red-600">{resendError}</p>
+      )}
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@example.com"
+        required
+        className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      />
+      <button
+        type="submit"
+        disabled={resendStatus === 'sending'}
+        className="mt-3 h-12 w-full rounded-xl bg-blue-600 text-base font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {resendStatus === 'sending' ? 'Sending…' : 'Resend verification email'}
+      </button>
+    </form>
+  );
+}
 
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
@@ -25,8 +85,8 @@ export default function VerifyEmailPage() {
       .then(() => setStatus(STATUS.SUCCESS))
       .catch((error) => {
         const message = error?.response?.data?.message ?? '';
-        // Backend returns 400 for invalid/already-used tokens
-        // and 410 for expired tokens — map both to a user-friendly state.
+        // Backend returns 400 for invalid/already-used tokens and 410 for
+        // expired tokens — map both to a user-friendly state.
         if (
           error?.response?.status === 410 ||
           message.toLowerCase().includes('expired')
@@ -110,14 +170,12 @@ export default function VerifyEmailPage() {
             </svg>
           </div>
           <p className="mt-6 text-slate-600">
-            This verification link has expired. Sign in to your account and we will send you a
-            new one.
+            This verification link has expired. Enter your email address below to receive a new
+            one.
           </p>
-          <Link
-            to="/login"
-            className="mt-8 flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 text-base font-semibold text-white transition-colors hover:bg-blue-700"
-          >
-            Go to sign in
+          <ResendForm />
+          <Link to="/login" className="mt-6 text-sm font-medium text-blue-600 hover:text-blue-700">
+            Back to sign in
           </Link>
         </div>
       </AuthLayout>
@@ -149,13 +207,11 @@ export default function VerifyEmailPage() {
         </div>
         <p className="mt-6 text-slate-600">
           The link you followed is invalid or has already been used. If your account is not yet
-          active, please sign in to request a new verification email.
+          active, enter your email address below to request a new verification link.
         </p>
-        <Link
-          to="/login"
-          className="mt-8 flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 text-base font-semibold text-white transition-colors hover:bg-blue-700"
-        >
-          Go to sign in
+        <ResendForm />
+        <Link to="/login" className="mt-6 text-sm font-medium text-blue-600 hover:text-blue-700">
+          Back to sign in
         </Link>
       </div>
     </AuthLayout>
