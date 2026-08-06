@@ -2,19 +2,19 @@ import { sendSuccess } from '../utils/apiResponse.js';
 import { ApiError } from '../utils/apiError.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../services/cloudinary.service.js';
 import {
-  createCompany,
-  getMyCompany,
-  getCompanyById,
-  updateCompany,
-  updateLogo,
+  createCompany as createCompanyService,
+  getMyCompany as getMyCompanyService,
+  getCompanyById as getCompanyByIdService,
+  updateCompany as updateCompanyService,
+  updateLogo as updateLogoService,
 } from '../services/company.service.js';
 
 /**
  * POST /companies — Create a new company profile for the authenticated employer.
  */
-export async function createCompanyController(req, res, next) {
+export async function createCompany(req, res, next) {
   try {
-    const company = await createCompany(req.user.id, req.body);
+    const company = await createCompanyService(req.user.id, req.body);
     return sendSuccess(res, {
       statusCode: 201,
       message: 'Company profile created successfully.',
@@ -28,9 +28,9 @@ export async function createCompanyController(req, res, next) {
 /**
  * GET /companies/me — Retrieve the authenticated employer's company profile.
  */
-export async function getMyCompanyController(req, res, next) {
+export async function getMyCompany(req, res, next) {
   try {
-    const company = await getMyCompany(req.user.id);
+    const company = await getMyCompanyService(req.user.id);
     return sendSuccess(res, {
       statusCode: 200,
       message: 'Company profile retrieved successfully.',
@@ -44,9 +44,9 @@ export async function getMyCompanyController(req, res, next) {
 /**
  * GET /companies/:id — Retrieve a company profile by ID (public view).
  */
-export async function getCompanyByIdController(req, res, next) {
+export async function getCompanyById(req, res, next) {
   try {
-    const company = await getCompanyById(req.params.id);
+    const company = await getCompanyByIdService(req.params.id);
     return sendSuccess(res, {
       statusCode: 200,
       message: 'Company details retrieved successfully.',
@@ -60,9 +60,9 @@ export async function getCompanyByIdController(req, res, next) {
 /**
  * PUT /companies/me — Update the authenticated employer's company profile.
  */
-export async function updateCompanyController(req, res, next) {
+export async function updateCompany(req, res, next) {
   try {
-    const company = await updateCompany(req.user.id, req.body);
+    const company = await updateCompanyService(req.user.id, req.body);
     return sendSuccess(res, {
       statusCode: 200,
       message: 'Company profile updated successfully.',
@@ -76,7 +76,7 @@ export async function updateCompanyController(req, res, next) {
 /**
  * PUT /companies/me/logo — Upload or update company logo for the authenticated employer.
  */
-export async function updateLogoController(req, res, next) {
+export async function uploadLogo(req, res, next) {
   let uploadedPublicId = null;
   try {
     if (!req.file) {
@@ -86,7 +86,11 @@ export async function updateLogoController(req, res, next) {
     const uploadResult = await uploadToCloudinary(req.file.buffer, 'company_logos');
     uploadedPublicId = uploadResult.public_id;
 
-    const company = await updateLogo(req.user.id, uploadResult.secure_url, uploadResult.public_id);
+    const company = await updateLogoService(
+      req.user.id,
+      uploadResult.secure_url,
+      uploadResult.public_id
+    );
     return sendSuccess(res, {
       statusCode: 200,
       message: 'Company logo updated successfully.',
@@ -103,3 +107,12 @@ export async function updateLogoController(req, res, next) {
     return next(error);
   }
 }
+
+// Aliases for compatibility
+export {
+  createCompany as createCompanyController,
+  getMyCompany as getMyCompanyController,
+  getCompanyById as getCompanyByIdController,
+  updateCompany as updateCompanyController,
+  uploadLogo as updateLogoController,
+};

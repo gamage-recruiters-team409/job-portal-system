@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import {
-  createCompanyController,
-  getMyCompanyController,
-  getCompanyByIdController,
-  updateCompanyController,
-  updateLogoController,
+  createCompany,
+  getMyCompany,
+  getCompanyById,
+  updateCompany,
+  uploadLogo,
 } from '../controllers/company.controller.js';
 import { companySchema, updateCompanySchema } from '../validations/company.validation.js';
 import { validate } from '../middleware/validate.js';
@@ -20,17 +20,17 @@ companyRouter.post(
   protect,
   requireRole(USER_ROLES.EMPLOYER),
   validate(companySchema),
-  createCompanyController
+  createCompany
 );
 
-companyRouter.get('/me', protect, requireRole(USER_ROLES.EMPLOYER), getMyCompanyController);
+companyRouter.get('/me', protect, requireRole(USER_ROLES.EMPLOYER), getMyCompany);
 
 companyRouter.put(
   '/me',
   protect,
   requireRole(USER_ROLES.EMPLOYER),
   validate(updateCompanySchema),
-  updateCompanyController
+  updateCompany
 );
 
 companyRouter.put(
@@ -38,10 +38,10 @@ companyRouter.put(
   protect,
   requireRole(USER_ROLES.EMPLOYER),
   uploadCompanyLogo,
-  updateLogoController
+  uploadLogo
 );
 
 // Public route to view company profile by ID
-companyRouter.get('/:id', getCompanyByIdController);
+companyRouter.get('/:id', getCompanyById);
 
 export default companyRouter;
