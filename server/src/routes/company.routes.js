@@ -33,6 +33,15 @@ companyRouter.put(
   updateCompany
 );
 
+// Logo upload route (POST & PUT supported)
+companyRouter.post(
+  '/me/logo',
+  protect,
+  requireRole(USER_ROLES.EMPLOYER),
+  uploadCompanyLogo,
+  uploadLogo
+);
+
 companyRouter.put(
   '/me/logo',
   protect,
