@@ -49,6 +49,8 @@ export const companySchema = z.object({
   ),
 });
 
+export const updateCompanySchema = companySchema.partial();
+
 export const validateCompany = (data) => {
   return companySchema.safeParse(data);
 };
