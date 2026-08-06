@@ -191,3 +191,93 @@ export const removeCvByUserId = async (userId) => {
     }
   ).exec();
 };
+
+export const addEducationEntryByUserId = async (userId, educationData) => {
+  let profile = await JobSeekerProfile.findOne({
+    user: userId,
+  }).exec();
+
+  if (!profile) {
+    profile = new JobSeekerProfile({
+      user: userId,
+    });
+  }
+
+  profile.education.push(educationData);
+
+  await profile.save();
+
+  return profile.education[profile.education.length - 1];
+};
+
+export const deleteEducationEntryByUserId = async (userId, entryId) => {
+  const profile = await JobSeekerProfile.findOne({
+    user: userId,
+  }).exec();
+
+  if (!profile) {
+    return null;
+  }
+
+  const educationEntry = profile.education.id(entryId);
+
+  if (!educationEntry) {
+    return null;
+  }
+
+  const removedEducation = educationEntry.toObject({
+    virtuals: false,
+    versionKey: false,
+  });
+
+  profile.education.pull(entryId);
+
+  await profile.save();
+
+  return removedEducation;
+};
+
+export const addExperienceEntryByUserId = async (userId, experienceData) => {
+  let profile = await JobSeekerProfile.findOne({
+    user: userId,
+  }).exec();
+
+  if (!profile) {
+    profile = new JobSeekerProfile({
+      user: userId,
+    });
+  }
+
+  profile.experience.push(experienceData);
+
+  await profile.save();
+
+  return profile.experience[profile.experience.length - 1];
+};
+
+export const deleteExperienceEntryByUserId = async (userId, entryId) => {
+  const profile = await JobSeekerProfile.findOne({
+    user: userId,
+  }).exec();
+
+  if (!profile) {
+    return null;
+  }
+
+  const experienceEntry = profile.experience.id(entryId);
+
+  if (!experienceEntry) {
+    return null;
+  }
+
+  const removedExperience = experienceEntry.toObject({
+    virtuals: false,
+    versionKey: false,
+  });
+
+  profile.experience.pull(entryId);
+
+  await profile.save();
+
+  return removedExperience;
+};

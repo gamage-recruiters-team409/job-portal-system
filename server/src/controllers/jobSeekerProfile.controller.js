@@ -1,14 +1,18 @@
 import { ApiError } from '../utils/apiError.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import {
+  addEducationEntryByUserId,
+  addExperienceEntryByUserId,
+  deleteEducationEntryByUserId,
+  deleteExperienceEntryByUserId,
   getJobSeekerProfileByUserId,
-  updateJobSeekerProfileByUserId,
-  updateEducationEntryByUserId,
-  updateExperienceEntryByUserId,
-  saveProfileImageByUserId,
+  removeCvByUserId,
   removeProfileImageByUserId,
   saveCvByUserId,
-  removeCvByUserId,
+  saveProfileImageByUserId,
+  updateEducationEntryByUserId,
+  updateExperienceEntryByUserId,
+  updateJobSeekerProfileByUserId,
 } from '../services/jobSeekerProfile.service.js';
 import {
   uploadJobSeekerProfileImage,
@@ -254,6 +258,90 @@ export async function deleteMyCv(req, res, next) {
       message: 'CV removed successfully.',
       data: {
         cv: profile.cv,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * POST /job-seeker-profile/me/education
+ * Adds one education entry to the authenticated Job Seeker's profile.
+ */
+export async function addMyEducationEntry(req, res, next) {
+  try {
+    const educationEntry = await addEducationEntryByUserId(req.user._id, req.body);
+
+    return sendSuccess(res, {
+      message: 'Education entry added successfully.',
+      data: {
+        education: educationEntry,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * DELETE /job-seeker-profile/me/education/:entryId
+ * Deletes one education entry owned by the authenticated Job Seeker.
+ */
+export async function deleteMyEducationEntry(req, res, next) {
+  try {
+    const educationEntry = await deleteEducationEntryByUserId(req.user._id, req.params.entryId);
+
+    if (!educationEntry) {
+      throw new ApiError(404, 'Education entry not found.');
+    }
+
+    return sendSuccess(res, {
+      message: 'Education entry deleted successfully.',
+      data: {
+        education: educationEntry,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * POST /job-seeker-profile/me/experience
+ * Adds one experience entry to the authenticated Job Seeker's profile.
+ */
+export async function addMyExperienceEntry(req, res, next) {
+  try {
+    const experienceEntry = await addExperienceEntryByUserId(req.user._id, req.body);
+
+    return sendSuccess(res, {
+      message: 'Experience entry added successfully.',
+      data: {
+        experience: experienceEntry,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * DELETE /job-seeker-profile/me/experience/:entryId
+ * Deletes one experience entry owned by the authenticated Job Seeker.
+ */
+export async function deleteMyExperienceEntry(req, res, next) {
+  try {
+    const experienceEntry = await deleteExperienceEntryByUserId(req.user._id, req.params.entryId);
+
+    if (!experienceEntry) {
+      throw new ApiError(404, 'Experience entry not found.');
+    }
+
+    return sendSuccess(res, {
+      message: 'Experience entry deleted successfully.',
+      data: {
+        experience: experienceEntry,
       },
     });
   } catch (error) {

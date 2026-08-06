@@ -1,14 +1,18 @@
 import { Router } from 'express';
 import { USER_ROLES } from '../constants/statuses.js';
 import {
+  addMyEducationEntry,
+  addMyExperienceEntry,
+  deleteMyEducationEntry,
+  deleteMyExperienceEntry,
+  deleteMyCv,
+  deleteMyProfileImage,
   getMyProfile,
-  updateMyProfile,
   updateMyEducationEntry,
   updateMyExperienceEntry,
-  uploadMyProfileImage,
-  deleteMyProfileImage,
+  updateMyProfile,
   uploadMyCv,
-  deleteMyCv,
+  uploadMyProfileImage,
 } from '../controllers/jobSeekerProfile.controller.js';
 import { protect, requireRole } from '../middleware/auth.js';
 import {
@@ -17,6 +21,8 @@ import {
 } from '../middleware/jobSeekerProfileUpload.js';
 import { validate } from '../middleware/validate.js';
 import {
+  createEducationSchema,
+  createExperienceSchema,
   profileEntryIdSchema,
   updateEducationSchema,
   updateExperienceSchema,
@@ -67,6 +73,12 @@ jobSeekerProfileRouter.put('/me/cv', uploadJobSeekerCv, uploadMyCv);
 jobSeekerProfileRouter.delete('/me/cv', deleteMyCv);
 
 /**
+ * POST /api/v1/job-seeker-profile/me/education
+ * Add one education entry to the authenticated Job Seeker's profile.
+ */
+jobSeekerProfileRouter.post('/me/education', validate(createEducationSchema), addMyEducationEntry);
+
+/**
  * PATCH /api/v1/job-seeker-profile/me/education/:entryId
  * Update one education entry belonging to the authenticated Job Seeker.
  */
@@ -78,6 +90,26 @@ jobSeekerProfileRouter.patch(
 );
 
 /**
+ * DELETE /api/v1/job-seeker-profile/me/education/:entryId
+ * Delete one education entry belonging to the authenticated Job Seeker.
+ */
+jobSeekerProfileRouter.delete(
+  '/me/education/:entryId',
+  validate(profileEntryIdSchema, 'params'),
+  deleteMyEducationEntry
+);
+
+/**
+ * POST /api/v1/job-seeker-profile/me/experience
+ * Add one experience entry to the authenticated Job Seeker's profile.
+ */
+jobSeekerProfileRouter.post(
+  '/me/experience',
+  validate(createExperienceSchema),
+  addMyExperienceEntry
+);
+
+/**
  * PATCH /api/v1/job-seeker-profile/me/experience/:entryId
  * Update one experience entry belonging to the authenticated Job Seeker.
  */
@@ -86,6 +118,16 @@ jobSeekerProfileRouter.patch(
   validate(profileEntryIdSchema, 'params'),
   validate(updateExperienceSchema),
   updateMyExperienceEntry
+);
+
+/**
+ * DELETE /api/v1/job-seeker-profile/me/experience/:entryId
+ * Delete one experience entry belonging to the authenticated Job Seeker.
+ */
+jobSeekerProfileRouter.delete(
+  '/me/experience/:entryId',
+  validate(profileEntryIdSchema, 'params'),
+  deleteMyExperienceEntry
 );
 
 export default jobSeekerProfileRouter;
