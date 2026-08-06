@@ -1,10 +1,5 @@
 import { sendSuccess } from '../utils/apiResponse.js';
-import {
-  createJob,
-  listEmployerJobs,
-  getJobById,
-  updateJob,
-} from '../services/job.service.js';
+import { createJob, listEmployerJobs, getJobById, updateJob } from '../services/job.service.js';
 
 /**
  * POST /jobs — create a new job posting as a draft.

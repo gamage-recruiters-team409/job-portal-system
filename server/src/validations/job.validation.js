@@ -16,7 +16,12 @@ const jobBaseSchema = z.object({
   benefits: z.string().trim().optional(),
 
   category: objectId,
-  skills: z.array(objectId).optional(),
+  skills: z
+    .array(objectId)
+    .optional()
+    .refine((skills) => !skills || new Set(skills).size === skills.length, {
+      message: 'Duplicate skill IDs are not allowed.',
+    }),
 
   location: z.string().trim().min(1, 'Location is required.'),
   jobType: z.enum(Object.values(JOB_TYPES)),
@@ -27,7 +32,9 @@ const jobBaseSchema = z.object({
   salaryMin: z.number().min(0).optional(),
   salaryMax: z.number().min(0).optional(),
 
-  deadline: z.coerce.date(),
+  deadline: z.coerce.date().refine((date) => date > new Date(), {
+    message: 'Deadline must be a future date.',
+  }),
 });
 
 export const createJobSchema = jobBaseSchema.refine(salaryRangeRefinement, {
@@ -35,10 +42,15 @@ export const createJobSchema = jobBaseSchema.refine(salaryRangeRefinement, {
   path: ['salaryMax'],
 });
 
-export const updateJobSchema = jobBaseSchema.partial().refine(salaryRangeRefinement, {
-  message: 'salaryMax cannot be lower than salaryMin.',
-  path: ['salaryMax'],
-});
+export const updateJobSchema = jobBaseSchema
+  .partial()
+  .refine(salaryRangeRefinement, {
+    message: 'salaryMax cannot be lower than salaryMin.',
+    path: ['salaryMax'],
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'Update body cannot be empty.',
+  });
 
 export const jobIdParamSchema = z.object({
   jobId: objectId,

@@ -24,12 +24,7 @@ jobRouter.post(
   createJobController
 );
 
-jobRouter.get(
-  '/',
-  protect,
-  requireRole(USER_ROLES.EMPLOYER),
-  listEmployerJobsController
-);
+jobRouter.get('/', protect, requireRole(USER_ROLES.EMPLOYER), listEmployerJobsController);
 
 jobRouter.get(
   '/:jobId',
