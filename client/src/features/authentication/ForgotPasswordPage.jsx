@@ -19,6 +19,7 @@ const forgotPasswordSchema = z.object({
 export default function ForgotPasswordPage() {
   const [serverError, setServerError] = useState(null);
   const [sent, setSent] = useState(false);
+  const [expiresIn, setExpiresIn] = useState('30 minutes');
 
   const {
     register,
@@ -29,7 +30,9 @@ export default function ForgotPasswordPage() {
   async function onSubmit(values) {
     setServerError(null);
     try {
-      await forgotPassword(values.email);
+      const res = await forgotPassword(values.email);
+      const exp = res?.data?.expiresInHuman || '30 minutes';
+      setExpiresIn(exp);
       setSent(true);
     } catch (error) {
       setServerError(getErrorMessage(error));
@@ -62,7 +65,7 @@ export default function ForgotPasswordPage() {
             </svg>
           </div>
           <p className="mt-6 text-slate-600">
-            The reset link expires in 30 minutes. If you don't receive it, check your spam folder or
+            The reset link expires in {expiresIn}. If you don't receive it, check your spam folder or
             try again.
           </p>
           <Link
