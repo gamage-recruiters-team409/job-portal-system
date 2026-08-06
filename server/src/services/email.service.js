@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
 import { ApiError } from '../utils/apiError.js';
+import { durationToHuman } from '../utils/duration.js';
 
 /**
  * Whether real SMTP credentials are configured.
@@ -86,7 +87,7 @@ export async function sendResetPasswordEmail(to, token) {
     'Click the link below to choose a new password:',
     url.toString(),
     '',
-    'This link expires in 30 minutes. If you did not request a reset, you can ignore this email.',
+    `This link expires in ${durationToHuman(env.resetPasswordExpiresIn)}. If you did not request a reset, you can ignore this email.`,
   ].join('\n');
 
   await sendMail({

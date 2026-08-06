@@ -17,6 +17,7 @@ import {
 } from '../validations/auth.validation.js';
 import { validate } from '../middleware/validate.js';
 import { protect } from '../middleware/auth.js';
+import { forgotPasswordLimiter, resetPasswordLimiter } from '../middleware/rateLimit.js';
 
 const authRouter = Router();
 
@@ -28,8 +29,8 @@ authRouter.post(
   validate(resendVerificationSchema),
   resendVerificationController
 );
-authRouter.post('/forgot-password', validate(forgotPasswordSchema), forgotPassword);
-authRouter.post('/reset-password', validate(resetPasswordSchema), resetPasswordController);
+authRouter.post('/forgot-password', forgotPasswordLimiter, validate(forgotPasswordSchema), forgotPassword);
+authRouter.post('/reset-password', resetPasswordLimiter, validate(resetPasswordSchema), resetPasswordController);
 authRouter.get('/me', protect, getMe);
 
 export default authRouter;

@@ -1,4 +1,6 @@
 import { sendSuccess } from '../utils/apiResponse.js';
+import { env } from '../config/env.js';
+import { durationToHuman } from '../utils/duration.js';
 import {
   registerUser,
   loginUser,
@@ -83,7 +85,9 @@ export async function getMe(req, res) {
 
 /**
  * POST /auth/forgot-password — email a password-reset link if the account exists.
- * The response is the same whether or not the account exists (no user probing).
+ * The response (status, message) is the same whether or not the account exists
+ * (no user probing), and the reset-link lifetime is derived from env so the
+ * frontend can display it without hardcoding a value that might drift.
  */
 export async function forgotPassword(req, res, next) {
   try {
@@ -91,6 +95,10 @@ export async function forgotPassword(req, res, next) {
     return sendSuccess(res, {
       message:
         'If an account exists for this email, a password reset link has been sent.',
+      data: {
+        expiresIn: env.resetPasswordExpiresIn,
+        expiresInHuman: durationToHuman(env.resetPasswordExpiresIn),
+      },
     });
   } catch (error) {
     return next(error);
