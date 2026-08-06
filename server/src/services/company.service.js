@@ -95,9 +95,18 @@ export async function getCompanyById(id) {
   return company;
 }
 
+// Fields that require re-verification when changed: companyName, companyEmail,
+// companyLogo, website, companyTelephone, companyAddress.
+// companyName and companyEmail are checked separately below (uniqueness
+// checks apply). companyLogo never appears in `data` here — logo updates go
+// through updateLogo, which applies its own re-verification reset.
+const SIMPLE_REVERIFICATION_FIELDS = ['website', 'companyTelephone', 'companyAddress'];
+
 /**
  * Update the logged-in employer's company profile.
- * If companyName or companyEmail is changed, reset verificationStatus to pending.
+ * verificationStatus resets to pending if any of the re-verification fields
+ * change (see SIMPLE_REVERIFICATION_FIELDS, plus companyName and companyEmail
+ * below; companyLogo is handled separately by updateLogo).
  *
  * @param {string} userId - ID of the authenticated employer user
  * @param {object} data - Company update payload
@@ -145,6 +154,12 @@ export async function updateCompany(userId, data) {
     resetVerification = true;
   }
 
+  for (const field of SIMPLE_REVERIFICATION_FIELDS) {
+    if (updateData[field] !== undefined && updateData[field].trim() !== (company[field] || '')) {
+      resetVerification = true;
+    }
+  }
+
   Object.assign(company, updateData);
 
   if (resetVerification) {
@@ -157,7 +172,13 @@ export async function updateCompany(userId, data) {
 
 /**
  * Update company logo for the logged-in employer.
- * If company already has a logo, deletes the old image from Cloudinary first.
+ * Saves the new logo to the database first; the old Cloudinary image is only
+ * deleted after that save succeeds, so a failed save never leaves the
+ * database pointing at an already-deleted image. If the save fails, the
+ * newly uploaded image is cleaned up instead and the old logo is left
+ * untouched.
+ * companyLogo is one of the re-verification fields (see SIMPLE_REVERIFICATION_FIELDS
+ * comment above updateCompany), so verificationStatus resets to pending here too.
  *
  * @param {string} userId - ID of the authenticated employer user
  * @param {string} secureUrl - Cloudinary secure URL of new logo
@@ -170,17 +191,33 @@ export async function updateLogo(userId, secureUrl, publicId) {
     throw new ApiError(404, 'Company profile not found.');
   }
 
-  if (company.companyLogoPublicId) {
+  const oldPublicId = company.companyLogoPublicId;
+
+  company.companyLogo = secureUrl;
+  company.companyLogoPublicId = publicId;
+  company.verificationStatus = EMPLOYER_VERIFICATION_STATUSES.PENDING;
+
+  try {
+    await company.save();
+  } catch (error) {
+    // Save failed — the database still points at the old logo, so clean up
+    // the orphaned new upload instead of the old one.
     try {
-      await deleteFromCloudinary(company.companyLogoPublicId);
+      await deleteFromCloudinary(publicId);
+    } catch (cleanupError) {
+      console.error('Failed to clean up newly uploaded logo after save failure:', cleanupError);
+    }
+    throw error;
+  }
+
+  // Save succeeded — the old image is no longer referenced, safe to delete.
+  if (oldPublicId) {
+    try {
+      await deleteFromCloudinary(oldPublicId);
     } catch (error) {
       console.error('Failed to delete old company logo from Cloudinary:', error);
     }
   }
 
-  company.companyLogo = secureUrl;
-  company.companyLogoPublicId = publicId;
-
-  await company.save();
   return company;
 }
