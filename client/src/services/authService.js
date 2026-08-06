@@ -35,3 +35,15 @@ export async function resendVerification(email) {
   const { data } = await apiClient.post('/auth/resend-verification', { email });
   return data;
 }
+
+/** POST /auth/forgot-password — request a password-reset email for the given address. */
+export async function forgotPassword(email) {
+  const { data } = await apiClient.post('/auth/forgot-password', { email });
+  return data;
+}
+
+/** POST /auth/reset-password — set a new password using a valid reset token. */
+export async function resetPassword(token, password, confirmPassword) {
+  const { data } = await apiClient.post('/auth/reset-password', { token, password, confirmPassword });
+  return data;
+}
