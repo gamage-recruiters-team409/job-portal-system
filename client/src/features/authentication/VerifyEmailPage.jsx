@@ -1,0 +1,219 @@
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { verifyEmail, resendVerification } from '../../services/authService.js';
+import AuthLayout from './components/AuthLayout.jsx';
+import { getErrorMessage } from './utils/getErrorMessage.js';
+
+const STATUS = {
+  LOADING: 'loading',
+  SUCCESS: 'success',
+  INVALID: 'invalid',
+  EXPIRED: 'expired',
+};
+
+/**
+ * Inline resend form shared by the expired and invalid states.
+ * Lets users get a new verification email without having to attempt
+ * a login that the backend will reject for unverified accounts.
+ */
+function ResendForm() {
+  const [email, setEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent'
+  const [resendError, setResendError] = useState(null);
+
+  async function handleResend(e) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setResendStatus('sending');
+    setResendError(null);
+    try {
+      await resendVerification(email.trim());
+      setResendStatus('sent');
+    } catch (error) {
+      setResendError(getErrorMessage(error));
+      setResendStatus('idle');
+    }
+  }
+
+  if (resendStatus === 'sent') {
+    return (
+      <p className="mt-4 text-sm font-medium text-green-600">
+        Verification email sent — check your inbox.
+      </p>
+    );
+  }
+
+  return (
+    <form onSubmit={handleResend} className="mt-6 w-full">
+      <p className="mb-3 text-sm text-slate-500">
+        Enter your email address below to receive a new verification link.
+      </p>
+      {resendError && (
+        <p className="mb-2 text-sm text-red-600">{resendError}</p>
+      )}
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@example.com"
+        required
+        className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      />
+      <button
+        type="submit"
+        disabled={resendStatus === 'sending'}
+        className="mt-3 h-12 w-full rounded-xl bg-blue-600 text-base font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {resendStatus === 'sending' ? 'Sending…' : 'Resend verification email'}
+      </button>
+    </form>
+  );
+}
+
+export default function VerifyEmailPage() {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
+  const [status, setStatus] = useState(STATUS.LOADING);
+
+  useEffect(() => {
+    if (!token) {
+      setStatus(STATUS.INVALID);
+      return;
+    }
+
+    verifyEmail(token)
+      .then(() => setStatus(STATUS.SUCCESS))
+      .catch((error) => {
+        const message = error?.response?.data?.message ?? '';
+        // Backend returns 400 for invalid/already-used tokens and 410 for
+        // expired tokens — map both to a user-friendly state.
+        if (
+          error?.response?.status === 410 ||
+          message.toLowerCase().includes('expired')
+        ) {
+          setStatus(STATUS.EXPIRED);
+        } else {
+          setStatus(STATUS.INVALID);
+        }
+      });
+  }, [token]);
+
+  if (status === STATUS.LOADING) {
+    return (
+      <AuthLayout title="Verifying your email…" subtitle="Please wait a moment.">
+        <div className="flex flex-col items-center gap-4 py-4">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+          <p className="text-sm text-slate-500">Confirming your email address…</p>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  if (status === STATUS.SUCCESS) {
+    return (
+      <AuthLayout
+        title="Email verified!"
+        subtitle="Your account is now active. You can sign in."
+      >
+        <div className="flex flex-col items-center text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-50 text-green-600">
+            <svg
+              className="h-8 w-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <p className="mt-6 text-slate-600">
+            Your email address has been confirmed. Your account is ready to use.
+          </p>
+          <Link
+            to="/login"
+            className="mt-8 flex h-12 w-full items-center justify-center rounded-xl bg-blue-600 text-base font-semibold text-white transition-colors hover:bg-blue-700"
+          >
+            Sign in
+          </Link>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  if (status === STATUS.EXPIRED) {
+    return (
+      <AuthLayout
+        title="Link expired"
+        subtitle="Verification links are only valid for 24 hours."
+      >
+        <div className="flex flex-col items-center text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 text-amber-500">
+            <svg
+              className="h-8 w-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <p className="mt-6 text-slate-600">
+            This verification link has expired. Enter your email address below to receive a new
+            one.
+          </p>
+          <ResendForm />
+          <Link to="/login" className="mt-6 text-sm font-medium text-blue-600 hover:text-blue-700">
+            Back to sign in
+          </Link>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  // STATUS.INVALID — missing token, already used, or any unexpected error
+  return (
+    <AuthLayout
+      title="Invalid verification link"
+      subtitle="This link is not recognised or has already been used."
+    >
+      <div className="flex flex-col items-center text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500">
+          <svg
+            className="h-8 w-8"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </div>
+        <p className="mt-6 text-slate-600">
+          The link you followed is invalid or has already been used. If your account is not yet
+          active, enter your email address below to request a new verification link.
+        </p>
+        <ResendForm />
+        <Link to="/login" className="mt-6 text-sm font-medium text-blue-600 hover:text-blue-700">
+          Back to sign in
+        </Link>
+      </div>
+    </AuthLayout>
+  );
+}
