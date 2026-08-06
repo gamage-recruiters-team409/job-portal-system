@@ -53,16 +53,17 @@ export default function TopNavbar({
         {/* Left: mobile menu button + logo */}
         <div className="flex items-center gap-3 shrink-0">
           {/*
-            Breakpoint coordinated with Injas's shared Sidebar (per TL review,
-            2026-08-06): the Sidebar becomes permanently visible at `md`, so
-            this trigger must hide at the same point. Injas confirmed he is
-            fine with either breakpoint, so this matches the Sidebar branch.
+            Breakpoint matches the final merged Sidebar contract (develop,
+            2026-08-06): the Sidebar remains hidden below `lg` and becomes
+            permanently visible from `lg` upward, so this trigger must hide
+            at the same point. Do not change this without coordinating with
+            Injas and the Team Lead, since it affects the shared layout.
           */}
           <button
             type="button"
             onClick={onMenuClick}
             aria-label="Open menu"
-            className="md:hidden p-2 -ml-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="lg:hidden p-2 -ml-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <svg
               width="22"
