@@ -5,7 +5,19 @@ import {
   updateJobSeekerProfileByUserId,
   updateEducationEntryByUserId,
   updateExperienceEntryByUserId,
+  saveProfileImageByUserId,
+  removeProfileImageByUserId,
+  saveCvByUserId,
+  removeCvByUserId,
 } from '../services/jobSeekerProfile.service.js';
+import {
+  uploadJobSeekerProfileImage,
+  deleteJobSeekerProfileImage,
+  uploadJobSeekerCv,
+  deleteJobSeekerCv,
+} from '../services/jobSeekerProfileMedia.service.js';
+const deleteCloudinaryAssetQuietly = (deleteAsset, publicId) =>
+  publicId ? deleteAsset(publicId).catch(() => null) : Promise.resolve(null);
 
 /**
  * GET /job-seeker-profile/me
@@ -89,6 +101,160 @@ export async function updateMyExperienceEntry(req, res, next) {
     return sendSuccess(res, {
       message: 'Experience entry updated successfully.',
       data: { experience: experienceEntry },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * PUT /job-seeker-profile/me/profile-image
+ * Uploads or replaces the authenticated Job Seeker's profile image.
+ */
+export async function uploadMyProfileImage(req, res, next) {
+  let uploadedImage = null;
+  let imagePersisted = false;
+
+  try {
+    if (!req.file) {
+      throw new ApiError(400, 'A profile image file is required.');
+    }
+
+    const existingProfile = await getJobSeekerProfileByUserId(req.user._id);
+    const previousPublicId = existingProfile?.profileImage?.publicId;
+
+    uploadedImage = await uploadJobSeekerProfileImage(req.file.buffer);
+
+    const profile = await saveProfileImageByUserId(req.user._id, {
+      imageUrl: uploadedImage.secureUrl,
+      publicId: uploadedImage.publicId,
+    });
+
+    imagePersisted = true;
+
+    if (previousPublicId && previousPublicId !== uploadedImage.publicId) {
+      await deleteCloudinaryAssetQuietly(deleteJobSeekerProfileImage, previousPublicId);
+    }
+
+    return sendSuccess(res, {
+      message: 'Profile image uploaded successfully.',
+      data: {
+        profileImage: profile.profileImage,
+      },
+    });
+  } catch (error) {
+    if (uploadedImage?.publicId && !imagePersisted) {
+      await deleteCloudinaryAssetQuietly(deleteJobSeekerProfileImage, uploadedImage.publicId);
+    }
+
+    return next(error);
+  }
+}
+
+/**
+ * DELETE /job-seeker-profile/me/profile-image
+ * Removes the authenticated Job Seeker's profile image.
+ */
+export async function deleteMyProfileImage(req, res, next) {
+  try {
+    const existingProfile = await getJobSeekerProfileByUserId(req.user._id);
+    const existingPublicId = existingProfile?.profileImage?.publicId;
+
+    if (!existingPublicId) {
+      throw new ApiError(404, 'Profile image not found.');
+    }
+
+    const profile = await removeProfileImageByUserId(req.user._id);
+
+    if (!profile) {
+      throw new ApiError(404, 'Job Seeker Profile not found.');
+    }
+
+    await deleteCloudinaryAssetQuietly(deleteJobSeekerProfileImage, existingPublicId);
+
+    return sendSuccess(res, {
+      message: 'Profile image removed successfully.',
+      data: {
+        profileImage: profile.profileImage,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * PUT /job-seeker-profile/me/cv
+ * Uploads or replaces the authenticated Job Seeker's CV.
+ */
+export async function uploadMyCv(req, res, next) {
+  let uploadedCv = null;
+  let cvPersisted = false;
+
+  try {
+    if (!req.file) {
+      throw new ApiError(400, 'A CV file is required.');
+    }
+
+    const existingProfile = await getJobSeekerProfileByUserId(req.user._id);
+    const previousPublicId = existingProfile?.cv?.publicId;
+
+    uploadedCv = await uploadJobSeekerCv(req.file.buffer);
+
+    const profile = await saveCvByUserId(req.user._id, {
+      fileName: req.file.originalname,
+      fileUrl: uploadedCv.secureUrl,
+      publicId: uploadedCv.publicId,
+      uploadedAt: new Date(),
+    });
+
+    cvPersisted = true;
+
+    if (previousPublicId && previousPublicId !== uploadedCv.publicId) {
+      await deleteCloudinaryAssetQuietly(deleteJobSeekerCv, previousPublicId);
+    }
+
+    return sendSuccess(res, {
+      message: 'CV uploaded successfully.',
+      data: {
+        cv: profile.cv,
+      },
+    });
+  } catch (error) {
+    if (uploadedCv?.publicId && !cvPersisted) {
+      await deleteCloudinaryAssetQuietly(deleteJobSeekerCv, uploadedCv.publicId);
+    }
+
+    return next(error);
+  }
+}
+
+/**
+ * DELETE /job-seeker-profile/me/cv
+ * Removes the authenticated Job Seeker's CV.
+ */
+export async function deleteMyCv(req, res, next) {
+  try {
+    const existingProfile = await getJobSeekerProfileByUserId(req.user._id);
+    const existingPublicId = existingProfile?.cv?.publicId;
+
+    if (!existingPublicId) {
+      throw new ApiError(404, 'CV not found.');
+    }
+
+    const profile = await removeCvByUserId(req.user._id);
+
+    if (!profile) {
+      throw new ApiError(404, 'Job Seeker Profile not found.');
+    }
+
+    await deleteCloudinaryAssetQuietly(deleteJobSeekerCv, existingPublicId);
+
+    return sendSuccess(res, {
+      message: 'CV removed successfully.',
+      data: {
+        cv: profile.cv,
+      },
     });
   } catch (error) {
     return next(error);

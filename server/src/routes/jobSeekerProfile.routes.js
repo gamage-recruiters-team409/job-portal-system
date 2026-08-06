@@ -5,8 +5,16 @@ import {
   updateMyProfile,
   updateMyEducationEntry,
   updateMyExperienceEntry,
+  uploadMyProfileImage,
+  deleteMyProfileImage,
+  uploadMyCv,
+  deleteMyCv,
 } from '../controllers/jobSeekerProfile.controller.js';
 import { protect, requireRole } from '../middleware/auth.js';
+import {
+  uploadJobSeekerProfileImage,
+  uploadJobSeekerCv,
+} from '../middleware/jobSeekerProfileUpload.js';
 import { validate } from '../middleware/validate.js';
 import {
   profileEntryIdSchema,
@@ -33,6 +41,30 @@ jobSeekerProfileRouter.get('/me', getMyProfile);
  * Update the authenticated Job Seeker's basic profile details.
  */
 jobSeekerProfileRouter.patch('/me', validate(updateJobSeekerProfileSchema), updateMyProfile);
+
+/**
+ * PUT /api/v1/job-seeker-profile/me/profile-image
+ * Upload or replace the authenticated Job Seeker's profile image.
+ */
+jobSeekerProfileRouter.put('/me/profile-image', uploadJobSeekerProfileImage, uploadMyProfileImage);
+
+/**
+ * DELETE /api/v1/job-seeker-profile/me/profile-image
+ * Remove the authenticated Job Seeker's profile image.
+ */
+jobSeekerProfileRouter.delete('/me/profile-image', deleteMyProfileImage);
+
+/**
+ * PUT /api/v1/job-seeker-profile/me/cv
+ * Upload or replace the authenticated Job Seeker's CV.
+ */
+jobSeekerProfileRouter.put('/me/cv', uploadJobSeekerCv, uploadMyCv);
+
+/**
+ * DELETE /api/v1/job-seeker-profile/me/cv
+ * Remove the authenticated Job Seeker's CV.
+ */
+jobSeekerProfileRouter.delete('/me/cv', deleteMyCv);
 
 /**
  * PATCH /api/v1/job-seeker-profile/me/education/:entryId
