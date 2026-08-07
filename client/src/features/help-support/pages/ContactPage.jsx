@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Mail, Phone, Clock, MapPin, ArrowRight } from 'lucide-react';
+import { Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
 
 // Reusable contact information row component
 function ContactInfoItem({ icon: Icon, label, value }) {
@@ -57,14 +57,9 @@ const CONTACT_DETAILS = [
     value: 'Contact details will be updated soon.',
   },
   {
-    icon: Clock,
-    label: 'Working hours',
-    value: 'Mon - Fri, 9:00 AM - 5:00 PM',
-  },
-  {
     icon: MapPin,
     label: 'Company address',
-    value: 'No. 6/12 A Galle Road, Panadura, Sri Lanka ',
+    value: 'Panadura, Sri Lanka ',
   },
 ];
 
@@ -203,7 +198,7 @@ function ContactPage() {
                   hover:shadow-md
                 "
               >
-                Gamage Recruiters, Colombo
+                Gamage Recruiters, Panadura
               </div>
             </div>
           </div>
