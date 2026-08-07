@@ -69,6 +69,3 @@ desktop.ini
 
 # Local overrides
 *.local
-
-# Postman local files
-.postman/
