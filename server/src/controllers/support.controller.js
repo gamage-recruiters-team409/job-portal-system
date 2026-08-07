@@ -1,6 +1,5 @@
 import { 
   createSupport,
-  getSupportMessagesService
 } from "../services/support.service.js";
 
 

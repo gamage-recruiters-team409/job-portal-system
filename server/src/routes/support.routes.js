@@ -2,7 +2,6 @@ import { Router } from "express";
 
 import {
   createSupportMessage,
-  getSupportMessages,
 } from "../controllers/support.controller.js";
 
 
