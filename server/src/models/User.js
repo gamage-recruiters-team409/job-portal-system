@@ -40,6 +40,27 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Password-reset state. We store only a hash of the one-time token (never
+    // the raw token), plus an expiry. Each new reset request overwrites these,
+    // so a previously issued link is invalidated the moment a newer one is made.
+    // These are internal-only fields: excluded from normal queries and from
+    // serialized User responses (see the toJSON transform below).
+    resetPasswordTokenHash: {
+      type: String,
+      select: false,
+    },
+    resetPasswordTokenExpires: {
+      type: Date,
+      select: false,
+    },
+    // Bumped on password reset. Embedded in auth JWTs so any session issued
+    // before a password change is rejected by the protect middleware. Also
+    // excluded from normal queries; login/protect select it explicitly.
+    tokenVersion: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
   },
   {
     timestamps: true,
@@ -49,6 +70,9 @@ const userSchema = new mongoose.Schema(
       transform(_doc, ret) {
         delete ret.password;
         delete ret.__v;
+        delete ret.resetPasswordTokenHash;
+        delete ret.resetPasswordTokenExpires;
+        delete ret.tokenVersion;
         return ret;
       },
     },
@@ -67,9 +91,11 @@ userSchema.methods.comparePassword = function comparePassword(candidate) {
 };
 
 userSchema.methods.generateAuthToken = function generateAuthToken() {
-  return jwt.sign({ id: this._id, role: this.role }, env.jwtSecret, {
-    expiresIn: env.jwtExpiresIn,
-  });
+  return jwt.sign(
+    { id: this._id, role: this.role, tokenVersion: this.tokenVersion },
+    env.jwtSecret,
+    { expiresIn: env.jwtExpiresIn }
+  );
 };
 
 const User = mongoose.model('User', userSchema);
