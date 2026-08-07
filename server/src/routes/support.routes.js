@@ -11,12 +11,12 @@ import {
   supportValidationSchema,
 } from "../validations/support.validation.js";
 
-
+import { supportSubmissionLimiter } from "../middleware/rateLimiter.js";
 
 const router = Router();
 
 
-
+router.use(supportSubmissionLimiter);
 router.post(
   "/",
   validate(supportValidationSchema),
