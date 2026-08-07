@@ -111,7 +111,7 @@ function SupportFormPage() {
 
               <div className="text-sm text-[#166534]">
                 <b className="block text-[#14532D]">Message sent successfully</b>
-                Our team will get back to you within 24 hours.
+                Our support team will review your message and respond as soon as possible.
               </div>
             </div>
           )}
@@ -163,7 +163,8 @@ function SupportFormPage() {
                 </div>
 
                 <p className="text-sm text-[#475569]">
-                  Fill in the details below and our support team will respond within 24 hours.
+                  Fill in the details below and our support team will review your message and
+                  respond as soon as possible.
                 </p>
               </div>
 
