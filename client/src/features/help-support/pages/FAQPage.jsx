@@ -1,4 +1,5 @@
 import { User, Briefcase, Search } from 'lucide-react';
+import React, { useState } from 'react';
 
 /**
  * FAQ category section card.
@@ -8,48 +9,38 @@ function CategoryCard({ icon: Icon, title, items }) {
   return (
     <div
       className="
-        bg-blue-50 
-        border border-blue-200 
-        rounded-2xl 
-        p-6
+        bg-white
+        border
+        border-slate-200
+        rounded-xl
+        p-5
       "
     >
-      {/* Category Header */}
       <div className="flex items-center gap-3 mb-4">
         <div
           className="
-            w-10 h-10 
-            rounded-xl 
-            bg-blue-600 
-            text-white 
-            flex 
-            items-center 
+            w-10
+            h-10
+            rounded-lg
+            bg-blue-100
+            flex
+            items-center
             justify-center
           "
         >
-          <Icon size={20} />
+          <Icon size={20} className="text-blue-600" />
         </div>
 
         <h3 className="font-semibold text-slate-900">{title}</h3>
       </div>
 
-      {/* Category Questions */}
-      <ul className="space-y-2 pl-2">
+      <div className="space-y-2">
         {items.map((item) => (
-          <li
-            key={item}
-            className="
-              text-sm 
-              text-slate-600
-              hover:text-blue-600
-              cursor-pointer
-              transition
-            "
-          >
-            {item}
-          </li>
+          <p key={item} className="text-sm text-slate-600">
+            • {item}
+          </p>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
@@ -62,58 +53,27 @@ function FAQCard({ question, answer }) {
     <div
       className="
         bg-white
-        border border-slate-200
-        rounded-2xl
+        border
+        border-slate-200
+        rounded-xl
         p-5
-        transition-all
-        duration-300
-        hover:-translate-y-1
-        hover:shadow-lg
-        hover:border-blue-300
       "
     >
       {/* Question */}
-      <div className="flex gap-3 items-start">
-        <div
-          className="
-            w-8 h-8
-            rounded-full
-            bg-blue-50
-            text-blue-600
-            flex
-            items-center
-            justify-center
-            font-semibold
-            shrink-0
-          "
-        >
-          ?
-        </div>
-
-        <h3
-          className="
-            text-sm
-            sm:text-base
-            font-semibold
-            text-slate-900
-          "
-        >
-          {question}
-        </h3>
-      </div>
-
-      {/* Answer */}
-      <p
+      <h3
         className="
-          mt-3
-          ml-11
           text-sm
-          text-slate-600
-          leading-relaxed
+          sm:text-base
+          font-semibold
+          text-slate-900
+          mb-2
         "
       >
-        {answer}
-      </p>
+        {question}
+      </h3>
+
+      {/* Answer */}
+      <p className="text-sm text-slate-600">{answer}</p>
     </div>
   );
 }
@@ -157,33 +117,22 @@ const FAQ_ITEMS = [
 ];
 
 export default function FAQPage() {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredFAQs = FAQ_ITEMS.filter((faq) =>
+    faq.question.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="bg-slate-50 min-h-screen">
-      <main
-        className="
-          max-w-[1280px]
-          mx-auto
-          px-4
-          sm:px-6
-          lg:px-10
-          py-10
-          sm:py-14
-        "
-      >
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <main className="max-w-6xl mx-auto px-6 py-12">
         {/* Page Title */}
+
         <div className="text-center mb-8">
-          <h1
-            className="
-              text-3xl
-              sm:text-4xl
-              font-bold
-              text-slate-900
-            "
-          >
-            Frequently Asked Questions
-          </h1>
+          <h1 className="text-[30px] font-bold">Frequently Asked Questions</h1>
 
           {/* Blue underline */}
+
           <div
             className="
               w-14
@@ -197,6 +146,7 @@ export default function FAQPage() {
         </div>
 
         {/* Search Section */}
+
         <div
           className="
             flex
@@ -222,6 +172,8 @@ export default function FAQPage() {
 
             <input
               type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search FAQs..."
               className="
                 w-full
@@ -240,6 +192,7 @@ export default function FAQPage() {
           </div>
 
           <button
+            onClick={() => setSearchTerm(searchTerm)}
             className="
               bg-blue-600
               text-white
@@ -255,6 +208,7 @@ export default function FAQPage() {
         </div>
 
         {/* FAQ Layout */}
+
         <div
           className="
             grid
@@ -265,6 +219,7 @@ export default function FAQPage() {
           "
         >
           {/* Category Sidebar */}
+
           <div className="space-y-5">
             {CATEGORIES.map((category) => (
               <CategoryCard key={category.title} {...category} />
@@ -272,10 +227,25 @@ export default function FAQPage() {
           </div>
 
           {/* FAQ Cards */}
+
           <div className="space-y-5">
-            {FAQ_ITEMS.map((faq) => (
-              <FAQCard key={faq.question} {...faq} />
-            ))}
+            {filteredFAQs.length > 0 ? (
+              filteredFAQs.map((faq) => <FAQCard key={faq.question} {...faq} />)
+            ) : (
+              <div
+                className="
+                  bg-white
+                  border
+                  border-slate-200
+                  rounded-xl
+                  p-5
+                  text-sm
+                  text-slate-500
+                "
+              >
+                No FAQs found matching your search.
+              </div>
+            )}
           </div>
         </div>
       </main>
