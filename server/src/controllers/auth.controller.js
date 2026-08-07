@@ -1,9 +1,13 @@
 import { sendSuccess } from '../utils/apiResponse.js';
+import { env } from '../config/env.js';
+import { durationToHuman } from '../utils/duration.js';
 import {
   registerUser,
   loginUser,
   verifyEmail,
   resendVerification,
+  requestPasswordReset,
+  resetPassword,
 } from '../services/auth.service.js';
 
 /**
@@ -77,4 +81,42 @@ export async function getMe(req, res) {
     message: 'Current user retrieved.',
     data: { user: req.user },
   });
+}
+
+/**
+ * POST /auth/forgot-password — email a password-reset link if the account exists.
+ * The response (status, message) is the same whether or not the account exists
+ * (no user probing), and the reset-link lifetime is derived from env so the
+ * frontend can display it without hardcoding a value that might drift.
+ */
+export async function forgotPassword(req, res, next) {
+  try {
+    await requestPasswordReset(req.body.email);
+    return sendSuccess(res, {
+      message:
+        'If an account exists for this email, a password reset link has been sent.',
+      data: {
+        expiresIn: env.resetPasswordExpiresIn,
+        expiresInHuman: durationToHuman(env.resetPasswordExpiresIn),
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * POST /auth/reset-password — set a new password using a valid reset token.
+ */
+export async function resetPasswordController(req, res, next) {
+  try {
+    const { token, password } = req.body;
+    const { user } = await resetPassword(token, password);
+    return sendSuccess(res, {
+      message: 'Your password has been reset. You can now log in.',
+      data: { user },
+    });
+  } catch (error) {
+    return next(error);
+  }
 }

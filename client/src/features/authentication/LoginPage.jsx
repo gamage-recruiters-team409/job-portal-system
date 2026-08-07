@@ -68,8 +68,14 @@ export default function LoginPage() {
           error={errors.password?.message}
         />
 
-        {/* Forgot-password link returns here once the reset flow (blocked on the
-            email-delivery decision) is implemented. */}
+        <div className="flex justify-end">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            Forgot password?
+          </Link>
+        </div>
 
         <button
           type="submit"
