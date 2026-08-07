@@ -28,27 +28,3 @@ export const createSupportMessage = async (req, res) => {
 };
 
 
-
-export const getSupportMessages = async (req, res, next) => {
-
-  try {
-
-    const messages = await getSupportMessagesService();
-
-    res.status(200).json({
-
-      success: true,
-      data: messages,
-
-    });
-
-
-  } catch(error){
-
-    console.log("SUPPORT GET ERROR:", error);
-
-    next(error);
-
-  }
-
-};

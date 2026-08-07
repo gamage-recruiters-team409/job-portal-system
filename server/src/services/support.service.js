@@ -7,9 +7,3 @@ export const createSupport = async (data) => {
 };
 
 
-export const getSupportMessagesService = async () => {
-  const messages = await SupportMessage.find()
-    .sort({ createdAt: -1 });
-
-  return messages;
-};

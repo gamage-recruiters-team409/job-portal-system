@@ -26,10 +26,6 @@ router.post(
 
 
 
-router.get(
-  "/",
-  getSupportMessages
-);
 
 
 
