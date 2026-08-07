@@ -15,9 +15,8 @@ const router = Router();
 router.get('/', protect, getSkills);
 
 // Admin only routes
-router.use('/admin', protect, requireRole(USER_ROLES.ADMIN));
-router.get('/admin', getAllSkillsAdmin);
-router.post('/admin', createSkill);
-router.patch('/admin/:id', updateSkill);
+router.get('/all', protect, requireRole(USER_ROLES.ADMIN), getAllSkillsAdmin);
+router.post('/', protect, requireRole(USER_ROLES.ADMIN), createSkill);
+router.patch('/:id', protect, requireRole(USER_ROLES.ADMIN), updateSkill);
 
 export default router;

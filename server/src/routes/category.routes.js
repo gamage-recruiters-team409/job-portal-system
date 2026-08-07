@@ -15,9 +15,8 @@ const router = Router();
 router.get('/', protect, getCategories);
 
 // Admin only routes
-router.use('/admin', protect, requireRole(USER_ROLES.ADMIN));
-router.get('/admin', getAllCategoriesAdmin);
-router.post('/admin', createCategory);
-router.patch('/admin/:id', updateCategory);
+router.get('/all', protect, requireRole(USER_ROLES.ADMIN), getAllCategoriesAdmin);
+router.post('/', protect, requireRole(USER_ROLES.ADMIN), createCategory);
+router.patch('/:id', protect, requireRole(USER_ROLES.ADMIN), updateCategory);
 
 export default router;
