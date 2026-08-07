@@ -84,7 +84,7 @@ function HelpPage() {
 
         {/* Search Section */}
 
-        <div className="flex gap-3 mb-8">
+        <div className="mb-8">
           <div className="flex-1 relative">
             <Search
               size={20}
@@ -98,13 +98,9 @@ function HelpPage() {
 
             <input
               type="text"
-
               value={searchTerm}
-
               onChange={(e) => setSearchTerm(e.target.value)}
-
               placeholder="Search Help topics..."
-
               className="
               w-full
               h-12
@@ -120,22 +116,6 @@ function HelpPage() {
               "
             />
           </div>
-
-          <button
-            onClick={() => setSearchTerm(searchTerm)}
-
-            className="
-            bg-blue-600
-            text-white
-            px-6
-            rounded-xl
-            font-semibold
-            hover:bg-blue-700
-            transition
-            "
-          >
-            Search
-          </button>
         </div>
 
         {/* User Guides */}
