@@ -1,4 +1,5 @@
 import multer from 'multer';
+import { ApiError } from '../utils/apiError.js';
 
 const storage = multer.memoryStorage();
 
@@ -7,7 +8,9 @@ const fileFilter = (req, file, cb) => {
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only PNG and JPEG images are allowed'), false);
+    // ApiError carries statusCode through multer's callback untouched, so the
+    // central error handler maps this to 400 instead of falling through to 500.
+    cb(new ApiError(400, 'Only PNG and JPEG images are allowed'), false);
   }
 };
 
