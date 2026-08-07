@@ -7,6 +7,7 @@ import multer from 'multer';
 const DUPLICATE_KEY_MESSAGES = {
   companyName: 'A company with this name already exists.',
   companyEmail: 'A company with this email address already exists.',
+  employerUserId: 'Employer already has a company profile.',
 };
 
 export function errorHandler(error, req, res, next) {

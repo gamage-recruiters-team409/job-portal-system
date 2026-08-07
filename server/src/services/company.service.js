@@ -41,11 +41,31 @@ export async function createCompany(userId, data) {
   delete payload.companyLogo;
   delete payload.companyLogoPublicId;
 
-  const company = await Company.create({
-    ...payload,
-    employerUserId: userId,
-    verificationStatus: EMPLOYER_VERIFICATION_STATUSES.PENDING,
-  });
+  let company;
+  try {
+    company = await Company.create({
+      ...payload,
+      employerUserId: userId,
+      verificationStatus: EMPLOYER_VERIFICATION_STATUSES.PENDING,
+    });
+  } catch (error) {
+    // A concurrent request may have raced past the pre-checks above and
+    // hit a unique index (companyName, companyEmail, or employerUserId).
+    // Map E11000 explicitly so it never surfaces as 500.
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue || {})[0];
+      const FIELD_MESSAGES = {
+        companyName: 'A company with this name already exists.',
+        companyEmail: 'A company with this email address already exists.',
+        employerUserId: 'Employer already has a company profile.',
+      };
+      throw new ApiError(
+        409,
+        FIELD_MESSAGES[field] || 'A record with this value already exists.'
+      );
+    }
+    throw error;
+  }
 
   return company;
 }
@@ -110,12 +130,20 @@ const REVERIFICATION_FIELDS = [
   'foundedYear',
 ];
 
-function hasFieldChanged(newValue, oldValue) {
-  if (newValue === undefined) {
+function hasFieldChanged(newValue, oldValue, supplied) {
+  // If the key was not present in the request body at all, treat it as
+  // unchanged — the employer did not mention this field.
+  if (!supplied) {
     return false;
   }
-  if (typeof newValue === 'string') {
-    return newValue.trim() !== (oldValue || '');
+  // Zod preprocessing can turn '' / null into undefined for optional fields
+  // like `website` and `foundedYear`. When the key WAS supplied but parsed
+  // to undefined it means the employer explicitly cleared the field.
+  // Compare the normalised old value (undefined / null → '') so that
+  // clearing an already-empty field is still a no-op.
+  const normalise = (v) => (v === undefined || v === null ? '' : v);
+  if (newValue === undefined || typeof newValue === 'string') {
+    return (newValue ?? '') !== normalise(oldValue);
   }
   return newValue !== oldValue;
 }
@@ -200,7 +228,7 @@ export async function updateCompany(userId, data) {
   }
 
   for (const field of REVERIFICATION_FIELDS) {
-    if (hasFieldChanged(updateData[field], company[field])) {
+    if (hasFieldChanged(updateData[field], company[field], field in updateData)) {
       resetVerification = true;
       break;
     }
@@ -217,7 +245,26 @@ export async function updateCompany(userId, data) {
     company.lastReVerificationRequestedAt = new Date();
   }
 
-  await company.save();
+  try {
+    await company.save();
+  } catch (error) {
+    // A concurrent request may have slipped past the pre-checks above and
+    // hit a unique index (companyName, companyEmail, or employerUserId).
+    // Map E11000 explicitly so it never surfaces as 500.
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue || {})[0];
+      const FIELD_MESSAGES = {
+        companyName: 'A company with this name already exists.',
+        companyEmail: 'A company with this email address already exists.',
+        employerUserId: 'Employer already has a company profile.',
+      };
+      throw new ApiError(
+        409,
+        FIELD_MESSAGES[field] || 'A record with this value already exists.'
+      );
+    }
+    throw error;
+  }
   return company;
 }
 
