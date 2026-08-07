@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import apiClient from '../../../services/apiClient';
 
 function SupportFormPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -52,8 +52,7 @@ function SupportFormPage() {
 
     try {
       setLoading(true);
-      console.log(formData);
-      await axios.post('http://localhost:5000/api/v1/support', formData);
+      await apiClient.post('/support', formData);
 
       setSubmitted(true);
 
