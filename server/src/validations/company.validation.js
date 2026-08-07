@@ -11,13 +11,18 @@ export const companySchema = z.object({
   companyEmail: z
     .string({ message: 'Company email is required' })
     .trim()
-    .email('Invalid company email address'),
+    .email('Invalid company email address')
+    .max(254, 'Company email cannot exceed 254 characters'),
   companyTelephone: z
     .string({ message: 'Company telephone is required' })
     .trim()
     .min(1, 'Company telephone is required')
     .max(20, 'Company telephone cannot exceed 20 characters'),
-  industry: z.string({ message: 'Industry is required' }).trim().min(1, 'Industry is required'),
+  industry: z
+    .string({ message: 'Industry is required' })
+    .trim()
+    .min(1, 'Industry is required')
+    .max(100, 'Industry cannot exceed 100 characters'),
   companySize: z.enum(['1-10', '11-50', '51-200', '200+'], {
     message: 'Company size is required',
   }),

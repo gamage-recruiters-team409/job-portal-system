@@ -95,18 +95,63 @@ export async function getCompanyById(id) {
   return company;
 }
 
-// Fields that require re-verification when changed: companyName, companyEmail,
-// companyLogo, website, companyTelephone, companyAddress.
-// companyName and companyEmail are checked separately below (uniqueness
-// checks apply). companyLogo never appears in `data` here — logo updates go
-// through updateLogo, which applies its own re-verification reset.
-const SIMPLE_REVERIFICATION_FIELDS = ['website', 'companyTelephone', 'companyAddress'];
+// Every profile field requires re-verification when changed, except
+// companyDescription (per Sahan). companyName and companyEmail are checked
+// separately below (uniqueness checks apply). companyLogo never appears in
+// `data` here — logo updates go through updateLogo, which applies its own
+// re-verification reset.
+const REVERIFICATION_FIELDS = [
+  'companyTelephone',
+  'industry',
+  'companySize',
+  'companyAddress',
+  'companyLocation',
+  'website',
+  'foundedYear',
+];
+
+function hasFieldChanged(newValue, oldValue) {
+  if (newValue === undefined) {
+    return false;
+  }
+  if (typeof newValue === 'string') {
+    return newValue.trim() !== (oldValue || '');
+  }
+  return newValue !== oldValue;
+}
+
+// Once a company has been verified at least once (verifiedAt is set), an
+// edit that would reset verificationStatus back to pending is locked out for
+// this many days after the last such edit — prevents a verified employer
+// from repeatedly toggling their badge. A company that has never been
+// verified (verifiedAt is null) can be edited freely; nothing in this
+// codebase sets verifiedAt yet (that's Admin verification, not built here),
+// so this lock is dormant until that lands.
+const REVERIFICATION_LOCK_DAYS = 15;
+const REVERIFICATION_LOCK_MS = REVERIFICATION_LOCK_DAYS * 24 * 60 * 60 * 1000;
+
+function assertReVerificationLockCleared(company) {
+  if (!company.verifiedAt || !company.lastReVerificationRequestedAt) {
+    return;
+  }
+  const unlockAt = new Date(
+    company.lastReVerificationRequestedAt.getTime() + REVERIFICATION_LOCK_MS
+  );
+  if (Date.now() < unlockAt.getTime()) {
+    throw new ApiError(
+      403,
+      `You can edit your company profile again on ${unlockAt.toISOString().slice(0, 10)}.`
+    );
+  }
+}
 
 /**
  * Update the logged-in employer's company profile.
- * verificationStatus resets to pending if any of the re-verification fields
- * change (see SIMPLE_REVERIFICATION_FIELDS, plus companyName and companyEmail
- * below; companyLogo is handled separately by updateLogo).
+ * verificationStatus resets to pending if any re-verification field changes
+ * (see REVERIFICATION_FIELDS, plus companyName and companyEmail below;
+ * companyLogo is handled separately by updateLogo). If the company has been
+ * verified before and is still inside the REVERIFICATION_LOCK_DAYS window
+ * from its last reset, the whole update is rejected — nothing is saved.
  *
  * @param {string} userId - ID of the authenticated employer user
  * @param {object} data - Company update payload
@@ -154,16 +199,22 @@ export async function updateCompany(userId, data) {
     resetVerification = true;
   }
 
-  for (const field of SIMPLE_REVERIFICATION_FIELDS) {
-    if (updateData[field] !== undefined && updateData[field].trim() !== (company[field] || '')) {
+  for (const field of REVERIFICATION_FIELDS) {
+    if (hasFieldChanged(updateData[field], company[field])) {
       resetVerification = true;
+      break;
     }
+  }
+
+  if (resetVerification) {
+    assertReVerificationLockCleared(company);
   }
 
   Object.assign(company, updateData);
 
   if (resetVerification) {
     company.verificationStatus = EMPLOYER_VERIFICATION_STATUSES.PENDING;
+    company.lastReVerificationRequestedAt = new Date();
   }
 
   await company.save();
@@ -177,8 +228,9 @@ export async function updateCompany(userId, data) {
  * database pointing at an already-deleted image. If the save fails, the
  * newly uploaded image is cleaned up instead and the old logo is left
  * untouched.
- * companyLogo is one of the re-verification fields (see SIMPLE_REVERIFICATION_FIELDS
- * comment above updateCompany), so verificationStatus resets to pending here too.
+ * companyLogo is a re-verification field (see REVERIFICATION_FIELDS comment
+ * above updateCompany), so verificationStatus resets to pending here too and
+ * the same REVERIFICATION_LOCK_DAYS lock applies.
  *
  * @param {string} userId - ID of the authenticated employer user
  * @param {string} secureUrl - Cloudinary secure URL of new logo
@@ -191,11 +243,14 @@ export async function updateLogo(userId, secureUrl, publicId) {
     throw new ApiError(404, 'Company profile not found.');
   }
 
+  assertReVerificationLockCleared(company);
+
   const oldPublicId = company.companyLogoPublicId;
 
   company.companyLogo = secureUrl;
   company.companyLogoPublicId = publicId;
   company.verificationStatus = EMPLOYER_VERIFICATION_STATUSES.PENDING;
+  company.lastReVerificationRequestedAt = new Date();
 
   try {
     await company.save();
