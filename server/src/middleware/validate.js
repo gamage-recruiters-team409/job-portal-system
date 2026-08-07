@@ -17,7 +17,11 @@ export function validate(schema, source = 'body') {
       return next(new ApiError(400, 'Validation failed', errors));
     }
 
-    req[source] = result.data;
+    if (source === 'query') {
+      req.validatedQuery = result.data;
+    } else {
+      req[source] = result.data;
+    }
     return next();
   };
 }

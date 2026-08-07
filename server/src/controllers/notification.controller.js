@@ -1,19 +1,19 @@
 import { sendSuccess } from '../utils/apiResponse.js';
-import {
-  getUserNotifications,
-  markNotificationAsRead,
-  createNotification,
-} from '../services/notification.service.js';
+import { getUserNotifications, markNotificationAsRead } from '../services/notification.service.js';
 
 /**
- * GET /notifications — return the current user's notifications.
+ * GET /notifications — return the current user's notifications, paginated.
  */
 export async function listNotifications(req, res, next) {
   try {
-    const { notifications } = await getUserNotifications(req.user._id);
+    const { page, limit } = req.validatedQuery;
+    const { notifications, pagination } = await getUserNotifications(req.user._id, {
+      page,
+      limit,
+    });
     return sendSuccess(res, {
       message: 'Notifications retrieved.',
-      data: { notifications },
+      data: { notifications, pagination },
     });
   } catch (error) {
     return next(error);
@@ -28,28 +28,6 @@ export async function markAsRead(req, res, next) {
     const { notification } = await markNotificationAsRead(req.params.id, req.user._id);
     return sendSuccess(res, {
       message: 'Notification marked as read.',
-      data: { notification },
-    });
-  } catch (error) {
-    return next(error);
-  }
-}
-
-/**
- * POST /notifications — create a notification (internal/testing use).
- */
-export async function create(req, res, next) {
-  try {
-    const { type, message, relatedJob } = req.body;
-    const { notification } = await createNotification({
-      user: req.user._id,
-      type,
-      message,
-      relatedJob,
-    });
-    return sendSuccess(res, {
-      statusCode: 201,
-      message: 'Notification created.',
       data: { notification },
     });
   } catch (error) {

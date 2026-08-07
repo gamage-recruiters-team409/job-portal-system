@@ -3,11 +3,27 @@ import { ApiError } from '../utils/apiError.js';
 import { NOTIFICATION_STATUSES } from '../constants/statuses.js';
 
 /**
- * Returns all notifications belonging to the given user, newest first.
+ * Returns a paginated page of notifications belonging to the given user,
+ * newest first. Used by both the Notification Dropdown (small limit) and
+ * the Notification Centre (larger limit).
  */
-export async function getUserNotifications(userId) {
-  const notifications = await Notification.find({ user: userId }).sort('-createdAt');
-  return { notifications };
+export async function getUserNotifications(userId, { page = 1, limit = 20 } = {}) {
+  const skip = (page - 1) * limit;
+
+  const [notifications, total] = await Promise.all([
+    Notification.find({ user: userId }).sort('-createdAt').skip(skip).limit(limit),
+    Notification.countDocuments({ user: userId }),
+  ]);
+
+  return {
+    notifications,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 }
 
 /**
@@ -27,6 +43,11 @@ export async function markNotificationAsRead(notificationId, userId) {
   return { notification };
 }
 
+/**
+ * Trusted internal service — NOT exposed via a public route.
+ * Called directly by other backend modules (Application, Job, Admin, etc.)
+ * when a real notification-worthy event occurs.
+ */
 export async function createNotification({ user, type, message, relatedJob }) {
   const notification = await Notification.create({
     user,
