@@ -147,28 +147,9 @@ export default function FAQPage() {
 
         {/* Search Section */}
 
-        <div
-          className="
-            flex
-            gap-3
-            mb-8
-          "
-        >
-          <div
-            className="
-              flex-1
-              relative
-            "
-          >
-            <Search
-              size={20}
-              className="
-                absolute
-                left-4
-                top-3.5
-                text-slate-400
-              "
-            />
+        <div className="mb-8">
+          <div className="relative">
+            <Search size={20} className="absolute left-4 top-3.5 text-slate-400" />
 
             <input
               type="text"
@@ -176,35 +157,20 @@ export default function FAQPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search FAQs..."
               className="
-                w-full
-                h-12
-                rounded-xl
-                border
-                border-slate-200
-                bg-white
-                pl-12
-                pr-4
-                text-sm
-                outline-none
-                focus:border-blue-600
-              "
+        w-full
+        h-12
+        rounded-xl
+        border
+        border-slate-200
+        bg-white
+        pl-12
+        pr-4
+        text-sm
+        outline-none
+        focus:border-blue-600
+      "
             />
           </div>
-
-          <button
-            onClick={() => setSearchTerm(searchTerm)}
-            className="
-              bg-blue-600
-              text-white
-              px-6
-              rounded-xl
-              font-semibold
-              hover:bg-blue-700
-              transition
-            "
-          >
-            Search
-          </button>
         </div>
 
         {/* FAQ Layout */}
