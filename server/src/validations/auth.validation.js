@@ -50,3 +50,25 @@ export const resendVerificationSchema = z.object({
     .toLowerCase()
     .email('Please provide a valid email address'),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string({ error: 'Email is required' })
+    .trim()
+    .toLowerCase()
+    .email('Please provide a valid email address'),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    token: z.string({ error: 'Reset token is required' }).min(1, 'Reset token is required'),
+    password: z
+      .string({ error: 'New password is required' })
+      .min(8, 'Password must be at least 8 characters')
+      .max(72, 'Password cannot exceed 72 characters'),
+    confirmPassword: z.string({ error: 'Please confirm your new password' }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ['confirmPassword'],
+    message: 'Passwords do not match',
+  });
