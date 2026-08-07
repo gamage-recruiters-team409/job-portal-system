@@ -11,6 +11,7 @@ import ResetPasswordPage from '../features/authentication/ResetPasswordPage.jsx'
 import MyReportedJobs from '../features/reported-jobs/job-seeker/pages/MyReportedJobs.jsx';
 import ReportDetails from '../features/reported-jobs/job-seeker/pages/ReportDetails.jsx';
 
+
 function AppRoutes() {
   return (
     <Routes>
@@ -25,6 +26,7 @@ function AppRoutes() {
       {/* Reported Jobs - Job Seeker */}
       <Route path="/my-reported-jobs" element={<MyReportedJobs />} />
       <Route path="/report-details/:id" element={<ReportDetails />} />
+      
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

@@ -90,18 +90,25 @@ export default function ReportFakeJobModal({ isOpen, onClose }) {
                     setShowError(false);
                   }}
 
-                  className={`w-full rounded-lg border px-3 py-2.5 text-sm outline-none ${
-                    showError ? 'border-red-400' : 'border-gray-300'
+                  className={`w-full appearance-none rounded-lg border px-3 py-2.5 pr-9 text-sm outline-none transition-colors focus:ring-2 ${
+                    showError
+                      ? 'border-red-400 focus:border-red-400 focus:ring-red-100'
+                      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-100'
                   }`}
                 >
-                  <option value="">Select a reason</option>
+                  <option value="" disabled>
+                    Select a reason
+                  </option>
 
                   {REPORT_REASONS.map((item) => (
                     <option key={item}>{item}</option>
                   ))}
                 </select>
 
-                <ChevronDown size={16} className="absolute right-3 top-3 text-gray-400" />
+                <ChevronDown
+                  size={16}
+                  className="pointer-events-none absolute right-3 top-3 text-gray-400"
+                />
               </div>
 
               {showError && (
@@ -128,11 +135,11 @@ export default function ReportFakeJobModal({ isOpen, onClose }) {
 
                 placeholder="Explain why you think this job is suspicious..."
 
-                className="mt-2 w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none"
+                className="mt-2 w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
 
               <p className="text-right text-xs text-gray-400">
-                {details.length}/{MAX_CHARS}
+                {details.length} / {MAX_CHARS}
               </p>
             </div>
 
