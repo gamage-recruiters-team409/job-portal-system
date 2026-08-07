@@ -49,12 +49,12 @@ const CONTACT_DETAILS = [
   {
     icon: Mail,
     label: 'Support email',
-    value: 'support@jobportal.com',
+    value: 'Contact details will be updated soon.',
   },
   {
     icon: Phone,
     label: 'Contact number',
-    value: '+94 11 234 5678',
+    value: 'Contact details will be updated soon.',
   },
   {
     icon: Clock,
@@ -64,7 +64,7 @@ const CONTACT_DETAILS = [
   {
     icon: MapPin,
     label: 'Company address',
-    value: 'No. 45, Recruitment Ave, Colombo',
+    value: 'No. 6/12 A Galle Road, Panadura, Sri Lanka ',
   },
 ];
 
