@@ -1,71 +1,68 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import apiClient from '../../../services/apiClient';
+
+const supportSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(2, 'Full name must contain at least 2 characters.')
+    .max(50, 'Full name cannot exceed 50 characters.'),
+  email: z
+    .string()
+    .trim()
+    .email('Please enter a valid email address.')
+    .max(100, 'Email cannot exceed 100 characters.'),
+  subject: z
+    .string()
+    .trim()
+    .min(3, 'Subject must contain at least 3 characters.')
+    .max(100, 'Subject cannot exceed 100 characters.'),
+  message: z
+    .string()
+    .trim()
+    .min(10, 'Message must contain at least 10 characters.')
+    .max(1000, 'Message cannot exceed 1000 characters.'),
+  role: z.enum(['job_seeker', 'employer'], {
+    errorMap: () => ({
+      message: 'Please select your role.',
+    }),
+  }),
+});
 
 function SupportFormPage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    subject: '',
-    message: '',
-    role: '',
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(supportSchema),
+    defaultValues: {
+      fullName: '',
+      email: '',
+      subject: '',
+      message: '',
+    },
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (data) => {
     setError('');
-
-    // Frontend validation
-
-    if (!formData.fullName.trim()) {
-      setError('Full name is required');
-      return;
-    }
-
-    if (!formData.email.includes('@')) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    if (!formData.message.trim()) {
-      setError('Message field is required');
-      return;
-    }
-
-    if (!formData.role) {
-      setError('Please select your role');
-      return;
-    }
 
     try {
       setLoading(true);
-      await apiClient.post('/support', formData);
+
+      await apiClient.post('/support', data);
 
       setSubmitted(true);
-
-      setFormData({
-        fullName: '',
-        email: '',
-        subject: '',
-        message: '',
-        role: '',
-      });
+      reset();
     } catch (err) {
-      console.error('Support submission failed:', err.response?.data || err.message);
-
       setError(err.response?.data?.message || 'Failed to submit message. Please try again.');
     } finally {
       setLoading(false);
@@ -171,15 +168,14 @@ function SupportFormPage() {
               {/* Form */}
 
               <form
-                onSubmit={handleSubmit}
-
+                onSubmit={handleSubmit(onSubmit)}
                 className="
-            bg-white
-            border border-[#E2E8F0]
-            rounded-xl
-            p-7
-            shadow-sm
-            "
+    bg-white
+    border border-[#E2E8F0]
+    rounded-xl
+    p-7
+    shadow-sm
+  "
               >
                 {/* Full Name */}
 
@@ -187,25 +183,22 @@ function SupportFormPage() {
                   <label className="text-sm font-medium">Full name</label>
 
                   <input
-                    name="fullName"
-
-                    value={formData.fullName}
-
-                    onChange={handleChange}
-
                     type="text"
-
                     placeholder="Enter your full name"
-
+                    {...register('fullName')}
                     className="
-                h-12
-                border border-[#E2E8F0]
-                rounded-lg
-                px-4
-                outline-none
-                focus:border-[#2563EB]
-                "
+    h-12
+    border border-[#E2E8F0]
+    rounded-lg
+    px-4
+    outline-none
+    focus:border-[#2563EB]
+  "
                   />
+
+                  {errors.fullName && (
+                    <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>
+                  )}
                 </div>
 
                 {/* Email */}
@@ -214,25 +207,22 @@ function SupportFormPage() {
                   <label className="text-sm font-medium">Email address</label>
 
                   <input
-                    name="email"
-
-                    value={formData.email}
-
-                    onChange={handleChange}
-
                     type="email"
-
                     placeholder="you@example.com"
-
+                    {...register('email')}
                     className="
-                h-12
-                border border-[#E2E8F0]
-                rounded-lg
-                px-4
-                outline-none
-                focus:border-[#2563EB]
-                "
+    h-12
+    border border-[#E2E8F0]
+    rounded-lg
+    px-4
+    outline-none
+    focus:border-[#2563EB]
+  "
                   />
+
+                  {errors.email && (
+                    <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                  )}
                 </div>
 
                 {/* Subject */}
@@ -241,24 +231,22 @@ function SupportFormPage() {
                   <label className="text-sm font-medium">Subject</label>
 
                   <input
-                    name="subject"
-
-                    value={formData.subject}
-
-                    onChange={handleChange}
-
                     type="text"
-
                     placeholder="What's this about?"
-
+                    {...register('subject')}
                     className="
-                h-12
-                border border-[#E2E8F0]
-                rounded-lg
-                px-4
-                outline-none
-                "
+    h-12
+    border border-[#E2E8F0]
+    rounded-lg
+    px-4
+    outline-none
+    focus:border-[#2563EB]
+  "
                   />
+
+                  {errors.subject && (
+                    <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>
+                  )}
                 </div>
 
                 {/* Message */}
@@ -267,62 +255,50 @@ function SupportFormPage() {
                   <label className="text-sm font-medium">Message</label>
 
                   <textarea
-                    name="message"
-
-                    value={formData.message}
-
-                    onChange={handleChange}
-
                     placeholder="Describe your issue or question..."
-
+                    {...register('message')}
                     className="
-                h-28
-                resize-none
-                border border-[#E2E8F0]
-                rounded-lg
-                p-4
-                outline-none
-                focus:border-[#2563EB]
-                "
+    h-28
+    resize-none
+    border border-[#E2E8F0]
+    rounded-lg
+    p-4
+    outline-none
+    focus:border-[#2563EB]
+  "
                   />
+
+                  {errors.message && (
+                    <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
+                  )}
                 </div>
 
                 {/* Role */}
+                <div className="mb-6">
+                  <div className="flex gap-6 text-sm text-[#475569] mb-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        value="job_seeker"
+                        {...register('role')}
+                        className="accent-[#2563EB]"
+                      />
+                      I am a Job Seeker
+                    </label>
 
-                <div className="flex gap-6 text-sm text-[#475569] mb-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-
-                      name="role"
-
-                      value="jobSeeker"
-
-                      checked={formData.role === 'jobSeeker'}
-
-                      onChange={handleChange}
-
-                      className="accent-[#2563EB]"
-                    />
-                    I am a Job Seeker
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-
-                      name="role"
-
-                      value="employer"
-
-                      checked={formData.role === 'employer'}
-
-                      onChange={handleChange}
-
-                      className="accent-[#2563EB]"
-                    />
-                    I am an Employer
-                  </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        value="employer"
+                        {...register('role')}
+                        className="accent-[#2563EB]"
+                      />
+                      I am an Employer
+                    </label>
+                  </div>
+                  {errors.role && (
+                    <p className="text-red-500 text-sm mt-2">{errors.role.message}</p>
+                  )}
                 </div>
 
                 {/* Submit Button */}

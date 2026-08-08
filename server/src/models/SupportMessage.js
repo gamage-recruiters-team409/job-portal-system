@@ -36,7 +36,7 @@ const supportMessageSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ['jobSeeker', 'employer'],
+      enum: ['job_seeker', 'employer'],
       required: true,
     },
     status: {

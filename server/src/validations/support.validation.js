@@ -21,5 +21,5 @@ export const supportValidationSchema = z.object({
     .min(10, 'Message must be at least 10 characters')
     .max(1000, 'Message must not exceed 1000 characters'),
 
-  role: z.enum(['jobSeeker', 'employer']),
+  role: z.enum(['job_seeker', 'employer']),
 });
