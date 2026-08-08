@@ -89,7 +89,7 @@ const SERVICES = [
   {
     icon: Briefcase,
     title: 'Job Matching',
-    description: 'Smart recommendations based on skills and preferences.',
+    description: 'Search and filter job opportunities based on your requirements.',
   },
   {
     icon: Users,
