@@ -93,8 +93,7 @@ export async function forgotPassword(req, res, next) {
   try {
     await requestPasswordReset(req.body.email);
     return sendSuccess(res, {
-      message:
-        'If an account exists for this email, a password reset link has been sent.',
+      message: 'If an account exists for this email, a password reset link has been sent.',
       data: {
         expiresIn: env.resetPasswordExpiresIn,
         expiresInHuman: durationToHuman(env.resetPasswordExpiresIn),
