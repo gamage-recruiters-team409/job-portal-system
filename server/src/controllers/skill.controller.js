@@ -1,4 +1,5 @@
 import Skill from '../models/Skill.js';
+import Category from '../models/Category.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import { ApiError } from '../utils/apiError.js';
 
@@ -54,6 +55,13 @@ export async function createSkill(req, res, next) {
       throw new ApiError(409, 'Skill already exists.');
     }
 
+    if (categoryId) {
+      const categoryExists = await Category.findById(categoryId);
+      if (!categoryExists) {
+        throw new ApiError(404, 'Referenced Category not found.');
+      }
+    }
+
     const skill = new Skill({
       skillName,
       categoryId: categoryId || null,
@@ -93,7 +101,16 @@ export async function updateSkill(req, res, next) {
       skill.skillName = skillName;
     }
 
-    if (categoryId !== undefined) skill.categoryId = categoryId || null;
+    if (categoryId !== undefined) {
+      if (categoryId) {
+        const categoryExists = await Category.findById(categoryId);
+        if (!categoryExists) {
+          throw new ApiError(404, 'Referenced Category not found.');
+        }
+      }
+      skill.categoryId = categoryId || null;
+    }
+
     if (isActive !== undefined) skill.isActive = isActive;
 
     await skill.save();
