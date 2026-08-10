@@ -1,5 +1,6 @@
 import JobSeekerProfile from '../models/JobSeekerProfile.js';
 import {
+  createPortfolioLinkSchema,
   educationRecordSchema,
   experienceRecordSchema,
 } from '../validations/jobSeekerProfile.validation.js';
@@ -41,6 +42,15 @@ export const mergeExperienceUpdate = (existingExperience, experienceUpdates) => 
   };
 
   return experienceRecordSchema.parse(mergedExperience);
+};
+
+export const mergePortfolioLinkUpdate = (existingPortfolioLink, portfolioUpdates) => {
+  const mergedPortfolioLink = {
+    ...existingPortfolioLink,
+    ...portfolioUpdates,
+  };
+
+  return createPortfolioLinkSchema.parse(mergedPortfolioLink);
 };
 
 export const getJobSeekerProfileByUserId = async (userId) => {
@@ -280,4 +290,75 @@ export const deleteExperienceEntryByUserId = async (userId, entryId) => {
   await profile.save();
 
   return removedExperience;
+};
+
+export const addPortfolioLinkByUserId = async (userId, portfolioData) => {
+  let profile = await JobSeekerProfile.findOne({
+    user: userId,
+  }).exec();
+
+  if (!profile) {
+    profile = new JobSeekerProfile({
+      user: userId,
+    });
+  }
+
+  profile.portfolioLinks.push(portfolioData);
+
+  await profile.save();
+
+  return profile.portfolioLinks[profile.portfolioLinks.length - 1];
+};
+
+export const updatePortfolioLinkByUserId = async (userId, entryId, portfolioUpdates) => {
+  const profile = await JobSeekerProfile.findOne({
+    user: userId,
+  }).exec();
+
+  if (!profile) {
+    return null;
+  }
+
+  const portfolioLink = profile.portfolioLinks.id(entryId);
+
+  if (!portfolioLink) {
+    return null;
+  }
+
+  const currentPortfolioLink = convertEntryToPlainObject(portfolioLink);
+
+  const validatedPortfolioLink = mergePortfolioLinkUpdate(currentPortfolioLink, portfolioUpdates);
+
+  portfolioLink.set(validatedPortfolioLink);
+
+  await profile.save();
+
+  return portfolioLink;
+};
+
+export const deletePortfolioLinkByUserId = async (userId, entryId) => {
+  const profile = await JobSeekerProfile.findOne({
+    user: userId,
+  }).exec();
+
+  if (!profile) {
+    return null;
+  }
+
+  const portfolioLink = profile.portfolioLinks.id(entryId);
+
+  if (!portfolioLink) {
+    return null;
+  }
+
+  const removedPortfolioLink = portfolioLink.toObject({
+    virtuals: false,
+    versionKey: false,
+  });
+
+  profile.portfolioLinks.pull(entryId);
+
+  await profile.save();
+
+  return removedPortfolioLink;
 };
