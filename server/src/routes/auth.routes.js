@@ -29,8 +29,18 @@ authRouter.post(
   validate(resendVerificationSchema),
   resendVerificationController
 );
-authRouter.post('/forgot-password', forgotPasswordLimiter, validate(forgotPasswordSchema), forgotPassword);
-authRouter.post('/reset-password', resetPasswordLimiter, validate(resetPasswordSchema), resetPasswordController);
+authRouter.post(
+  '/forgot-password',
+  forgotPasswordLimiter,
+  validate(forgotPasswordSchema),
+  forgotPassword
+);
+authRouter.post(
+  '/reset-password',
+  resetPasswordLimiter,
+  validate(resetPasswordSchema),
+  resetPasswordController
+);
 authRouter.get('/me', protect, getMe);
 
 export default authRouter;
