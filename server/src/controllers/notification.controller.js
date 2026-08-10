@@ -25,7 +25,7 @@ export async function listNotifications(req, res, next) {
  */
 export async function markAsRead(req, res, next) {
   try {
-    const { notification } = await markNotificationAsRead(req.params.id, req.user._id);
+    const { notification } = await markNotificationAsRead(req.validatedParams.id, req.user._id);
     return sendSuccess(res, {
       message: 'Notification marked as read.',
       data: { notification },
