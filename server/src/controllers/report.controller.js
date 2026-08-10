@@ -44,7 +44,10 @@ export const getMyReportsController = async (req, res) => {
 
 export const getReportByIdController = async (req, res) => {
   try {
-    const report = await getReportById(req.params.id);
+    const report = await getReportById(
+  req.params.id,
+  req.user._id
+);
 
     if (!report) {
       return res.status(404).json({
