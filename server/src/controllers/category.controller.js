@@ -2,6 +2,8 @@ import Category from '../models/Category.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import { ApiError } from '../utils/apiError.js';
 
+const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 export async function getCategories(req, res, next) {
   try {
     const categories = await Category.find({ isActive: true })
@@ -38,7 +40,7 @@ export async function createCategory(req, res, next) {
     }
 
     const existingCategory = await Category.findOne({
-      categoryName: { $regex: new RegExp(`^${categoryName}$`, 'i') },
+      categoryName: { $regex: new RegExp(`^${escapeRegex(categoryName)}$`, 'i') },
     });
     if (existingCategory) {
       throw new ApiError(409, 'Category already exists.');
@@ -75,7 +77,7 @@ export async function updateCategory(req, res, next) {
     if (categoryName) {
       // Check for uniqueness excluding current category
       const existing = await Category.findOne({
-        categoryName: { $regex: new RegExp(`^${categoryName}$`, 'i') },
+        categoryName: { $regex: new RegExp(`^${escapeRegex(categoryName)}$`, 'i') },
         _id: { $ne: id },
       });
       if (existing) {

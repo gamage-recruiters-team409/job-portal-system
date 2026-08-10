@@ -3,6 +3,8 @@ import Category from '../models/Category.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 import { ApiError } from '../utils/apiError.js';
 
+const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 export async function getSkills(req, res, next) {
   try {
     const { categoryId } = req.query;
@@ -49,7 +51,7 @@ export async function createSkill(req, res, next) {
     }
 
     const existingSkill = await Skill.findOne({
-      skillName: { $regex: new RegExp(`^${skillName}$`, 'i') },
+      skillName: { $regex: new RegExp(`^${escapeRegex(skillName)}$`, 'i') },
     });
     if (existingSkill) {
       throw new ApiError(409, 'Skill already exists.');
@@ -92,7 +94,7 @@ export async function updateSkill(req, res, next) {
 
     if (skillName) {
       const existing = await Skill.findOne({
-        skillName: { $regex: new RegExp(`^${skillName}$`, 'i') },
+        skillName: { $regex: new RegExp(`^${escapeRegex(skillName)}$`, 'i') },
         _id: { $ne: id },
       });
       if (existing) {
