@@ -11,6 +11,7 @@ export async function getSkills(req, res, next) {
     }
 
     const skills = await Skill.find(query)
+      .select('-createdBy -createdAt -updatedAt -__v')
       .sort({ skillName: 1 })
       .populate('categoryId', 'categoryName');
 

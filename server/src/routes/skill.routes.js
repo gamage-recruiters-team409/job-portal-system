@@ -12,7 +12,7 @@ const router = Router();
 
 // Publicly available (or at least authenticated without role restriction)
 // Anyone logged in can see active skills (Job Seekers or Employers)
-router.get('/', protect, getSkills);
+router.get('/', getSkills);
 
 // Admin only routes
 router.get('/all', protect, requireRole(USER_ROLES.ADMIN), getAllSkillsAdmin);
