@@ -1,5 +1,6 @@
 import { ApiError } from '../utils/apiError.js';
 import { sendSuccess } from '../utils/apiResponse.js';
+
 import {
   addEducationEntryByUserId,
   addExperienceEntryByUserId,
@@ -14,18 +15,21 @@ import {
   updateExperienceEntryByUserId,
   updateJobSeekerProfileByUserId,
 } from '../services/jobSeekerProfile.service.js';
+
 import {
   uploadJobSeekerProfileImage,
   deleteJobSeekerProfileImage,
   uploadJobSeekerCv,
   deleteJobSeekerCv,
+  generateJobSeekerCvDownloadUrl,
 } from '../services/jobSeekerProfileMedia.service.js';
+
 const deleteCloudinaryAssetQuietly = (deleteAsset, publicId) =>
   publicId ? deleteAsset(publicId).catch(() => null) : Promise.resolve(null);
 
 /**
  * GET /job-seeker-profile/me
- * Returns the authenticated job seeker's profile.
+ * Returns the authenticated Job Seeker's profile.
  */
 export async function getMyProfile(req, res, next) {
   try {
@@ -37,7 +41,9 @@ export async function getMyProfile(req, res, next) {
 
     return sendSuccess(res, {
       message: 'Job Seeker Profile retrieved successfully.',
-      data: { profile },
+      data: {
+        profile,
+      },
     });
   } catch (error) {
     return next(error);
@@ -46,7 +52,7 @@ export async function getMyProfile(req, res, next) {
 
 /**
  * PATCH /job-seeker-profile/me
- * Creates or updates the authenticated job seeker's basic profile details.
+ * Creates or updates the authenticated Job Seeker's basic profile details.
  */
 export async function updateMyProfile(req, res, next) {
   try {
@@ -54,7 +60,9 @@ export async function updateMyProfile(req, res, next) {
 
     return sendSuccess(res, {
       message: 'Job Seeker Profile updated successfully.',
-      data: { profile },
+      data: {
+        profile,
+      },
     });
   } catch (error) {
     return next(error);
@@ -63,7 +71,7 @@ export async function updateMyProfile(req, res, next) {
 
 /**
  * PATCH /job-seeker-profile/me/education/:entryId
- * Updates one education entry owned by the authenticated job seeker.
+ * Updates one education entry owned by the authenticated Job Seeker.
  */
 export async function updateMyEducationEntry(req, res, next) {
   try {
@@ -79,7 +87,9 @@ export async function updateMyEducationEntry(req, res, next) {
 
     return sendSuccess(res, {
       message: 'Education entry updated successfully.',
-      data: { education: educationEntry },
+      data: {
+        education: educationEntry,
+      },
     });
   } catch (error) {
     return next(error);
@@ -88,7 +98,7 @@ export async function updateMyEducationEntry(req, res, next) {
 
 /**
  * PATCH /job-seeker-profile/me/experience/:entryId
- * Updates one experience entry owned by the authenticated job seeker.
+ * Updates one experience entry owned by the authenticated Job Seeker.
  */
 export async function updateMyExperienceEntry(req, res, next) {
   try {
@@ -104,7 +114,9 @@ export async function updateMyExperienceEntry(req, res, next) {
 
     return sendSuccess(res, {
       message: 'Experience entry updated successfully.',
-      data: { experience: experienceEntry },
+      data: {
+        experience: experienceEntry,
+      },
     });
   } catch (error) {
     return next(error);
@@ -215,7 +227,7 @@ export async function uploadMyCv(req, res, next) {
     cvPersisted = true;
 
     if (previousPublicId && previousPublicId !== uploadedCv.publicId) {
-      await deleteCloudinaryAssetQuietly(deleteJobSeekerCv, previousPublicId);
+      await deleteJobSeekerCv(previousPublicId);
     }
 
     return sendSuccess(res, {
@@ -234,6 +246,34 @@ export async function uploadMyCv(req, res, next) {
 }
 
 /**
+ * GET /job-seeker-profile/me/cv/download-url
+ * Generates a short-lived signed download URL for the authenticated
+ * Job Seeker's CV.
+ */
+export async function getMyCvDownloadUrl(req, res, next) {
+  try {
+    const profile = await getJobSeekerProfileByUserId(req.user._id);
+    const publicId = profile?.cv?.publicId;
+
+    if (!publicId) {
+      throw new ApiError(404, 'CV not found.');
+    }
+
+    const { downloadUrl, expiresAt } = generateJobSeekerCvDownloadUrl(publicId);
+
+    return sendSuccess(res, {
+      message: 'Secure CV download link generated successfully.',
+      data: {
+        downloadUrl,
+        expiresAt,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
  * DELETE /job-seeker-profile/me/cv
  * Removes the authenticated Job Seeker's CV.
  */
@@ -246,13 +286,13 @@ export async function deleteMyCv(req, res, next) {
       throw new ApiError(404, 'CV not found.');
     }
 
+    await deleteJobSeekerCv(existingPublicId);
+
     const profile = await removeCvByUserId(req.user._id);
 
     if (!profile) {
       throw new ApiError(404, 'Job Seeker Profile not found.');
     }
-
-    await deleteCloudinaryAssetQuietly(deleteJobSeekerCv, existingPublicId);
 
     return sendSuccess(res, {
       message: 'CV removed successfully.',

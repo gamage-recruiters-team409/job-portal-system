@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { USER_ROLES } from '../constants/statuses.js';
+
 import {
   addMyEducationEntry,
   addMyExperienceEntry,
@@ -7,6 +8,7 @@ import {
   deleteMyExperienceEntry,
   deleteMyCv,
   deleteMyProfileImage,
+  getMyCvDownloadUrl,
   getMyProfile,
   updateMyEducationEntry,
   updateMyExperienceEntry,
@@ -14,12 +16,16 @@ import {
   uploadMyCv,
   uploadMyProfileImage,
 } from '../controllers/jobSeekerProfile.controller.js';
+
 import { protect, requireRole } from '../middleware/auth.js';
+
 import {
   uploadJobSeekerProfileImage,
   uploadJobSeekerCv,
 } from '../middleware/jobSeekerProfileUpload.js';
+
 import { validate } from '../middleware/validate.js';
+
 import {
   createEducationSchema,
   createExperienceSchema,
@@ -65,6 +71,13 @@ jobSeekerProfileRouter.delete('/me/profile-image', deleteMyProfileImage);
  * Upload or replace the authenticated Job Seeker's CV.
  */
 jobSeekerProfileRouter.put('/me/cv', uploadJobSeekerCv, uploadMyCv);
+
+/**
+ * GET /api/v1/job-seeker-profile/me/cv/download-url
+ * Generate a short-lived signed download URL for the authenticated
+ * Job Seeker's CV.
+ */
+jobSeekerProfileRouter.get('/me/cv/download-url', getMyCvDownloadUrl);
 
 /**
  * DELETE /api/v1/job-seeker-profile/me/cv
