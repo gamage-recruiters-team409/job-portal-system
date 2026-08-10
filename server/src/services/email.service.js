@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
 import { ApiError } from '../utils/apiError.js';
+import { durationToHuman } from '../utils/duration.js';
 
 /**
  * Whether real SMTP credentials are configured.
@@ -66,6 +67,32 @@ export async function sendVerificationEmail(to, token) {
   await sendMail({
     to,
     subject: 'Verify your email — Gamage Recruiters',
+    text,
+    html: text.replace(/\n/g, '<br/>'),
+  });
+}
+
+/**
+ * Send a password-reset email containing the reset link.
+ * @param {string} to recipient address
+ * @param {string} token reset token to embed in the link
+ */
+export async function sendResetPasswordEmail(to, token) {
+  const url = new URL('/reset-password', env.clientUrl);
+  url.searchParams.set('token', token);
+
+  const text = [
+    'We received a request to reset your Gamage Recruiters password.',
+    '',
+    'Click the link below to choose a new password:',
+    url.toString(),
+    '',
+    `This link expires in ${durationToHuman(env.resetPasswordExpiresIn)}. If you did not request a reset, you can ignore this email.`,
+  ].join('\n');
+
+  await sendMail({
+    to,
+    subject: 'Reset your password — Gamage Recruiters',
     text,
     html: text.replace(/\n/g, '<br/>'),
   });
