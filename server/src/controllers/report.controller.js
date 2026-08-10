@@ -7,7 +7,9 @@ import {
 export const createReportController = async (req, res) => {
   try {
     const reportData = {
-      ...req.body,
+      jobId: req.body.jobId,
+      reason: req.body.reason,
+      description: req.body.description,
       reportedBy: req.user._id,
     };
 
@@ -19,7 +21,7 @@ export const createReportController = async (req, res) => {
       data: report,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(error.statusCode || 500).json({
       success: false,
       message: error.message,
     });
@@ -45,9 +47,9 @@ export const getMyReportsController = async (req, res) => {
 export const getReportByIdController = async (req, res) => {
   try {
     const report = await getReportById(
-  req.params.id,
-  req.user._id
-);
+      req.params.id,
+      req.user._id
+    );
 
     if (!report) {
       return res.status(404).json({
