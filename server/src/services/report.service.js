@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Report from '../models/Report.js';
 import Job from '../models/Job.js';
-import Company from '../models/Company.js';
+import Company from '../models/company.model.js';
 
 export const createReport = async (reportData) => {
   const { jobId, reason, description, reportedBy } = reportData;
