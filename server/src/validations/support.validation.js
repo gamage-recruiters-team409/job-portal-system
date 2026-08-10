@@ -7,7 +7,12 @@ export const supportValidationSchema = z.object({
     .min(2, 'Full name must be at least 2 characters')
     .max(50, 'Full name must not exceed 50 characters'),
 
-  email: z.string().trim().toLowerCase().email('Invalid email address'),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email('Invalid email address')
+    .max(100, 'Email must not exceed 100 characters'),
 
   subject: z
     .string()
