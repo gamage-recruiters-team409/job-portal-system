@@ -66,20 +66,6 @@ const companySchema = new mongoose.Schema(
       enum: Object.values(EMPLOYER_VERIFICATION_STATUSES),
       default: EMPLOYER_VERIFICATION_STATUSES.PENDING,
     },
-    // Set the first time verificationStatus transitions to VERIFIED (Admin
-    // functionality, not yet built). Once set, it anchors the 15-day
-    // re-verification edit lock in company.service.js and is never cleared,
-    // even if a later edit resets verificationStatus back to pending.
-    verifiedAt: {
-      type: Date,
-      default: null,
-    },
-    // Timestamp of the last edit that reset verificationStatus to pending.
-    // Used with verifiedAt to enforce the 15-day re-verification edit lock.
-    lastReVerificationRequestedAt: {
-      type: Date,
-      default: null,
-    },
     employerUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
