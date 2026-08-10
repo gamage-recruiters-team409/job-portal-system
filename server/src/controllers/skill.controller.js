@@ -1,9 +1,5 @@
-import Skill from '../models/Skill.js';
-import Category from '../models/Category.js';
+import * as skillService from '../services/skill.service.js';
 import { sendSuccess } from '../utils/apiResponse.js';
-import { ApiError } from '../utils/apiError.js';
-
-const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export async function getSkills(req, res, next) {
   try {
@@ -13,10 +9,7 @@ export async function getSkills(req, res, next) {
       query.categoryId = categoryId;
     }
 
-    const skills = await Skill.find(query)
-      .select('-createdBy -createdAt -updatedAt -__v')
-      .sort({ skillName: 1 })
-      .populate('categoryId', 'categoryName');
+    const skills = await skillService.getSkills(query);
 
     return sendSuccess(res, {
       message: 'Skills retrieved successfully',
@@ -29,9 +22,7 @@ export async function getSkills(req, res, next) {
 
 export async function getAllSkillsAdmin(req, res, next) {
   try {
-    const skills = await Skill.find()
-      .sort({ createdAt: -1 })
-      .populate('categoryId', 'categoryName');
+    const skills = await skillService.getAllSkillsAdmin();
     return sendSuccess(res, {
       message: 'All skills retrieved successfully',
       data: { skills },
@@ -44,33 +35,13 @@ export async function getAllSkillsAdmin(req, res, next) {
 export async function createSkill(req, res, next) {
   try {
     const { skillName, categoryId } = req.body;
-    const adminId = req.user._id;
+    const createdBy = req.user._id;
 
-    if (!skillName) {
-      throw new ApiError(400, 'Skill name is required.');
-    }
-
-    const existingSkill = await Skill.findOne({
-      skillName: { $regex: new RegExp(`^${escapeRegex(skillName)}$`, 'i') },
-    });
-    if (existingSkill) {
-      throw new ApiError(409, 'Skill already exists.');
-    }
-
-    if (categoryId) {
-      const categoryExists = await Category.findById(categoryId);
-      if (!categoryExists) {
-        throw new ApiError(404, 'Referenced Category not found.');
-      }
-    }
-
-    const skill = new Skill({
+    const skill = await skillService.createSkill({
       skillName,
-      categoryId: categoryId || null,
-      createdBy: adminId,
+      categoryId,
+      createdBy,
     });
-
-    await skill.save();
 
     return sendSuccess(res, {
       statusCode: 201,
@@ -87,35 +58,11 @@ export async function updateSkill(req, res, next) {
     const { id } = req.params;
     const { skillName, categoryId, isActive } = req.body;
 
-    const skill = await Skill.findById(id);
-    if (!skill) {
-      throw new ApiError(404, 'Skill not found.');
-    }
-
-    if (skillName) {
-      const existing = await Skill.findOne({
-        skillName: { $regex: new RegExp(`^${escapeRegex(skillName)}$`, 'i') },
-        _id: { $ne: id },
-      });
-      if (existing) {
-        throw new ApiError(409, 'Another skill with this name already exists.');
-      }
-      skill.skillName = skillName;
-    }
-
-    if (categoryId !== undefined) {
-      if (categoryId) {
-        const categoryExists = await Category.findById(categoryId);
-        if (!categoryExists) {
-          throw new ApiError(404, 'Referenced Category not found.');
-        }
-      }
-      skill.categoryId = categoryId || null;
-    }
-
-    if (isActive !== undefined) skill.isActive = isActive;
-
-    await skill.save();
+    const skill = await skillService.updateSkill(id, {
+      skillName,
+      categoryId,
+      isActive,
+    });
 
     return sendSuccess(res, {
       message: 'Skill updated successfully',

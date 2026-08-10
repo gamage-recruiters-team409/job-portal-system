@@ -1,14 +1,9 @@
-import Category from '../models/Category.js';
+import * as categoryService from '../services/category.service.js';
 import { sendSuccess } from '../utils/apiResponse.js';
-import { ApiError } from '../utils/apiError.js';
-
-const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export async function getCategories(req, res, next) {
   try {
-    const categories = await Category.find({ isActive: true })
-      .select('-createdBy -createdAt -updatedAt -__v')
-      .sort({ categoryName: 1 });
+    const categories = await categoryService.getCategories();
     return sendSuccess(res, {
       message: 'Categories retrieved successfully',
       data: { categories },
@@ -20,7 +15,7 @@ export async function getCategories(req, res, next) {
 
 export async function getAllCategoriesAdmin(req, res, next) {
   try {
-    const categories = await Category.find().sort({ createdAt: -1 });
+    const categories = await categoryService.getAllCategoriesAdmin();
     return sendSuccess(res, {
       message: 'All categories retrieved successfully',
       data: { categories },
@@ -33,26 +28,13 @@ export async function getAllCategoriesAdmin(req, res, next) {
 export async function createCategory(req, res, next) {
   try {
     const { categoryName, description } = req.body;
-    const adminId = req.user._id;
+    const createdBy = req.user._id;
 
-    if (!categoryName) {
-      throw new ApiError(400, 'Category name is required.');
-    }
-
-    const existingCategory = await Category.findOne({
-      categoryName: { $regex: new RegExp(`^${escapeRegex(categoryName)}$`, 'i') },
-    });
-    if (existingCategory) {
-      throw new ApiError(409, 'Category already exists.');
-    }
-
-    const category = new Category({
+    const category = await categoryService.createCategory({
       categoryName,
       description,
-      createdBy: adminId,
+      createdBy,
     });
-
-    await category.save();
 
     return sendSuccess(res, {
       statusCode: 201,
@@ -69,27 +51,11 @@ export async function updateCategory(req, res, next) {
     const { id } = req.params;
     const { categoryName, description, isActive } = req.body;
 
-    const category = await Category.findById(id);
-    if (!category) {
-      throw new ApiError(404, 'Category not found.');
-    }
-
-    if (categoryName) {
-      // Check for uniqueness excluding current category
-      const existing = await Category.findOne({
-        categoryName: { $regex: new RegExp(`^${escapeRegex(categoryName)}$`, 'i') },
-        _id: { $ne: id },
-      });
-      if (existing) {
-        throw new ApiError(409, 'Another category with this name already exists.');
-      }
-      category.categoryName = categoryName;
-    }
-
-    if (description !== undefined) category.description = description;
-    if (isActive !== undefined) category.isActive = isActive;
-
-    await category.save();
+    const category = await categoryService.updateCategory(id, {
+      categoryName,
+      description,
+      isActive,
+    });
 
     return sendSuccess(res, {
       message: 'Category updated successfully',
