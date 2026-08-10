@@ -1,38 +1,28 @@
 import mongoose from 'mongoose';
-import Report from '../models/Report.js';
 import Job from '../models/Job.js';
-import Company from '../models/company.model.js';
+import Report from '../models/Report.js';
 
 export const createReport = async (reportData) => {
   const { jobId, reason, description, reportedBy } = reportData;
 
-  // Validate Job ObjectId before querying
   if (!mongoose.Types.ObjectId.isValid(jobId)) {
-    const error = new Error('Invalid Job ID');
-    error.statusCode = 400;
-    throw error;
+    throw new Error('Invalid job ID');
   }
 
-  // Get the job from the database
   const job = await Job.findOne({
     _id: jobId,
     isDeleted: false,
-  });
+  }).populate('companyId', 'companyName');
 
   if (!job) {
-    const error = new Error('Job not found');
-    error.statusCode = 404;
-    throw error;
+    throw new Error('Job not found');
   }
-
-  // Derive company information from the shared Job data
-  const company = await Company.findById(job.companyId);
 
   const report = await Report.create({
     jobId: job._id,
     jobTitle: job.title,
-    companyId: job.companyId,
-    companyName: company?.companyName,
+    companyId: job.companyId?._id,
+    companyName: job.companyId?.companyName,
     reportedBy,
     reason,
     description,
