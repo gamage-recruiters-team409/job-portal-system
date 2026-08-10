@@ -35,7 +35,9 @@ export async function createCategory(req, res, next) {
       throw new ApiError(400, 'Category name is required.');
     }
 
-    const existingCategory = await Category.findOne({ categoryName: { $regex: new RegExp(`^${categoryName}$`, 'i') } });
+    const existingCategory = await Category.findOne({
+      categoryName: { $regex: new RegExp(`^${categoryName}$`, 'i') },
+    });
     if (existingCategory) {
       throw new ApiError(409, 'Category already exists.');
     }
@@ -45,7 +47,7 @@ export async function createCategory(req, res, next) {
       description,
       createdBy: adminId,
     });
-    
+
     await category.save();
 
     return sendSuccess(res, {
@@ -70,9 +72,9 @@ export async function updateCategory(req, res, next) {
 
     if (categoryName) {
       // Check for uniqueness excluding current category
-      const existing = await Category.findOne({ 
-        categoryName: { $regex: new RegExp(`^${categoryName}$`, 'i') }, 
-        _id: { $ne: id } 
+      const existing = await Category.findOne({
+        categoryName: { $regex: new RegExp(`^${categoryName}$`, 'i') },
+        _id: { $ne: id },
       });
       if (existing) {
         throw new ApiError(409, 'Another category with this name already exists.');

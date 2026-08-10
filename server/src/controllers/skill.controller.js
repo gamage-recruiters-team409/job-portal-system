@@ -10,8 +10,10 @@ export async function getSkills(req, res, next) {
       query.categoryId = categoryId;
     }
 
-    const skills = await Skill.find(query).sort({ skillName: 1 }).populate('categoryId', 'categoryName');
-    
+    const skills = await Skill.find(query)
+      .sort({ skillName: 1 })
+      .populate('categoryId', 'categoryName');
+
     return sendSuccess(res, {
       message: 'Skills retrieved successfully',
       data: { skills },
@@ -23,7 +25,9 @@ export async function getSkills(req, res, next) {
 
 export async function getAllSkillsAdmin(req, res, next) {
   try {
-    const skills = await Skill.find().sort({ createdAt: -1 }).populate('categoryId', 'categoryName');
+    const skills = await Skill.find()
+      .sort({ createdAt: -1 })
+      .populate('categoryId', 'categoryName');
     return sendSuccess(res, {
       message: 'All skills retrieved successfully',
       data: { skills },
@@ -42,7 +46,9 @@ export async function createSkill(req, res, next) {
       throw new ApiError(400, 'Skill name is required.');
     }
 
-    const existingSkill = await Skill.findOne({ skillName: { $regex: new RegExp(`^${skillName}$`, 'i') } });
+    const existingSkill = await Skill.findOne({
+      skillName: { $regex: new RegExp(`^${skillName}$`, 'i') },
+    });
     if (existingSkill) {
       throw new ApiError(409, 'Skill already exists.');
     }
@@ -52,7 +58,7 @@ export async function createSkill(req, res, next) {
       categoryId: categoryId || null,
       createdBy: adminId,
     });
-    
+
     await skill.save();
 
     return sendSuccess(res, {
@@ -76,9 +82,9 @@ export async function updateSkill(req, res, next) {
     }
 
     if (skillName) {
-      const existing = await Skill.findOne({ 
-        skillName: { $regex: new RegExp(`^${skillName}$`, 'i') }, 
-        _id: { $ne: id } 
+      const existing = await Skill.findOne({
+        skillName: { $regex: new RegExp(`^${skillName}$`, 'i') },
+        _id: { $ne: id },
       });
       if (existing) {
         throw new ApiError(409, 'Another skill with this name already exists.');
