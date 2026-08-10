@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-
 export const createReportSchema = z.object({
   jobId: z.string()
     .min(1, 'Job ID is required'),
@@ -17,14 +16,4 @@ export const createReportSchema = z.object({
   description: z.string()
     .max(500, 'Description cannot exceed 500 characters')
     .optional(),
-});
-
-
-export const updateReportStatusSchema = z.object({
-  status: z.enum([
-    'pending',
-    'under_review',
-    'resolved',
-    'dismissed',
-  ]),
 });
