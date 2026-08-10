@@ -4,7 +4,9 @@ import { ApiError } from '../utils/apiError.js';
 
 export async function getCategories(req, res, next) {
   try {
-    const categories = await Category.find({ isActive: true }).sort({ categoryName: 1 });
+    const categories = await Category.find({ isActive: true })
+      .select('-createdBy -createdAt -updatedAt -__v')
+      .sort({ categoryName: 1 });
     return sendSuccess(res, {
       message: 'Categories retrieved successfully',
       data: { categories },

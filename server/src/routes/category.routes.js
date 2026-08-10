@@ -12,7 +12,7 @@ const router = Router();
 
 // Publicly available (or at least authenticated without role restriction)
 // Anyone logged in can see active categories (Job Seekers or Employers)
-router.get('/', protect, getCategories);
+router.get('/', getCategories);
 
 // Admin only routes
 router.get('/all', protect, requireRole(USER_ROLES.ADMIN), getAllCategoriesAdmin);
