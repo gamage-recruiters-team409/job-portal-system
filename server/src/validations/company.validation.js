@@ -11,26 +11,39 @@ export const companySchema = z.object({
   companyEmail: z
     .string({ message: 'Company email is required' })
     .trim()
-    .email('Invalid company email address'),
+    .email('Invalid company email address')
+    .max(254, 'Company email cannot exceed 254 characters'),
   companyTelephone: z
     .string({ message: 'Company telephone is required' })
     .trim()
-    .min(1, 'Company telephone is required'),
-  industry: z.string({ message: 'Industry is required' }).trim().min(1, 'Industry is required'),
+    .min(1, 'Company telephone is required')
+    .max(20, 'Company telephone cannot exceed 20 characters'),
+  industry: z
+    .string({ message: 'Industry is required' })
+    .trim()
+    .min(1, 'Industry is required')
+    .max(100, 'Industry cannot exceed 100 characters'),
   companySize: z.enum(['1-10', '11-50', '51-200', '200+'], {
     message: 'Company size is required',
   }),
   companyAddress: z
     .string({ message: 'Company address is required' })
     .trim()
-    .min(1, 'Company address is required'),
+    .min(1, 'Company address is required')
+    .max(200, 'Company address cannot exceed 200 characters'),
   companyLocation: z
     .string({ message: 'Company location is required' })
     .trim()
-    .min(1, 'Company location is required'),
+    .min(1, 'Company location is required')
+    .max(100, 'Company location cannot exceed 100 characters'),
   website: z.preprocess(
     (val) => (val === '' || val === null ? undefined : val),
-    z.string().trim().url('Invalid URL format').optional()
+    z
+      .string()
+      .trim()
+      .url('Invalid URL format')
+      .max(200, 'Website URL cannot exceed 200 characters')
+      .optional()
   ),
   companyDescription: z
     .string()
@@ -48,6 +61,14 @@ export const companySchema = z.object({
       .optional()
   ),
 });
+
+// PUT /companies/me performs a partial profile update — every field is
+// optional, but the body must contain at least one field to update.
+export const updateCompanySchema = companySchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'At least one field must be provided for update.',
+  });
 
 export const validateCompany = (data) => {
   return companySchema.safeParse(data);

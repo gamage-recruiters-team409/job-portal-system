@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
+
 import FoundationPage from '../pages/FoundationPage.jsx';
 import NotFoundPage from '../pages/NotFoundPage.jsx';
 import UnauthorizedPage from '../pages/UnauthorizedPage.jsx';
@@ -8,16 +9,30 @@ import VerifyEmailPage from '../features/authentication/VerifyEmailPage.jsx';
 import ForgotPasswordPage from '../features/authentication/ForgotPasswordPage.jsx';
 import ResetPasswordPage from '../features/authentication/ResetPasswordPage.jsx';
 
+import AboutPage from '../features/help-support/pages/AboutPage.jsx';
+import ContactPage from '../features/help-support/pages/ContactPage.jsx';
+import FAQPage from '../features/help-support/pages/FAQPage.jsx';
+import HelpPage from '../features/help-support/pages/HelpPage.jsx';
+import SupportFormPage from '../features/help-support/pages/SupportFormPage.jsx';
+
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<FoundationPage />} />
+
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/faq" element={<FAQPage />} />
+      <Route path="/help" element={<HelpPage />} />
+      <Route path="/support" element={<SupportFormPage />} />
+
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
