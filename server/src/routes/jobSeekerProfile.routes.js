@@ -13,6 +13,7 @@ import {
   deleteMyProfileImage,
   getMyCvDownloadUrl,
   getMyProfile,
+  getMyProfileCompletion,
   updateMyEducationEntry,
   updateMyExperienceEntry,
   updateMyProfile,
@@ -178,5 +179,12 @@ jobSeekerProfileRouter.delete(
   validate(profileEntryIdSchema, 'params'),
   deleteMyPortfolioLink
 );
+
+/**
+ * GET /api/v1/job-seeker-profile/me/completion
+ * Retrieve the dynamically calculated completion status
+ * for the authenticated Job Seeker's profile.
+ */
+jobSeekerProfileRouter.get('/me/completion', getMyProfileCompletion);
 
 export default jobSeekerProfileRouter;

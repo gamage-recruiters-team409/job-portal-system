@@ -7,6 +7,18 @@ import {
 
 const editableProfileFields = ['currentPosition', 'careerSummary', 'location'];
 
+const PROFILE_COMPLETION_WEIGHTS = Object.freeze({
+  basicProfile: 20,
+  skills: 15,
+  education: 15,
+  experience: 15,
+  cv: 15,
+  profileImage: 10,
+  portfolio: 10,
+});
+
+const hasTextValue = (value) => typeof value === 'string' && value.trim().length > 0;
+
 const selectEditableProfileFields = (profileData) =>
   Object.fromEntries(
     Object.entries(profileData).filter(([field]) => editableProfileFields.includes(field))
@@ -51,6 +63,57 @@ export const mergePortfolioLinkUpdate = (existingPortfolioLink, portfolioUpdates
   };
 
   return createPortfolioLinkSchema.parse(mergedPortfolioLink);
+};
+
+export const calculateProfileCompletion = (profile) => {
+  const sectionStatus = {
+    basicProfile:
+      hasTextValue(profile?.currentPosition) &&
+      hasTextValue(profile?.careerSummary) &&
+      hasTextValue(profile?.location),
+
+    skills: Array.isArray(profile?.skills) && profile.skills.length > 0,
+
+    education: Array.isArray(profile?.education) && profile.education.length > 0,
+
+    experience: Array.isArray(profile?.experience) && profile.experience.length > 0,
+
+    cv: Boolean(profile?.cv?.publicId),
+
+    profileImage: Boolean(profile?.profileImage?.publicId),
+
+    portfolio: Array.isArray(profile?.portfolioLinks) && profile.portfolioLinks.length > 0,
+  };
+
+  const completedSections = Object.entries(sectionStatus)
+    .filter(([, completed]) => completed)
+    .map(([section]) => section);
+
+  const missingSections = Object.entries(sectionStatus)
+    .filter(([, completed]) => !completed)
+    .map(([section]) => section);
+
+  const percentage = completedSections.reduce(
+    (total, section) => total + PROFILE_COMPLETION_WEIGHTS[section],
+    0
+  );
+
+  const sections = Object.fromEntries(
+    Object.entries(sectionStatus).map(([section, completed]) => [
+      section,
+      {
+        completed,
+        weight: PROFILE_COMPLETION_WEIGHTS[section],
+      },
+    ])
+  );
+
+  return {
+    percentage,
+    completedSections,
+    missingSections,
+    sections,
+  };
 };
 
 export const getJobSeekerProfileByUserId = async (userId) => {
@@ -361,4 +424,14 @@ export const deletePortfolioLinkByUserId = async (userId, entryId) => {
   await profile.save();
 
   return removedPortfolioLink;
+};
+
+export const getProfileCompletionByUserId = async (userId) => {
+  const profile = await JobSeekerProfile.findOne({
+    user: userId,
+  })
+    .lean()
+    .exec();
+
+  return calculateProfileCompletion(profile);
 };

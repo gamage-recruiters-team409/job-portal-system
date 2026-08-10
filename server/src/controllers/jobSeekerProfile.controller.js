@@ -2,6 +2,7 @@ import { ApiError } from '../utils/apiError.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 
 import {
+  getProfileCompletionByUserId,
   addPortfolioLinkByUserId,
   deletePortfolioLinkByUserId,
   updatePortfolioLinkByUserId,
@@ -454,6 +455,26 @@ export async function deleteMyPortfolioLink(req, res, next) {
       message: 'Portfolio link deleted successfully.',
       data: {
         portfolioLink,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * GET /job-seeker-profile/me/completion
+ * Returns the dynamically calculated profile completion status
+ * for the authenticated Job Seeker.
+ */
+export async function getMyProfileCompletion(req, res, next) {
+  try {
+    const completion = await getProfileCompletionByUserId(req.user._id);
+
+    return sendSuccess(res, {
+      message: 'Profile completion retrieved successfully.',
+      data: {
+        completion,
       },
     });
   } catch (error) {
