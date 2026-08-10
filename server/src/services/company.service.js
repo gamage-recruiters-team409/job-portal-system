@@ -59,10 +59,7 @@ export async function createCompany(userId, data) {
         companyEmail: 'A company with this email address already exists.',
         employerUserId: 'Employer already has a company profile.',
       };
-      throw new ApiError(
-        409,
-        FIELD_MESSAGES[field] || 'A record with this value already exists.'
-      );
+      throw new ApiError(409, FIELD_MESSAGES[field] || 'A record with this value already exists.');
     }
     throw error;
   }
@@ -258,10 +255,7 @@ export async function updateCompany(userId, data) {
         companyEmail: 'A company with this email address already exists.',
         employerUserId: 'Employer already has a company profile.',
       };
-      throw new ApiError(
-        409,
-        FIELD_MESSAGES[field] || 'A record with this value already exists.'
-      );
+      throw new ApiError(409, FIELD_MESSAGES[field] || 'A record with this value already exists.');
     }
     throw error;
   }
