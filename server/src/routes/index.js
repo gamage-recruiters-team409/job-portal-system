@@ -11,7 +11,6 @@ import jobRouter from './job.routes.js';
 import jobSeekerProfileRouter from './jobSeekerProfile.routes.js';
 import companyRouter from './company.routes.js';
 
-
 const apiRouter = Router();
 apiRouter.use('/health', healthRouter);
 apiRouter.use('/auth', authRouter);
@@ -23,6 +22,5 @@ apiRouter.use('/jobs', jobsRouter);
 apiRouter.use('/employer/jobs', jobRouter);
 apiRouter.use('/job-seeker-profile', jobSeekerProfileRouter);
 apiRouter.use('/companies', companyRouter);
-
 
 export default apiRouter;

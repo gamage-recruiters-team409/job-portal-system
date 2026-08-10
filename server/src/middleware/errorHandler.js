@@ -31,7 +31,9 @@ export function errorHandler(error, req, res, next) {
     const duplicateField = error.keyValue ? Object.keys(error.keyValue)[0] : 'field';
     return res.status(409).json({
       success: false,
-      message: DUPLICATE_KEY_MESSAGES[duplicateField] || `A duplicate record with this ${duplicateField} already exists.`,
+      message:
+        DUPLICATE_KEY_MESSAGES[duplicateField] ||
+        `A duplicate record with this ${duplicateField} already exists.`,
     });
   }
 
