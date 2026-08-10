@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { REPORT_STATUSES } from '../constants/statuses.js';
 
 const { Schema, model } = mongoose;
 
@@ -44,17 +45,11 @@ const reportSchema = new Schema(
       maxlength: 500,
     },
 
-    status: {
-      type: String,
-      enum: [
-        'pending',
-        'under_review',
-        'resolved',
-        'dismissed',
-      ],
-      default: 'pending',
-    },
-
+   status: {
+  type: String,
+  enum: Object.values(REPORT_STATUSES),
+  default: REPORT_STATUSES.PENDING,
+},
     reviewedBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',
