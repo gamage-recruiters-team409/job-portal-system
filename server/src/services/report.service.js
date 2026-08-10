@@ -1,12 +1,14 @@
 import mongoose from 'mongoose';
 import Job from '../models/Job.js';
+import Company from '../models/company.model.js';
 import Report from '../models/Report.js';
+import { ApiError } from '../utils/apiError.js';
 
 export const createReport = async (reportData) => {
   const { jobId, reason, description, reportedBy } = reportData;
 
   if (!mongoose.Types.ObjectId.isValid(jobId)) {
-    throw new Error('Invalid job ID');
+    throw new ApiError(400, 'Invalid job ID.');
   }
 
   const job = await Job.findOne({
@@ -15,7 +17,7 @@ export const createReport = async (reportData) => {
   }).populate('companyId', 'companyName');
 
   if (!job) {
-    throw new Error('Job not found');
+    throw new ApiError(404, 'Job not found.');
   }
 
   const report = await Report.create({
@@ -32,24 +34,26 @@ export const createReport = async (reportData) => {
 };
 
 export const getMyReports = async (userId) => {
-  const reports = await Report.find({
+  return await Report.find({
     reportedBy: userId,
   }).sort({
     createdAt: -1,
   });
-
-  return reports;
 };
 
 export const getReportById = async (reportId, userId) => {
   if (!mongoose.Types.ObjectId.isValid(reportId)) {
-    return null;
+    throw new ApiError(400, 'Invalid report ID.');
   }
 
   const report = await Report.findOne({
     _id: reportId,
     reportedBy: userId,
   });
+
+  if (!report) {
+    throw new ApiError(404, 'Report not found.');
+  }
 
   return report;
 };

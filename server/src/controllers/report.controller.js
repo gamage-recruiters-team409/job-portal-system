@@ -4,7 +4,7 @@ import {
   getReportById,
 } from '../services/report.service.js';
 
-export const createReportController = async (req, res) => {
+export const createReportController = async (req, res, next) => {
   try {
     const reportData = {
       jobId: req.body.jobId,
@@ -21,14 +21,11 @@ export const createReportController = async (req, res) => {
       data: report,
     });
   } catch (error) {
-    res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message,
-    });
+    next(error);
   }
 };
 
-export const getMyReportsController = async (req, res) => {
+export const getMyReportsController = async (req, res, next) => {
   try {
     const reports = await getMyReports(req.user._id);
 
@@ -37,35 +34,22 @@ export const getMyReportsController = async (req, res) => {
       data: reports,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    next(error);
   }
 };
 
-export const getReportByIdController = async (req, res) => {
+export const getReportByIdController = async (req, res, next) => {
   try {
     const report = await getReportById(
       req.params.id,
       req.user._id
     );
 
-    if (!report) {
-      return res.status(404).json({
-        success: false,
-        message: 'Report not found',
-      });
-    }
-
     res.status(200).json({
       success: true,
       data: report,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    next(error);
   }
 };

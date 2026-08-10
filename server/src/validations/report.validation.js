@@ -2,7 +2,10 @@ import { z } from 'zod';
 import { REPORT_REASONS } from '../constants/statuses.js';
 
 export const createReportSchema = z.object({
-  jobId: z.string().min(1, 'Job ID is required'),
+  jobId: z.string().regex(
+  /^[0-9a-fA-F]{24}$/,
+  'Invalid job ID'
+),
 
   reason: z.string().refine(
     (value) => REPORT_REASONS.includes(value),
