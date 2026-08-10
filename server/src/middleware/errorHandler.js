@@ -26,12 +26,12 @@ export function errorHandler(error, req, res, next) {
     return res.status(400).json({ success: false, message: error.message });
   }
 
-  // MongoDB duplicate key error (E11000) — also has no statusCode.
+  // Handle Mongoose duplicate key errors (E11000) globally
   if (error.code === 11000) {
-    const duplicateField = Object.keys(error.keyValue || {})[0];
+    const duplicateField = error.keyValue ? Object.keys(error.keyValue)[0] : 'field';
     return res.status(409).json({
       success: false,
-      message: DUPLICATE_KEY_MESSAGES[duplicateField] || 'A record with this value already exists.',
+      message: DUPLICATE_KEY_MESSAGES[duplicateField] || `A duplicate record with this ${duplicateField} already exists.`,
     });
   }
 
