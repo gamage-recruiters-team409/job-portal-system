@@ -218,36 +218,38 @@ function SettingsIcon(props) {
 
 /* ─── Shared Non-Admin Navigation Configurations ───────────────────────── */
 
+// `disabled: true` marks destinations whose frontend route isn't registered
+// in AppRoutes.jsx yet. Remove the flag once the owning module ships its route.
 export const EMPLOYER_NAV_ITEMS = [
   {
     label: 'Dashboard',
     icon: DashboardIcon,
     path: '/employer/dashboard',
+    disabled: true,
   },
   {
     label: 'Jobs',
     icon: BriefcaseIcon,
     path: '/jobs',
+    disabled: true,
   },
   {
     label: 'Applicants',
     icon: UsersIcon,
     path: '/applicants',
+    disabled: true,
   },
   {
     label: 'Company profile',
     icon: BuildingIcon,
     path: '/employer/company',
-  },
-  {
-    label: 'My reported jobs',
-    icon: CheckSquareIcon,
-    path: '/my-reported-jobs',
+    disabled: true,
   },
   {
     label: 'Settings',
     icon: SettingsIcon,
     path: '/settings',
+    disabled: true,
   },
 ];
 
@@ -256,31 +258,37 @@ export const JOB_SEEKER_NAV_ITEMS = [
     label: 'Dashboard',
     icon: DashboardIcon,
     path: '/dashboard',
+    disabled: true,
   },
   {
     label: 'My Profile',
     icon: UserIcon,
     path: '/profile',
+    disabled: true,
   },
   {
     label: 'Find Jobs',
     icon: BriefcaseIcon,
     path: '/jobs',
+    disabled: true,
   },
   {
     label: 'Messages',
     icon: MessagesIcon,
     path: '/messages',
+    disabled: true,
   },
   {
     label: 'Saved Jobs',
     icon: BookmarkIcon,
     path: '/saved-jobs',
+    disabled: true,
   },
   {
     label: 'My Applications',
     icon: CheckSquareIcon,
     path: '/applications',
+    disabled: true,
   },
   {
     label: 'My reported jobs',
@@ -291,6 +299,7 @@ export const JOB_SEEKER_NAV_ITEMS = [
     label: 'Settings',
     icon: SettingsIcon,
     path: '/settings',
+    disabled: true,
   },
 ];
 
@@ -317,7 +326,7 @@ function renderIcon(icon) {
  * Breakpoint is `lg` to match TopNavbar's `lg:hidden` menu button.
  *
  * @param {Object} props
- * @param {Array<{ label: string, icon: any, path: string }>} [props.navItems]
+ * @param {Array<{ label: string, icon: any, path: string, disabled?: boolean }>} [props.navItems]
  * @param {Function} [props.onLogout] - Logout handler (button hidden when absent)
  * @param {boolean} [props.isOpen] - Mobile drawer open state, owned by the parent layout
  * @param {Function} [props.onClose] - Called to close the mobile drawer (overlay, nav click)
@@ -363,6 +372,24 @@ function Sidebar({ navItems = EMPLOYER_NAV_ITEMS, onLogout, isOpen = false, onCl
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
           {navItems.map((item) => {
             const active = isActive(item.path);
+
+            // Not-yet-available destinations render as inert, visually muted
+            // items so the sidebar never links to a page that 404s.
+            if (item.disabled) {
+              return (
+                <span
+                  key={item.path}
+                  aria-disabled="true"
+                  title="Coming soon"
+                  className="flex h-[44px] cursor-not-allowed items-center gap-2 rounded-lg px-3 text-sm font-medium text-[#CBD5E1]"
+                >
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+                    {renderIcon(item.icon)}
+                  </span>
+                  <span className="whitespace-nowrap">{item.label}</span>
+                </span>
+              );
+            }
 
             return (
               <Link

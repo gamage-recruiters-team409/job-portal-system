@@ -28,11 +28,11 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
-      {/* Reported Jobs - Job Seeker & Employer */}
+      {/* Reported Jobs - Job Seeker only */}
       <Route
         path="/my-reported-jobs"
         element={
-          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER]}>
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <MyReportedJobs />
             </AuthenticatedLayout>
@@ -43,7 +43,7 @@ function AppRoutes() {
       <Route
         path="/report-details/:id"
         element={
-          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER]}>
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <ReportDetails />
             </AuthenticatedLayout>
