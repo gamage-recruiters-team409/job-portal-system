@@ -8,6 +8,9 @@ import {
   listEmployerJobs,
   getJobById,
   updateJob,
+  submitJobForReview,
+  closeJob,
+  reopenJob,
 } from '../services/job.service.js';
 
 /**
@@ -135,6 +138,64 @@ export async function updateJobController(req, res, next) {
     });
     return sendSuccess(res, {
       message: 'Job updated.',
+      data: { job },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * PATCH /jobs/:jobId/submit-for-review — draft/rejected → pending_review.
+ * Clears any previous review feedback on resubmission.
+ */
+export async function submitJobForReviewController(req, res, next) {
+  try {
+    const job = await submitJobForReview({
+      jobId: req.params.jobId,
+      employerId: req.user._id,
+    });
+    return sendSuccess(res, {
+      message: 'Job submitted for review.',
+      data: { job },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * PATCH /jobs/:jobId/close — published → closed.
+ */
+export async function closeJobController(req, res, next) {
+  try {
+    const job = await closeJob({
+      jobId: req.params.jobId,
+      employerId: req.user._id,
+      reason: req.body.reason,
+    });
+    return sendSuccess(res, {
+      message: 'Job closed.',
+      data: { job },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * PATCH /jobs/:jobId/reopen — closed → published.
+ * Requires a new deadline if the posting has already expired.
+ */
+export async function reopenJobController(req, res, next) {
+  try {
+    const job = await reopenJob({
+      jobId: req.params.jobId,
+      employerId: req.user._id,
+      newDeadline: req.body.deadline,
+    });
+    return sendSuccess(res, {
+      message: 'Job reopened.',
       data: { job },
     });
   } catch (error) {
