@@ -52,39 +52,57 @@ function StatusTimeline({ status }) {
     resolved: 2,
     dismissed: 3,
   };
+
   const currentIndex = statusToIndex[status] ?? 0;
+
   return (
     <div className="flex items-start px-4 pt-2">
-      {' '}
       {TIMELINE_STEPS.map((step, index) => {
-        const isDone = index <= currentIndex;
+        const isFinalOutcome = step.key === 'resolved' || step.key === 'dismissed';
+
+        const isDone =
+          status === 'dismissed'
+            ? step.key === 'submitted' || step.key === 'under_review' || step.key === 'dismissed'
+            : status === 'resolved'
+              ? step.key === 'submitted' || step.key === 'under_review' || step.key === 'resolved'
+              : index <= currentIndex;
+
         const isLast = index === TIMELINE_STEPS.length - 1;
+
         return (
           <React.Fragment key={step.key}>
-            {' '}
             <div className="flex flex-col items-center">
-              {' '}
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${isDone ? 'bg-blue-600' : 'bg-gray-200'}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                  isDone ? 'bg-blue-600' : 'bg-gray-200'
+                }`}
               >
-                {' '}
-                {isDone && <Check size={16} className="text-white" strokeWidth={3} />}{' '}
-              </div>{' '}
+                {isDone && <Check size={16} className="text-white" strokeWidth={3} />}
+              </div>
+
               <span
-                className={`mt-2 max-w-[90px] text-center text-sm font-medium ${isDone ? 'text-gray-900' : 'text-gray-400'}`}
+                className={`mt-2 max-w-[90px] text-center text-sm font-medium ${
+                  isDone ? 'text-gray-900' : 'text-gray-400'
+                }`}
               >
-                {' '}
-                {step.label}{' '}
-              </span>{' '}
-            </div>{' '}
+                {step.label}
+              </span>
+            </div>
+
             {!isLast && (
               <div
-                className={`mt-4 h-0.5 flex-1 ${index < currentIndex ? 'bg-blue-600' : 'bg-gray-200'}`}
+                className={`mt-4 h-0.5 flex-1 ${
+                  isFinalOutcome
+                    ? 'bg-gray-200'
+                    : index < currentIndex
+                      ? 'bg-blue-600'
+                      : 'bg-gray-200'
+                }`}
               />
-            )}{' '}
+            )}
           </React.Fragment>
         );
-      })}{' '}
+      })}
     </div>
   );
 }
