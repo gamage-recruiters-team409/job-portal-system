@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, ChevronDown, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+import { submitReport } from '../../../../services/reportService.js';
 
 const REPORT_REASONS = [
   'Fake or non-existent job',
@@ -12,34 +17,74 @@ const REPORT_REASONS = [
 
 const MAX_CHARS = 500;
 
-export default function ReportFakeJobModal({ isOpen, onClose }) {
-  const [reason, setReason] = useState('');
-  const [details, setDetails] = useState('');
-  const [showError, setShowError] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+const reportSchema = z.object({
+  reason: z
+    .string()
+    .min(1, 'Please select a reason')
+    .refine((value) => REPORT_REASONS.includes(value), {
+      message: 'Invalid report reason',
+    }),
+  description: z
+    .string()
+    .max(MAX_CHARS, `Description cannot exceed ${MAX_CHARS} characters`)
+    .optional(),
+});
 
-  const handleSubmit = () => {
-    if (!reason) {
-      setShowError(true);
+export default function ReportFakeJobModal({ isOpen, onClose, jobId }) {
+  const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(reportSchema),
+    defaultValues: {
+      reason: '',
+      description: '',
+    },
+  });
+
+  const description = watch('description') || '';
+
+  useEffect(() => {
+    if (!isOpen) {
+      reset();
+      setSubmitted(false);
+      setSubmitError('');
+    }
+  }, [isOpen, reset]);
+
+  const onSubmit = async (formData) => {
+    setSubmitError('');
+
+    if (!jobId) {
+      setSubmitError('Unable to submit the report because the job ID is missing.');
       return;
     }
 
-    setShowError(false);
+    try {
+      await submitReport({
+        jobId,
+        reason: formData.reason,
+        description: formData.description || undefined,
+      });
 
-    // Backend API call will be added later
-    console.log({
-      reason,
-      details,
-    });
-
-    setSubmitted(true);
+      setSubmitted(true);
+    } catch (error) {
+      setSubmitError(
+        error.response?.data?.message || 'Failed to submit the report. Please try again.'
+      );
+    }
   };
 
   const handleClose = () => {
-    setReason('');
-    setDetails('');
-    setShowError(false);
+    reset();
     setSubmitted(false);
+    setSubmitError('');
     onClose();
   };
 
@@ -61,6 +106,7 @@ export default function ReportFakeJobModal({ isOpen, onClose }) {
             </p>
 
             <button
+              type="button"
               onClick={handleClose}
               className="mt-6 w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700"
             >
@@ -68,11 +114,15 @@ export default function ReportFakeJobModal({ isOpen, onClose }) {
             </button>
           </div>
         ) : (
-          <div className="p-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="p-6">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Report Fake Job</h2>
 
-              <button onClick={handleClose} className="text-gray-400 hover:text-gray-700">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="text-gray-400 hover:text-gray-700"
+              >
                 <X size={20} />
               </button>
             </div>
@@ -84,14 +134,9 @@ export default function ReportFakeJobModal({ isOpen, onClose }) {
 
               <div className="relative mt-2">
                 <select
-                  value={reason}
-                  onChange={(e) => {
-                    setReason(e.target.value);
-                    setShowError(false);
-                  }}
-
+                  {...register('reason')}
                   className={`w-full appearance-none rounded-lg border px-3 py-2.5 pr-9 text-sm outline-none transition-colors focus:ring-2 ${
-                    showError
+                    errors.reason
                       ? 'border-red-400 focus:border-red-400 focus:ring-red-100'
                       : 'border-gray-300 focus:border-blue-500 focus:ring-blue-100'
                   }`}
@@ -101,7 +146,9 @@ export default function ReportFakeJobModal({ isOpen, onClose }) {
                   </option>
 
                   {REPORT_REASONS.map((item) => (
-                    <option key={item}>{item}</option>
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
                   ))}
                 </select>
 
@@ -111,10 +158,10 @@ export default function ReportFakeJobModal({ isOpen, onClose }) {
                 />
               </div>
 
-              {showError && (
+              {errors.reason && (
                 <p className="mt-2 flex items-center gap-2 text-sm text-red-500">
                   <AlertTriangle size={14} />
-                  Please select a reason
+                  {errors.reason.message}
                 </p>
               )}
             </div>
@@ -125,42 +172,52 @@ export default function ReportFakeJobModal({ isOpen, onClose }) {
               </label>
 
               <textarea
+                {...register('description')}
                 rows="4"
-
                 maxLength={MAX_CHARS}
-
-                value={details}
-
-                onChange={(e) => setDetails(e.target.value)}
-
                 placeholder="Explain why you think this job is suspicious..."
-
-                className="mt-2 w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className={`mt-2 w-full resize-none rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:ring-2 ${
+                  errors.description
+                    ? 'border-red-400 focus:border-red-400 focus:ring-red-100'
+                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-100'
+                }`}
               />
 
               <p className="text-right text-xs text-gray-400">
-                {details.length} / {MAX_CHARS}
+                {description.length} / {MAX_CHARS}
               </p>
+
+              {errors.description && (
+                <p className="mt-1 text-sm text-red-500">{errors.description.message}</p>
+              )}
             </div>
+
+            {submitError && (
+              <div className="mt-4 flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+                <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                <span>{submitError}</span>
+              </div>
+            )}
 
             <div className="mt-6 flex justify-end gap-3">
               <button
+                type="button"
                 onClick={handleClose}
-
-                className="rounded-lg border px-5 py-2 text-sm text-gray-700"
+                disabled={isSubmitting}
+                className="rounded-lg border px-5 py-2 text-sm text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
 
               <button
-                onClick={handleSubmit}
-
-                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Submit Report
+                {isSubmitting ? 'Submitting...' : 'Submit Report'}
               </button>
             </div>
-          </div>
+          </form>
         )}
       </div>
     </div>
