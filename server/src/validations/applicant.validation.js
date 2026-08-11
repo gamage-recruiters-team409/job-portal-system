@@ -80,11 +80,7 @@ export const updateStatusSchema = z.object({
     error: `status must be one of: ${EMPLOYER_SETTABLE_STATUSES.join(', ')}`,
   }),
 
-  note: z
-    .string()
-    .trim()
-    .max(1000, 'note cannot exceed 1000 characters')
-    .optional(),
+  note: z.string().trim().max(1000, 'note cannot exceed 1000 characters').optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -98,11 +94,7 @@ export const updateStatusSchema = z.object({
  * routes — the client only supplies an optional note.
  */
 const noteOnlySchema = z.object({
-  note: z
-    .string()
-    .trim()
-    .max(1000, 'note cannot exceed 1000 characters')
-    .optional(),
+  note: z.string().trim().max(1000, 'note cannot exceed 1000 characters').optional(),
 });
 
 export const shortlistSchema = noteOnlySchema;

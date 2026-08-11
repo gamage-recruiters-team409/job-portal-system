@@ -23,18 +23,10 @@ const applicantRouter = Router();
 applicantRouter.use(protect, requireRole(USER_ROLES.EMPLOYER, USER_ROLES.ADMIN));
 
 // GET /api/v1/applicants?jobId=&status=&search=&page=&limit=
-applicantRouter.get(
-  '/',
-  validate(listApplicantsQuerySchema, 'query'),
-  listApplicantsController
-);
+applicantRouter.get('/', validate(listApplicantsQuerySchema, 'query'), listApplicantsController);
 
 // GET /api/v1/applicants/:id
-applicantRouter.get(
-  '/:id',
-  validate(applicantIdParamSchema, 'params'),
-  getApplicantByIdController
-);
+applicantRouter.get('/:id', validate(applicantIdParamSchema, 'params'), getApplicantByIdController);
 
 // PATCH /api/v1/applicants/:id/status
 applicantRouter.patch(
