@@ -15,6 +15,7 @@ import ContactPage from '../features/help-support/pages/ContactPage.jsx';
 import FAQPage from '../features/help-support/pages/FAQPage.jsx';
 import HelpPage from '../features/help-support/pages/HelpPage.jsx';
 import SupportFormPage from '../features/help-support/pages/SupportFormPage.jsx';
+import AuthenticatedLayout from '../layouts/authenticated/AuthenticatedLayout.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 
 function AppRoutes() {
@@ -27,12 +28,14 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
-      {/* Reported Jobs - Job Seeker */}
+      {/* Reported Jobs - Job Seeker & Employer */}
       <Route
         path="/my-reported-jobs"
         element={
-          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
-            <MyReportedJobs />
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <MyReportedJobs />
+            </AuthenticatedLayout>
           </ProtectedRoute>
         }
       />
@@ -40,8 +43,10 @@ function AppRoutes() {
       <Route
         path="/report-details/:id"
         element={
-          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
-            <ReportDetails />
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <ReportDetails />
+            </AuthenticatedLayout>
           </ProtectedRoute>
         }
       />
