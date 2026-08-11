@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
-
+import { USER_ROLES } from '../constants/statuses.js';
 import FoundationPage from '../pages/FoundationPage.jsx';
 import NotFoundPage from '../pages/NotFoundPage.jsx';
 import UnauthorizedPage from '../pages/UnauthorizedPage.jsx';
@@ -15,6 +15,7 @@ import ContactPage from '../features/help-support/pages/ContactPage.jsx';
 import FAQPage from '../features/help-support/pages/FAQPage.jsx';
 import HelpPage from '../features/help-support/pages/HelpPage.jsx';
 import SupportFormPage from '../features/help-support/pages/SupportFormPage.jsx';
+import ProtectedRoute from './ProtectedRoute.jsx';
 
 function AppRoutes() {
   return (
@@ -27,8 +28,23 @@ function AppRoutes() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       {/* Reported Jobs - Job Seeker */}
-      <Route path="/my-reported-jobs" element={<MyReportedJobs />} />
-      <Route path="/report-details/:id" element={<ReportDetails />} />
+      <Route
+        path="/my-reported-jobs"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <MyReportedJobs />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/report-details/:id"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <ReportDetails />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/faq" element={<FAQPage />} />
