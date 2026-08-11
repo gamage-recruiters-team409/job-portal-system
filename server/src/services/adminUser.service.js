@@ -1,6 +1,7 @@
 import User from '../models/User.js';
+import Report from '../models/Report.js';
 import { ApiError } from '../utils/apiError.js';
-import { USER_ROLES, ACCOUNT_STATUSES } from '../constants/statuses.js';
+import { USER_ROLES, ACCOUNT_STATUSES, REPORT_STATUSES } from '../constants/statuses.js';
 
 const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -149,17 +150,13 @@ export async function updateUserStatus(userId, newStatus, adminUserId) {
 
 /**
  * Get user statistics for Admin dashboard cards.
- * Reports pending returns 0 until the Report model is available.
  */
 export async function getUserStats() {
-  const [totalRegistered, activeNow] = await Promise.all([
+  const [totalRegistered, activeNow, reportsPending] = await Promise.all([
     User.countDocuments(),
     User.countDocuments({ accountStatus: ACCOUNT_STATUSES.ACTIVE }),
+    Report.countDocuments({ status: REPORT_STATUSES.PENDING }),
   ]);
-
-  // Placeholder: Report model not yet available (owned by Anuruddhika)
-  // TODO: Replace with Report.countDocuments({ status: REPORT_STATUSES.PENDING })
-  const reportsPending = 0;
 
   return {
     totalRegistered,
