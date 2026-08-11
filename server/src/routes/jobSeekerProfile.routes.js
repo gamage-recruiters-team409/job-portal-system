@@ -17,6 +17,7 @@ import {
   updateMyEducationEntry,
   updateMyExperienceEntry,
   updateMyProfile,
+  updateMySkills,
   uploadMyCv,
   uploadMyProfileImage,
 } from '../controllers/jobSeekerProfile.controller.js';
@@ -39,6 +40,7 @@ import {
   updateExperienceSchema,
   updateJobSeekerProfileSchema,
   updatePortfolioLinkSchema,
+  updateProfileSkillsSchema,
 } from '../validations/jobSeekerProfile.validation.js';
 
 const jobSeekerProfileRouter = Router();
@@ -186,5 +188,11 @@ jobSeekerProfileRouter.delete(
  * for the authenticated Job Seeker's profile.
  */
 jobSeekerProfileRouter.get('/me/completion', getMyProfileCompletion);
+
+/**
+ * PATCH /api/v1/job-seeker-profile/me/skills
+ * Update the Skill selections for the authenticated Job Seeker.
+ */
+jobSeekerProfileRouter.patch('/me/skills', validate(updateProfileSkillsSchema), updateMySkills);
 
 export default jobSeekerProfileRouter;

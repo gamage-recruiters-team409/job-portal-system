@@ -1,4 +1,7 @@
 import JobSeekerProfile from '../models/JobSeekerProfile.js';
+import Skill from '../models/Skill.js';
+import { ApiError } from '../utils/apiError.js';
+
 import {
   createPortfolioLinkSchema,
   educationRecordSchema,
@@ -434,4 +437,36 @@ export const getProfileCompletionByUserId = async (userId) => {
     .exec();
 
   return calculateProfileCompletion(profile);
+};
+
+export const updateProfileSkillsByUserId = async (userId, skillIds) => {
+  if (skillIds.length > 0) {
+    const activeSkillCount = await Skill.countDocuments({
+      _id: {
+        $in: skillIds,
+      },
+      isActive: true,
+    });
+
+    if (activeSkillCount !== skillIds.length) {
+      throw new ApiError(400, 'One or more selected skills are invalid or inactive.');
+    }
+  }
+
+  return JobSeekerProfile.findOneAndUpdate(
+    {
+      user: userId,
+    },
+    {
+      $set: {
+        skills: skillIds,
+      },
+    },
+    {
+      new: true,
+      upsert: true,
+      runValidators: true,
+      setDefaultsOnInsert: true,
+    }
+  ).exec();
 };

@@ -3,6 +3,7 @@ import { sendSuccess } from '../utils/apiResponse.js';
 
 import {
   getProfileCompletionByUserId,
+  updateProfileSkillsByUserId,
   addPortfolioLinkByUserId,
   deletePortfolioLinkByUserId,
   updatePortfolioLinkByUserId,
@@ -475,6 +476,25 @@ export async function getMyProfileCompletion(req, res, next) {
       message: 'Profile completion retrieved successfully.',
       data: {
         completion,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * PATCH /job-seeker-profile/me/skills
+ * Updates the Skill selections belonging to the authenticated Job Seeker.
+ */
+export async function updateMySkills(req, res, next) {
+  try {
+    const profile = await updateProfileSkillsByUserId(req.user._id, req.body.skills);
+
+    return sendSuccess(res, {
+      message: 'Profile skills updated successfully.',
+      data: {
+        skills: profile.skills,
       },
     });
   } catch (error) {
