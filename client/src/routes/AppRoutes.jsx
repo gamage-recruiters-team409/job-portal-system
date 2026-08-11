@@ -15,6 +15,7 @@ import ContactPage from '../features/help-support/pages/ContactPage.jsx';
 import FAQPage from '../features/help-support/pages/FAQPage.jsx';
 import HelpPage from '../features/help-support/pages/HelpPage.jsx';
 import SupportFormPage from '../features/help-support/pages/SupportFormPage.jsx';
+import ViewCompanyProfile from '../features/employer-profile/pages/ViewCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 
 function AppRoutes() {
@@ -50,6 +51,24 @@ function AppRoutes() {
       <Route path="/faq" element={<FAQPage />} />
       <Route path="/help" element={<HelpPage />} />
       <Route path="/support" element={<SupportFormPage />} />
+
+      {/* Employer & Company Profile */}
+      <Route
+        path="/employer/company"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <ViewCompanyProfile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/company/profile"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <ViewCompanyProfile />
+          </ProtectedRoute>
+        }
+      />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
