@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import Job from '../models/Job.js';
-import Company from '../models/company.model.js';
 import Report from '../models/Report.js';
 import { ApiError } from '../utils/apiError.js';
 
