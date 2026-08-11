@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Job from '../models/Job.js';
 import Report from '../models/Report.js';
 import { ApiError } from '../utils/apiError.js';
+import { JOB_STATUSES } from '../constants/statuses.js';
 
 export const createReport = async (reportData) => {
   const { jobId, reason, description, reportedBy } = reportData;
@@ -10,10 +11,11 @@ export const createReport = async (reportData) => {
     throw new ApiError(400, 'Invalid job ID.');
   }
 
-  const job = await Job.findOne({
-    _id: jobId,
-    isDeleted: false,
-  }).populate('companyId', 'companyName');
+const job = await Job.findOne({
+  _id: jobId,
+  isDeleted: false,
+  status: JOB_STATUSES.PUBLISHED,
+}).populate('companyId', 'companyName');
 
   if (!job) {
     throw new ApiError(404, 'Job not found.');
