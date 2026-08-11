@@ -12,6 +12,7 @@ const TIMELINE_STEPS = [
   { key: 'submitted', label: 'Report submitted' },
   { key: 'under_review', label: 'Under Review' },
   { key: 'resolved', label: 'Resolved' },
+  { key: 'dismissed', label: 'Dismissed' },
 ];
 function Section({ title, children }) {
   return (
@@ -45,7 +46,12 @@ function StatusBadge({ status }) {
   );
 }
 function StatusTimeline({ status }) {
-  const statusToIndex = { pending: 0, under_review: 1, resolved: 2, dismissed: 2 };
+  const statusToIndex = {
+    pending: 0,
+    under_review: 1,
+    resolved: 2,
+    dismissed: 3,
+  };
   const currentIndex = statusToIndex[status] ?? 0;
   return (
     <div className="flex items-start px-4 pt-2">
