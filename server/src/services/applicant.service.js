@@ -12,7 +12,7 @@ import { APPLICATION_STATUSES, USER_ROLES } from '../constants/statuses.js';
  * Escapes special regex characters in user-provided query strings, so
  * `search` is always treated as literal text rather than a regex pattern.
  * Matches the existing pattern used in job.service.js (keywordFilter) for
- * consistency across the codebase 
+ * consistency across the codebase
  */
 function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -25,12 +25,19 @@ function escapeRegExp(string) {
  * protected CV-access flow yet (per TL review on this PR — CV View &
  * Download remains a documented "Backend Item Remaining" until a dedicated,
  * ownership-checked, short-lived signed-URL endpoint is implemented).
+ *
+ * Explicitly allow-lists the fields to keep, rather than destructuring
+ * fileUrl into a discarded variable, so there is no unused binding for
+ * the project's ESLint no-unused-vars rule to flag.
  */
 function sanitizeApplicationForResponse(applicationDoc) {
-  const obj = typeof applicationDoc.toObject === 'function' ? applicationDoc.toObject() : applicationDoc;
+  const obj =
+    typeof applicationDoc.toObject === 'function' ? applicationDoc.toObject() : applicationDoc;
   if (obj.resume) {
-    const { fileUrl, ...safeResume } = obj.resume;
-    obj.resume = safeResume;
+    obj.resume = {
+      fileName: obj.resume.fileName,
+      fileSize: obj.resume.fileSize,
+    };
   }
   return obj;
 }
@@ -218,7 +225,10 @@ export async function getApplicantById(applicationId, reqUser) {
 export async function updateApplicantStatus(applicationId, body, reqUser) {
   const { status, note } = body;
 
-  const application = await Application.findById(applicationId).populate('job', 'createdBy isDeleted');
+  const application = await Application.findById(applicationId).populate(
+    'job',
+    'createdBy isDeleted'
+  );
   if (!application) {
     throw new ApiError(404, 'Application not found.');
   }
