@@ -186,7 +186,8 @@ export const createPortfolioLinkSchema = z
       .string()
       .trim()
       .min(1, 'Portfolio URL is required.')
-      .url('A valid portfolio URL is required.'),
+      .url('A valid portfolio URL is required.')
+      .regex(/^https?:\/\//i, 'Portfolio URL must use http:// or https://.'),
   })
   .strict();
 
