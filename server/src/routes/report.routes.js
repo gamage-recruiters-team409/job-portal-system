@@ -23,18 +23,8 @@ router.post(
   createReportController
 );
 
-router.get(
-  '/my-reports',
-  protect,
-  requireRole(USER_ROLES.JOB_SEEKER),
-  getMyReportsController
-);
+router.get('/my-reports', protect, requireRole(USER_ROLES.JOB_SEEKER), getMyReportsController);
 
-router.get(
-  '/:id',
-  protect,
-  requireRole(USER_ROLES.JOB_SEEKER),
-  getReportByIdController
-);
+router.get('/:id', protect, requireRole(USER_ROLES.JOB_SEEKER), getReportByIdController);
 
 export default router;

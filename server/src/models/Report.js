@@ -3,7 +3,6 @@ import { REPORT_STATUSES } from '../constants/statuses.js';
 
 const { Schema, model } = mongoose;
 
-
 const reportSchema = new Schema(
   {
     jobId: {
@@ -45,11 +44,11 @@ const reportSchema = new Schema(
       maxlength: 500,
     },
 
-   status: {
-  type: String,
-  enum: Object.values(REPORT_STATUSES),
-  default: REPORT_STATUSES.PENDING,
-},
+    status: {
+      type: String,
+      enum: Object.values(REPORT_STATUSES),
+      default: REPORT_STATUSES.PENDING,
+    },
     reviewedBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -63,7 +62,6 @@ const reportSchema = new Schema(
     timestamps: true,
   }
 );
-
 
 const Report = model('Report', reportSchema);
 

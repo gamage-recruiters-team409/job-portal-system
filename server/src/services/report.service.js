@@ -11,11 +11,11 @@ export const createReport = async (reportData) => {
     throw new ApiError(400, 'Invalid job ID.');
   }
 
-const job = await Job.findOne({
-  _id: jobId,
-  isDeleted: false,
-  status: JOB_STATUSES.PUBLISHED,
-}).populate('companyId', 'companyName');
+  const job = await Job.findOne({
+    _id: jobId,
+    isDeleted: false,
+    status: JOB_STATUSES.PUBLISHED,
+  }).populate('companyId', 'companyName');
 
   if (!job) {
     throw new ApiError(404, 'Job not found.');

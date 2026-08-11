@@ -1,8 +1,4 @@
-import {
-  createReport,
-  getMyReports,
-  getReportById,
-} from '../services/report.service.js';
+import { createReport, getMyReports, getReportById } from '../services/report.service.js';
 
 export const createReportController = async (req, res, next) => {
   try {
@@ -40,10 +36,7 @@ export const getMyReportsController = async (req, res, next) => {
 
 export const getReportByIdController = async (req, res, next) => {
   try {
-    const report = await getReportById(
-      req.params.id,
-      req.user._id
-    );
+    const report = await getReportById(req.params.id, req.user._id);
 
     res.status(200).json({
       success: true,
