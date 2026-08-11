@@ -16,6 +16,8 @@ import ContactPage from '../features/help-support/pages/ContactPage.jsx';
 import FAQPage from '../features/help-support/pages/FAQPage.jsx';
 import HelpPage from '../features/help-support/pages/HelpPage.jsx';
 import SupportFormPage from '../features/help-support/pages/SupportFormPage.jsx';
+import JobsPage from '../features/public-jobs/pages/JobsPage.jsx';
+import JobDetailPage from '../features/public-jobs/pages/JobDetailPage.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 
 function AppRoutes() {
@@ -32,6 +34,8 @@ function AppRoutes() {
       {/* Public pages — wrapped in PublicLayout so PublicFooter appears on all of them */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<FoundationPage />} />
+        <Route path="/jobs" element={<JobsPage />} />
+        <Route path="/jobs/:id" element={<JobDetailPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/faq" element={<FAQPage />} />
