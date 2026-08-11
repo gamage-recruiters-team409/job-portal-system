@@ -30,11 +30,6 @@ export default function PublicFooter() {
           <h4 className="text-sm font-semibold text-slate-900">For Job Seekers</h4>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
-              <Link className={LINK_COLOR} to="/jobs">
-                Browse jobs
-              </Link>
-            </li>
-            <li>
               <Link className={LINK_COLOR} to="/register">
                 Create an account
               </Link>
