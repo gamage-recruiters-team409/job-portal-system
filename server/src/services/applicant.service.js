@@ -5,8 +5,35 @@ import { ApiError } from '../utils/apiError.js';
 import { APPLICATION_STATUSES, USER_ROLES } from '../constants/statuses.js';
 
 // ---------------------------------------------------------------------------
-// Internal helper
+// Internal helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Escapes special regex characters in user-provided query strings, so
+ * `search` is always treated as literal text rather than a regex pattern.
+ * Matches the existing pattern used in job.service.js (keywordFilter) for
+ * consistency across the codebase 
+ */
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Strips the stored CV fileUrl from a resume snapshot before it goes into a
+ * general applicant response. fileName/fileSize are harmless metadata and
+ * stay; fileUrl must never be exposed directly, since there is no approved
+ * protected CV-access flow yet (per TL review on this PR — CV View &
+ * Download remains a documented "Backend Item Remaining" until a dedicated,
+ * ownership-checked, short-lived signed-URL endpoint is implemented).
+ */
+function sanitizeApplicationForResponse(applicationDoc) {
+  const obj = typeof applicationDoc.toObject === 'function' ? applicationDoc.toObject() : applicationDoc;
+  if (obj.resume) {
+    const { fileUrl, ...safeResume } = obj.resume;
+    obj.resume = safeResume;
+  }
+  return obj;
+}
 
 /**
  * Load the job and verify that the requesting user owns it (or is an admin).
@@ -84,15 +111,21 @@ export async function listApplicants(query, reqUser) {
   });
   pipeline.push({ $unwind: '$jobSeekerData' });
 
-  // Stage 3: optional search — case-insensitive regex on name or email
+  // Stage 3: optional search — case-insensitive regex on name or email.
+  // Input is escaped so it is always treated as literal text, never as a
+  // regex pattern (prevents expensive/unintended regex from user input).
   if (search) {
-    const regex = { $regex: search, $options: 'i' };
+    const escapedSearch = escapeRegExp(search);
+    const regex = { $regex: escapedSearch, $options: 'i' };
     pipeline.push({
       $match: { $or: [{ 'jobSeekerData.name': regex }, { 'jobSeekerData.email': regex }] },
     });
   }
 
-  // Stage 4: shape the output — expose only the fields the controller needs
+  // Stage 4: shape the output — expose only the fields the controller needs.
+  // resume.fileUrl is intentionally excluded — see sanitizeApplicationForResponse
+  // note above. No approved CV-access flow exists yet, so the stored CV URL
+  // must never appear in the general applicant list.
   pipeline.push({
     $project: {
       _id: 1,
@@ -100,7 +133,8 @@ export async function listApplicants(query, reqUser) {
       createdAt: 1,
       updatedAt: 1,
       coverLetter: 1,
-      resume: 1,
+      'resume.fileName': 1,
+      'resume.fileSize': 1,
       employerNote: 1,
       jobSeeker: {
         _id: '$jobSeekerData._id',
@@ -162,7 +196,7 @@ export async function getApplicantById(applicationId, reqUser) {
   // job is now a populated Job document; pass its _id to assertJobOwnership
   await assertJobOwnership(application.job._id.toString(), reqUser);
 
-  return { application };
+  return { application: sanitizeApplicationForResponse(application) };
 }
 
 // ---------------------------------------------------------------------------
@@ -210,7 +244,7 @@ export async function updateApplicantStatus(applicationId, body, reqUser) {
   // .save() triggers the pre-save hook → statusHistory is updated automatically
   await application.save();
 
-  return { application };
+  return { application: sanitizeApplicationForResponse(application) };
 }
 
 // ---------------------------------------------------------------------------
