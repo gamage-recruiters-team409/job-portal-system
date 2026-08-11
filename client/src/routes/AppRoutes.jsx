@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { USER_ROLES } from '../constants/statuses.js';
+import PublicLayout from '../layouts/public/PublicLayout.jsx';
 import FoundationPage from '../pages/FoundationPage.jsx';
 import NotFoundPage from '../pages/NotFoundPage.jsx';
 import UnauthorizedPage from '../pages/UnauthorizedPage.jsx';
@@ -20,13 +21,24 @@ import ProtectedRoute from './ProtectedRoute.jsx';
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<FoundationPage />} />
+      {/* Auth pages — use their own AuthLayout, intentionally excluded from PublicLayout */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+      {/* Public pages — wrapped in PublicLayout so PublicFooter appears on all of them */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<FoundationPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/faq" element={<FAQPage />} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/support" element={<SupportFormPage />} />
+      </Route>
+
       {/* Reported Jobs - Job Seeker */}
       <Route
         path="/my-reported-jobs"
@@ -45,11 +57,6 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route path="/about" element={<AboutPage />} />
-      <Route path="/contact" element={<ContactPage />} />
-      <Route path="/faq" element={<FAQPage />} />
-      <Route path="/help" element={<HelpPage />} />
-      <Route path="/support" element={<SupportFormPage />} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
