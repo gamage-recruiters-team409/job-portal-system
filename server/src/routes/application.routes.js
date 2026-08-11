@@ -2,11 +2,25 @@
 
 import { Router } from 'express';
 import { protect, requireRole } from '../middleware/auth.js';
-import { applyToJob } from '../controllers/application.controller.js';
+import { validate } from '../middleware/validate.js';
+import {
+  applyToJob,
+  getApplicationHistory,
+  getApplicationDetails,
+} from '../controllers/application.controller.js';
+import { applyToJobSchema } from '../validations/application.validation.js';
 import { USER_ROLES } from '../constants/statuses.js';
+import { z } from 'zod';
+
+const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ID format.');
+const applicationIdParamSchema = z.object({ id: objectId });
 
 const router = Router();
 
-router.post('/', protect, requireRole(USER_ROLES.JOB_SEEKER), applyToJob);
+router.use(protect, requireRole(USER_ROLES.JOB_SEEKER));
+
+router.post('/', validate(applyToJobSchema, 'body'), applyToJob);
+router.get('/', getApplicationHistory);
+router.get('/:id', validate(applicationIdParamSchema, 'params'), getApplicationDetails);
 
 export default router;
