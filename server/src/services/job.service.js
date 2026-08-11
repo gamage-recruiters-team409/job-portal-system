@@ -307,6 +307,13 @@ export async function submitJobForReview({ jobId, employerId }) {
     throw new ApiError(400, `Cannot submit for review from status "${job.status}".`);
   }
 
+  if (job.deadline < new Date()) {
+    throw new ApiError(
+      400,
+      "This job's deadline has already passed. Update it with a new future deadline before submitting for review."
+    );
+  }
+
   job.status = JOB_STATUSES.PENDING_REVIEW;
   job.reviewNote = undefined;
   job.reviewedBy = undefined;
