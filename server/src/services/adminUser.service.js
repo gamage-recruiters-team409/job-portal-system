@@ -55,11 +55,11 @@ export async function getUserById(userId) {
   if (!user) {
     throw new ApiError(404, 'User not found.');
   }
-  
+
   if (user.role === USER_ROLES.ADMIN) {
     throw new ApiError(403, 'You cannot manage other admin accounts.');
   }
-  
+
   return user;
 }
 
@@ -96,7 +96,7 @@ export async function updateUser(userId, { name, email, role }) {
   if (!user) {
     throw new ApiError(404, 'User not found.');
   }
-  
+
   if (user.role === USER_ROLES.ADMIN) {
     throw new ApiError(403, 'You cannot manage other admin accounts.');
   }
@@ -134,7 +134,7 @@ export async function updateUserStatus(userId, newStatus, adminUserId) {
   if (!user) {
     throw new ApiError(404, 'User not found.');
   }
-  
+
   if (user.role === USER_ROLES.ADMIN) {
     throw new ApiError(403, 'You cannot manage other admin accounts.');
   }
