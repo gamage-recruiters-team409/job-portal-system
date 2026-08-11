@@ -38,7 +38,8 @@ export const createUserSchema = z.object({
     .email('Please provide a valid email address.'),
   password: z
     .string({ required_error: 'Password is required' })
-    .min(8, 'Password must be at least 8 characters.'),
+    .min(8, 'Password must be at least 8 characters.')
+    .max(72, 'Password cannot exceed 72 characters.'),
   role: z.enum(MANAGEABLE_ROLES, {
     message: `Role must be one of: ${MANAGEABLE_ROLES.join(', ')}`,
   }),
