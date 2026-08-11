@@ -10,6 +10,7 @@ import jobRouter from './job.routes.js';
 import jobSeekerProfileRouter from './jobSeekerProfile.routes.js';
 import companyRouter from './company.routes.js';
 import statisticsRouter from './statistics.routes.js';
+import adminUserRouter from './adminUser.routes.js';
 
 const apiRouter = Router();
 
@@ -24,5 +25,6 @@ apiRouter.use('/employer/jobs', jobRouter);
 apiRouter.use('/job-seeker-profile', jobSeekerProfileRouter);
 apiRouter.use('/companies', companyRouter);
 apiRouter.use('/statistics', statisticsRouter);
+apiRouter.use('/admin/users', adminUserRouter);
 
 export default apiRouter;
