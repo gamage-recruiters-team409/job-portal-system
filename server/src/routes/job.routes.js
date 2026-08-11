@@ -4,6 +4,7 @@ import {
   listEmployerJobsController,
   getJobController,
   updateJobController,
+  deleteJobController,
 } from '../controllers/job.controller.js';
 import {
   createJobSchema,
@@ -41,6 +42,14 @@ jobRouter.patch(
   validate(jobIdParamSchema, 'params'),
   validate(updateJobSchema, 'body'),
   updateJobController
+);
+
+jobRouter.delete(
+  '/:jobId',
+  protect,
+  requireRole(USER_ROLES.EMPLOYER),
+  validate(jobIdParamSchema, 'params'),
+  deleteJobController
 );
 
 export default jobRouter;

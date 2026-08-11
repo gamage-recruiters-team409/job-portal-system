@@ -295,3 +295,35 @@ export async function updateJob({ jobId, employerId, updates }) {
 
   return job;
 }
+
+const DELETABLE_STATUSES = [
+  JOB_STATUSES.DRAFT,
+  JOB_STATUSES.CLOSED,
+  JOB_STATUSES.REJECTED,
+  JOB_STATUSES.SUSPENDED,
+];
+
+export async function deleteJob({ jobId, employerId }) {
+  const job = await Job.findOne({
+    _id: jobId,
+    createdBy: employerId,
+    isDeleted: false,
+  });
+
+  if (!job) {
+    throw new ApiError(404, 'Job not found.');
+  }
+
+  if (!DELETABLE_STATUSES.includes(job.status)) {
+    throw new ApiError(
+      400,
+      `Job cannot be deleted while status is "${job.status}". Active postings must be closed first.`
+    );
+  }
+
+  job.isDeleted = true;
+  job.deletedAt = new Date();
+  await job.save();
+
+  return job;
+}
