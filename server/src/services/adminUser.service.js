@@ -1,6 +1,6 @@
 import User from '../models/User.js';
 import { ApiError } from '../utils/apiError.js';
-import { ACCOUNT_STATUSES } from '../constants/statuses.js';
+import { USER_ROLES, ACCOUNT_STATUSES } from '../constants/statuses.js';
 
 const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -8,7 +8,8 @@ const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
  * Get paginated, searchable, filterable list of users for Admin.
  */
 export async function getUsers({ search, status, role, page = 1, limit = 10 }) {
-  const filter = {};
+  // Base filter: NEVER return admin users through this API
+  const filter = { role: { $ne: USER_ROLES.ADMIN } };
 
   // Search by name or email (case-insensitive, regex-safe)
   if (search) {
@@ -53,6 +54,11 @@ export async function getUserById(userId) {
   if (!user) {
     throw new ApiError(404, 'User not found.');
   }
+  
+  if (user.role === USER_ROLES.ADMIN) {
+    throw new ApiError(403, 'You cannot manage other admin accounts.');
+  }
+  
   return user;
 }
 
@@ -89,6 +95,10 @@ export async function updateUser(userId, { name, email, role }) {
   if (!user) {
     throw new ApiError(404, 'User not found.');
   }
+  
+  if (user.role === USER_ROLES.ADMIN) {
+    throw new ApiError(403, 'You cannot manage other admin accounts.');
+  }
 
   // If email is being changed, check for duplicates
   if (email && email.toLowerCase() !== user.email) {
@@ -122,6 +132,10 @@ export async function updateUserStatus(userId, newStatus, adminUserId) {
   const user = await User.findById(userId);
   if (!user) {
     throw new ApiError(404, 'User not found.');
+  }
+  
+  if (user.role === USER_ROLES.ADMIN) {
+    throw new ApiError(403, 'You cannot manage other admin accounts.');
   }
 
   if (user.accountStatus === newStatus) {

@@ -4,6 +4,8 @@ import { USER_ROLES, ACCOUNT_STATUSES } from '../constants/statuses.js';
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
 const objectId = z.string().regex(objectIdRegex, 'Invalid user ID format.');
 
+const MANAGEABLE_ROLES = [USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER];
+
 export const userIdParamSchema = z.object({
   userId: objectId,
 });
@@ -16,8 +18,8 @@ export const getUsersQuerySchema = z.object({
     })
     .optional(),
   role: z
-    .enum(Object.values(USER_ROLES), {
-      message: `Role must be one of: ${Object.values(USER_ROLES).join(', ')}`,
+    .enum(MANAGEABLE_ROLES, {
+      message: `Role must be one of: ${MANAGEABLE_ROLES.join(', ')}`,
     })
     .optional(),
   page: z.coerce.number().int().positive().default(1),
@@ -37,8 +39,8 @@ export const createUserSchema = z.object({
   password: z
     .string({ required_error: 'Password is required' })
     .min(8, 'Password must be at least 8 characters.'),
-  role: z.enum(Object.values(USER_ROLES), {
-    message: `Role must be one of: ${Object.values(USER_ROLES).join(', ')}`,
+  role: z.enum(MANAGEABLE_ROLES, {
+    message: `Role must be one of: ${MANAGEABLE_ROLES.join(', ')}`,
   }),
 });
 
@@ -52,8 +54,8 @@ export const updateUserSchema = z
       .optional(),
     email: z.string().trim().email('Please provide a valid email address.').optional(),
     role: z
-      .enum(Object.values(USER_ROLES), {
-        message: `Role must be one of: ${Object.values(USER_ROLES).join(', ')}`,
+      .enum(MANAGEABLE_ROLES, {
+        message: `Role must be one of: ${MANAGEABLE_ROLES.join(', ')}`,
       })
       .optional(),
   })
