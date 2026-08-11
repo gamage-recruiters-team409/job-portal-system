@@ -97,3 +97,67 @@ export async function sendResetPasswordEmail(to, token) {
     html: text.replace(/\n/g, '<br/>'),
   });
 }
+
+/**
+ * Notify a job seeker that their application was successfully submitted.
+ * @param {string} to recipient address
+ * @param {string} jobTitle title of the job applied to
+ */
+export async function sendApplicationSubmittedEmail(to, jobTitle) {
+  const text = [
+    `Your application for "${jobTitle}" has been submitted successfully.`,
+    '',
+    'You can track your application status from your dashboard.',
+    '',
+    'Thank you for using Gamage Recruiters.',
+  ].join('\n');
+
+  await sendMail({
+    to,
+    subject: `Application submitted — ${jobTitle}`,
+    text,
+    html: text.replace(/\n/g, '<br/>'),
+  });
+}
+
+/**
+ * Notify an employer that a new application was received for their job.
+ * @param {string} to recipient address (employer)
+ * @param {string} jobTitle title of the job
+ * @param {string} applicantName name of the applicant
+ */
+export async function sendNewApplicationEmail(to, jobTitle, applicantName) {
+  const text = [
+    `You have received a new application for "${jobTitle}" from ${applicantName}.`,
+    '',
+    'Log in to your employer dashboard to review the application.',
+  ].join('\n');
+
+  await sendMail({
+    to,
+    subject: `New application received — ${jobTitle}`,
+    text,
+    html: text.replace(/\n/g, '<br/>'),
+  });
+}
+
+/**
+ * Notify a job seeker that their application status has changed.
+ * @param {string} to recipient address
+ * @param {string} jobTitle title of the job
+ * @param {string} newStatus the new application status
+ */
+export async function sendApplicationStatusChangeEmail(to, jobTitle, newStatus) {
+  const text = [
+    `Your application status for "${jobTitle}" has been updated to: ${newStatus}.`,
+    '',
+    'Log in to your dashboard to view the full details.',
+  ].join('\n');
+
+  await sendMail({
+    to,
+    subject: `Application status updated — ${jobTitle}`,
+    text,
+    html: text.replace(/\n/g, '<br/>'),
+  });
+}
