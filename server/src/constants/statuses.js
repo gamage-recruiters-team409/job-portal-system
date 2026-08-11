@@ -45,3 +45,12 @@ export const NOTIFICATION_STATUSES = Object.freeze({
   READ: 'Read',
   UNREAD: 'Unread',
 });
+
+export const REPORT_REASONS = Object.freeze([
+  'Fake or non-existent job',
+  'Requests payment or personal financial info',
+  'Misleading job details',
+  'Discriminatory requirements',
+  'Spam or duplicate posting',
+  'Other',
+]);

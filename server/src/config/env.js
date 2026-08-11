@@ -29,4 +29,8 @@ export const env = Object.freeze({
   brevoPassword: process.env.BREVO_PASSWORD || '',
   emailFromName: process.env.EMAIL_FROM_NAME || 'Gamage Recruiters',
   emailFromAddress: process.env.EMAIL_FROM_ADDRESS || 'no-reply@gamagerecruiters.local',
+  // Cloudinary credentials for company logo and media uploads
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || '',
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || '',
 });
