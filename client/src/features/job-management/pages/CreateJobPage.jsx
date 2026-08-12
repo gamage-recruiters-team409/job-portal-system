@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,16 +34,17 @@ const createJobFormSchema = z
       z.number({ error: 'Experience is required.' }).min(0, 'Experience must be 0 or more.')
     ),
     salaryCurrency: z.string().optional(),
-    salaryMin: z.coerce.number().min(0).optional().or(z.literal('')),
-    salaryMax: z.coerce.number().min(0).optional().or(z.literal('')),
+    salaryMin: z.preprocess(
+      (val) => (val === '' || val === undefined || val === null ? undefined : Number(val)),
+      z.number().min(0).optional()
+    ),
+    salaryMax: z.preprocess(
+      (val) => (val === '' || val === undefined || val === null ? undefined : Number(val)),
+      z.number().min(0).optional()
+    ),
   })
   .refine(
-    (data) =>
-      data.salaryMax === '' ||
-      data.salaryMin === '' ||
-      data.salaryMax == null ||
-      data.salaryMin == null ||
-      Number(data.salaryMax) >= Number(data.salaryMin),
+    (data) => data.salaryMax == null || data.salaryMin == null || data.salaryMax >= data.salaryMin,
     { message: 'Salary max cannot be lower than salary min.', path: ['salaryMax'] }
   );
 
@@ -54,10 +55,14 @@ export default function CreateJobPage() {
   const [serverError, setServerError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSkillIds, setSelectedSkillIds] = useState([]);
+  const [createdJobId, setCreatedJobId] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
+  const topRef = useRef(null);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(createJobFormSchema),
@@ -82,19 +87,23 @@ export default function CreateJobPage() {
   const buildPayload = (formValues) => ({
     ...formValues,
     skills: selectedSkillIds,
-    salaryMin: formValues.salaryMin === '' ? undefined : Number(formValues.salaryMin),
-    salaryMax: formValues.salaryMax === '' ? undefined : Number(formValues.salaryMax),
   });
 
   const onSaveAsDraft = async (formValues) => {
     setServerError('');
+    setSuccessMessage('');
     setIsSubmitting(true);
     try {
       const payload = buildPayload(formValues);
       const { data } = await createJob(payload);
-      navigate(`/jobs/manage`, { state: { createdJobId: data.job._id } });
+      setCreatedJobId(null);
+      setSuccessMessage('Job saved as draft successfully.');
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      reset();
+      setSelectedSkillIds([]);
     } catch (error) {
       setServerError(error.response?.data?.message || 'Failed to save job as draft.');
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } finally {
       setIsSubmitting(false);
     }
@@ -102,14 +111,34 @@ export default function CreateJobPage() {
 
   const onSubmitForReview = async (formValues) => {
     setServerError('');
+    setSuccessMessage('');
     setIsSubmitting(true);
+
+    let jobId = createdJobId;
+
     try {
-      const payload = buildPayload(formValues);
-      const { data } = await createJob(payload);
-      await submitJobForReview(data.job._id);
-      navigate(`/jobs/manage`, { state: { submittedJobId: data.job._id } });
+      if (!jobId) {
+        const payload = buildPayload(formValues);
+        const { data } = await createJob(payload);
+        jobId = data.job._id;
+        setCreatedJobId(jobId);
+      }
+
+      await submitJobForReview(jobId);
+      setSuccessMessage('Job submitted for review successfully.');
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setCreatedJobId(null);
+      reset();
+      setSelectedSkillIds([]);
     } catch (error) {
-      setServerError(error.response?.data?.message || 'Failed to submit job for review.');
+      if (jobId) {
+        setServerError(
+          'The job was saved as a draft, but submitting it for review failed. Click "Submit for review" again to retry — this will not create a duplicate draft.'
+        );
+      } else {
+        setServerError(error.response?.data?.message || 'Failed to submit job for review.');
+      }
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } finally {
       setIsSubmitting(false);
     }
@@ -119,9 +148,16 @@ export default function CreateJobPage() {
   const inputClass =
     'w-full rounded-lg border border-[#94A3B8] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]';
   const errorClass = 'mt-1 text-xs text-[#DC2626]';
+  const selectClass =
+    'w-full appearance-none rounded-lg border border-[#94A3B8] bg-white bg-no-repeat px-3 py-2 pr-10 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]';
+  const selectArrowStyle = {
+    backgroundImage:
+      "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
+    backgroundPosition: 'right 0.75rem center',
+  };
 
   return (
-    <div className="mx-0 max-w-7xl p-10">
+    <div ref={topRef} className="mx-0 max-w-7xl p-10">
       <Breadcrumb items={[{ label: 'Jobs', path: '/jobs' }, { label: 'Post a new job' }]} />
       <h1 className="mt-4 text-3xl md:text-4xl font-bold text-[#000000]">Post a new job</h1>
       <p className="mt-2 text-base font-normal text-[#000000]">
@@ -131,6 +167,12 @@ export default function CreateJobPage() {
       {serverError && (
         <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm text-[#DC2626]">
           {serverError}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="mt-4 rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-4 py-3 text-sm text-[#15803D]">
+          {successMessage}
         </div>
       )}
 
@@ -188,7 +230,7 @@ export default function CreateJobPage() {
             <label className={labelClass}>
               Category <span className="text-[#DC2626]">*</span>
             </label>
-            <select className={inputClass} {...register('category')}>
+            <select className={selectClass} style={selectArrowStyle} {...register('category')}>
               <option value="">Select Category</option>
               {categories.map((c) => (
                 <option key={c._id} value={c._id}>
@@ -204,6 +246,8 @@ export default function CreateJobPage() {
               options={skills}
               selectedIds={selectedSkillIds}
               onChange={setSelectedSkillIds}
+              selectClass={selectClass}
+              selectArrowStyle={selectArrowStyle}
             />
           </div>
 
@@ -222,7 +266,7 @@ export default function CreateJobPage() {
             <label className={labelClass}>
               Job type <span className="text-[#DC2626]">*</span>
             </label>
-            <select className={inputClass} {...register('jobType')}>
+            <select className={selectClass} style={selectArrowStyle} {...register('jobType')}>
               <option value="">Select job type</option>
               {Object.values(JOB_TYPES).map((value) => (
                 <option key={value} value={value}>
@@ -237,7 +281,7 @@ export default function CreateJobPage() {
             <label className={labelClass}>
               Work mode <span className="text-[#DC2626]">*</span>
             </label>
-            <select className={inputClass} {...register('workMode')}>
+            <select className={selectClass} style={selectArrowStyle} {...register('workMode')}>
               <option value="">Select work mode</option>
               {Object.values(WORK_MODES).map((value) => (
                 <option key={value} value={value}>
@@ -265,7 +309,7 @@ export default function CreateJobPage() {
 
           <div>
             <label className={labelClass}>Salary Currency</label>
-            <select className={inputClass} {...register('salaryCurrency')}>
+            <select className={selectClass} style={selectArrowStyle} {...register('salaryCurrency')}>
               {Object.values(SALARY_CURRENCIES).map((currency) => (
                 <option key={currency} value={currency}>
                   {currency}
@@ -290,7 +334,7 @@ export default function CreateJobPage() {
           <button
             type="button"
             onClick={() => navigate('/jobs')}
-            className="rounded-lg border border-[#E2E8F0] px-4 py-2 text-sm font-medium text-[#475569] hover:bg-[#F8FAFC]"
+            className="rounded-lg border border-[#94A3B8] px-4 py-2 text-base font-semibold text-[#000000] hover:bg-[#94A3B8]"
           >
             Cancel
           </button>
@@ -298,7 +342,7 @@ export default function CreateJobPage() {
             type="button"
             disabled={isSubmitting}
             onClick={handleSubmit(onSaveAsDraft)}
-            className="rounded-lg border border-[#E2E8F0] px-4 py-2 text-sm font-medium text-[#475569] hover:bg-[#F8FAFC] disabled:opacity-50"
+            className="rounded-lg border border-[#94A3B8] px-4 py-2 text-base font-semibold text-[#000000] hover:bg-[#94A3B8] disabled:opacity-50"
           >
             Save as draft
           </button>
@@ -306,7 +350,7 @@ export default function CreateJobPage() {
             type="button"
             disabled={isSubmitting}
             onClick={handleSubmit(onSubmitForReview)}
-            className="rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-50"
+            className="rounded-lg bg-[#2563EB] px-4 py-2 text-base font-semibold text-white hover:bg-[#1E40AF] disabled:opacity-50"
           >
             Submit for review
           </button>
@@ -316,7 +360,7 @@ export default function CreateJobPage() {
   );
 }
 
-function SkillsMultiSelect({ options, selectedIds, onChange }) {
+function SkillsMultiSelect({ options, selectedIds, onChange, selectClass, selectArrowStyle }) {
   const selectedSkills = options.filter((s) => selectedIds.includes(s._id));
   const availableOptions = options.filter((s) => !selectedIds.includes(s._id));
 
@@ -331,7 +375,8 @@ function SkillsMultiSelect({ options, selectedIds, onChange }) {
   return (
     <div>
       <select
-        className="w-full rounded-lg border border-[#E2E8F0] px-3 py-2 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+        className={selectClass}
+        style={selectArrowStyle}
         value=""
         onChange={(e) => addSkill(e.target.value)}
       >
