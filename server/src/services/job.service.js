@@ -370,12 +370,7 @@ export async function reopenJob({ jobId, employerId, newDeadline }) {
   return job;
 }
 
-const DELETABLE_STATUSES = [
-  JOB_STATUSES.DRAFT,
-  JOB_STATUSES.CLOSED,
-  JOB_STATUSES.REJECTED,
-  JOB_STATUSES.SUSPENDED,
-];
+const DELETABLE_STATUSES = [JOB_STATUSES.DRAFT, JOB_STATUSES.CLOSED, JOB_STATUSES.REJECTED];
 
 export async function deleteJob({ jobId, employerId }) {
   const job = await Job.findOne({
