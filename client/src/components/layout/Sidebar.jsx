@@ -237,7 +237,6 @@ export const EMPLOYER_NAV_ITEMS = [
     label: 'Applicants',
     icon: UsersIcon,
     path: '/applicants',
-    disabled: true,
   },
   {
     label: 'Company profile',
