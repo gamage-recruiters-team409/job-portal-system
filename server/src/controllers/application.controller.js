@@ -3,19 +3,19 @@
 import Application from '../models/Application.js';
 import Job from '../models/Job.js';
 import JobSeekerProfile from '../models/JobSeekerProfile.js';
+import User from '../models/User.js';
 import { ApiError } from '../utils/apiError.js';
 import { JOB_STATUSES } from '../constants/statuses.js';
 import cloudinary from '../config/cloudinary.js';
 import { generateJobSeekerCvDownloadUrl } from '../services/jobSeekerProfileMedia.service.js';
+import {
+  notifyApplicationSubmitted,
+  notifyNewApplication,
+} from '../services/notification.service.js';
 
 const JOB_SAFE_FIELDS =
   'title location jobType workMode experienceYears salaryCurrency salaryMin salaryMax deadline status companyId category skills';
 
-// Correction (re-review): the Profile CV is stored as an authenticated
-// Cloudinary asset, so its stored fileUrl is not a plain fetchable URL.
-// We generate a fresh, short-lived signed download URL from the trusted
-// publicId (the approved server-side flow) and upload FROM that signed
-// URL, rather than depending on the raw protected delivery URL.
 async function createApplicationCvSnapshot(profileCv, applicationId) {
   const { downloadUrl } = generateJobSeekerCvDownloadUrl(profileCv.publicId);
 
@@ -33,8 +33,6 @@ async function createApplicationCvSnapshot(profileCv, applicationId) {
   };
 }
 
-// Cleanup helper: if Application persistence fails after the Cloudinary
-// snapshot was already created, remove the orphaned snapshot asset.
 async function deleteApplicationCvSnapshot(publicId) {
   if (!publicId) return;
   try {
@@ -45,6 +43,45 @@ async function deleteApplicationCvSnapshot(publicId) {
     });
   } catch {
     // Best-effort cleanup — do not let cleanup failure mask the original error.
+  }
+}
+
+// Fires both notification helpers after a successful Application save.
+// Both helpers are already best-effort for email (they never throw on
+// email failure — see notification.service.js). This wrapper additionally
+// ensures that even an unexpected failure in the notification/DB layer
+// itself cannot affect the already-successful Application response —
+// the Application was already persisted and its 201 response must not be
+// turned into an error by a downstream notification problem.
+async function notifyApplicationParties({ application, job, jobSeeker }) {
+  try {
+    const employer = await User.findById(job.createdBy).select('email');
+
+    await Promise.all([
+      notifyApplicationSubmitted({
+        jobSeekerId: jobSeeker._id,
+        jobSeekerEmail: jobSeeker.email,
+        jobId: job._id,
+        jobTitle: job.title,
+      }),
+      employer
+        ? notifyNewApplication({
+            employerId: job.createdBy,
+            employerEmail: employer.email,
+            jobId: job._id,
+            jobTitle: job.title,
+            applicantName: jobSeeker.name,
+          })
+        : Promise.resolve(),
+    ]);
+  } catch (error) {
+    // Notification failures must never affect the Application response —
+    // the Application is already persisted at this point. Log and move on;
+    // do not retry here, since retrying could create duplicate notifications.
+    console.error(
+      `Failed to send application notifications for application ${application._id}:`,
+      error.message
+    );
   }
 }
 
@@ -88,11 +125,15 @@ export async function applyToJob(req, res, next) {
         resume: resumeSnapshot,
       });
     } catch (dbError) {
-      // Roll back the Cloudinary snapshot since the Application was
-      // never persisted (e.g. duplicate application or a DB failure).
       await deleteApplicationCvSnapshot(resumeSnapshot.publicId);
       throw dbError;
     }
+
+    // The Application is now successfully persisted. Notifications are
+    // fired without awaiting failure-sensitivity — see
+    // notifyApplicationParties() for why this can never turn a successful
+    // Application into a failed API response.
+    await notifyApplicationParties({ application, job, jobSeeker: req.user });
 
     return res.status(201).json({
       success: true,
