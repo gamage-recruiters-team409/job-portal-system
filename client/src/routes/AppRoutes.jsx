@@ -18,6 +18,7 @@ import HelpPage from '../features/help-support/pages/HelpPage.jsx';
 import SupportFormPage from '../features/help-support/pages/SupportFormPage.jsx';
 import AuthenticatedLayout from '../layouts/authenticated/AuthenticatedLayout.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
+import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
 
 function AppRoutes() {
   return (
@@ -58,6 +59,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <ReportDetails />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/jobs/create"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <CreateJobPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
