@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { listJobs, searchJobs, filterJobs } from '../../../services/jobService.js';
 import { getCategories, getSkills } from '../../../services/referenceService.js';
@@ -173,6 +173,23 @@ export default function JobsPage() {
     Boolean
   ).length;
 
+  // Memoized filter state derived from the URL. Passed to the (controlled)
+  // JobFilterBar so its controls stay in sync with the applied query — the
+  // object identity only changes when the URL params actually change.
+  const filterValues = useMemo(
+    () => ({
+      category,
+      jobType,
+      workMode,
+      minSalary,
+      maxSalary,
+      minExperience,
+      maxExperience,
+      postedDate,
+    }),
+    [category, jobType, workMode, minSalary, maxSalary, minExperience, maxExperience, postedDate]
+  );
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       {/* Header Banner */}
@@ -230,7 +247,16 @@ export default function JobsPage() {
       {/* Expandable Filter Panel */}
       {showFilters && (
         <div className="mb-8">
-          <JobFilterBar onApply={handleApplyFilters} />
+          {/*
+          Key remounts the (controlled) filter bar whenever the active URL
+          filter state changes, so its local controls always match the applied
+          query (e.g. after "Clear all filters" or a new filter is applied).
+        */}
+        <JobFilterBar
+          key={JSON.stringify(filterValues)}
+          values={filterValues}
+          onApply={handleApplyFilters}
+        />
         </div>
       )}
 

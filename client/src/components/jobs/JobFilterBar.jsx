@@ -3,9 +3,17 @@ import { useState } from 'react';
 /**
  * @file JobFilterBar.jsx
  * @description Structured filter controls for the Browse page. Values map
- * directly to the backend /jobs/filter query params. Local draft state; Apply
- * fires `onApply(filters)` and Reset clears back to empty.
+ * directly to the backend /jobs/filter query params.
  *
+ * The component is CONTROLLED by the parent's active filter state (`values`),
+ * which itself derives from the URL — so the URL is the single source of truth.
+ * The parent remounts this component (via a `key` from the filter values) when
+ * the URL changes, so an external change (e.g. "Clear all filters") resets the
+ * controls too. `Apply` fires `onApply(filters)`; `Reset` clears the controls
+ * and applies an empty filter set (also clearing the URL).
+ *
+ * @param {object} values — active filters from the URL:
+ *   { jobType, workMode, minSalary, maxSalary, minExperience, maxExperience, postedDate }
  * @param {function} onApply — called with the active filters object.
  */
 const JOB_TYPES = ['full-time', 'part-time', 'contract', 'internship'];
@@ -47,14 +55,18 @@ function ChipGroup({ label, options, value, onChange, mapLabel = (o) => o }) {
   );
 }
 
-export default function JobFilterBar({ onApply }) {
-  const [jobType, setJobType] = useState('');
-  const [workMode, setWorkMode] = useState('');
-  const [minSalary, setMinSalary] = useState('');
-  const [maxSalary, setMaxSalary] = useState('');
-  const [minExp, setMinExp] = useState('');
-  const [maxExp, setMaxExp] = useState('');
-  const [postedDate, setPostedDate] = useState('');
+// Helper to coerce a value from the URL (string or ''/null) into the local
+// draft's expected string shape.
+const str = (v) => (v == null ? '' : String(v));
+
+export default function JobFilterBar({ values = {}, onApply }) {
+  const [jobType, setJobType] = useState(str(values.jobType));
+  const [workMode, setWorkMode] = useState(str(values.workMode));
+  const [minSalary, setMinSalary] = useState(str(values.minSalary));
+  const [maxSalary, setMaxSalary] = useState(str(values.maxSalary));
+  const [minExp, setMinExp] = useState(str(values.minExperience));
+  const [maxExp, setMaxExp] = useState(str(values.maxExperience));
+  const [postedDate, setPostedDate] = useState(str(values.postedDate));
 
   // Toggle a single-select value: selecting the active chip clears it.
   const toggleSingle = (current, setValue, value) => setValue(current === value ? '' : value);
@@ -79,6 +91,9 @@ export default function JobFilterBar({ onApply }) {
     setMinExp('');
     setMaxExp('');
     setPostedDate('');
+    // Clear the applied filters (and the URL) as well, so the controls and the
+    // active results stay in sync.
+    onApply({});
   }
 
   return (
