@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Building2,
   CheckCircle2,
@@ -9,12 +9,12 @@ import {
   Mail,
   Phone,
   Pencil,
-  ExternalLink,
-  ChevronRight,
   Plus,
   RefreshCw,
   Loader2,
+  Briefcase,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { getMyCompany } from '../../../services/companyService.js';
 import ChangeLogoModal from '../components/ChangeLogoModal.jsx';
 
@@ -48,31 +48,6 @@ function VerificationBadge({ status }) {
     </span>
   );
 }
-
-// Sample open positions placeholder data matching layout design
-const PLACEHOLDER_OPEN_POSITIONS = [
-  {
-    id: 'p1',
-    title: 'Senior Frontend Engineer',
-    location: 'Colombo',
-    type: 'Full time',
-    applicantCount: 12,
-  },
-  {
-    id: 'p2',
-    title: 'Product Designer',
-    location: 'Colombo',
-    type: 'Full time',
-    applicantCount: 18,
-  },
-  {
-    id: 'p3',
-    title: 'DevOps Engineer',
-    location: 'Remote',
-    type: 'Full time',
-    applicantCount: 25,
-  },
-];
 
 export default function ViewCompanyProfile() {
   const navigate = useNavigate();
@@ -114,11 +89,11 @@ export default function ViewCompanyProfile() {
   }, []);
 
   const handleEditProfile = () => {
-    navigate('/employer/company/edit');
+    toast('Edit company profile feature coming soon!', { icon: 'ℹ️' });
   };
 
   const handleCreateCompany = () => {
-    navigate('/employer/company/create');
+    toast('Create company profile feature coming soon!', { icon: 'ℹ️' });
   };
 
   const handleLogoUpdated = (updatedCompany) => {
@@ -194,7 +169,7 @@ export default function ViewCompanyProfile() {
             className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition"
           >
             <Plus className="h-4 w-4" />
-            Create company profile
+            <span>Create company profile</span>
           </button>
         </div>
       </div>
@@ -317,7 +292,7 @@ export default function ViewCompanyProfile() {
               </div>
             ) : (
               <p className="mt-4 text-sm italic text-[#64748B]">
-                No company description provided yet. Click 'Edit profile' to add details about your company.
+                No company description provided yet.
               </p>
             )}
           </div>
@@ -326,34 +301,20 @@ export default function ViewCompanyProfile() {
           <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-[#0F172A]">Open positions</h2>
-              <Link
-                to="/jobs"
-                className="inline-flex items-center gap-1 text-sm font-medium text-[#2563EB] hover:underline"
-              >
-                <span>Manage jobs</span>
-                <ExternalLink className="h-3.5 w-3.5" />
-              </Link>
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
+                Coming soon
+              </span>
             </div>
 
-            {/* Open positions list (Placeholder module integration) */}
-            <div className="mt-4 divide-y divide-slate-100 border-t border-slate-100">
-              {PLACEHOLDER_OPEN_POSITIONS.map((job) => (
-                <div
-                  key={job.id}
-                  className="flex items-center justify-between py-3.5 first:pt-4 last:pb-0 hover:bg-slate-50/50 transition px-1 rounded-lg"
-                >
-                  <div>
-                    <h3 className="text-sm font-semibold text-[#0F172A]">{job.title}</h3>
-                    <p className="text-xs text-[#64748B]">
-                      {job.location} — {job.type}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-[#64748B]">
-                    <span>{job.applicantCount} applicants</span>
-                    <ChevronRight className="h-4 w-4 text-slate-400" />
-                  </div>
-                </div>
-              ))}
+            {/* Coming Soon state for Job Management module */}
+            <div className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center">
+              <Briefcase className="mx-auto h-8 w-8 text-slate-400" />
+              <p className="mt-2 text-sm font-medium text-slate-700">
+                Job management integration coming soon
+              </p>
+              <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+                Your posted job openings and applicant counts will be displayed here once the Employer Job Management module is integrated.
+              </p>
             </div>
           </div>
         </div>
@@ -448,34 +409,36 @@ export default function ViewCompanyProfile() {
               <VerificationBadge status={company.verificationStatus} />
             </div>
 
-            {/* Show date/admin only if verified and present */}
-            {company.verificationStatus === 'verified' && (
-              <div className="mt-4 space-y-3 border-t border-slate-100 pt-3 text-sm">
-                {(company.verifiedAt || company.verifiedOn || company.updatedAt) && (
-                  <div>
-                    <span className="block text-xs text-[#64748B]">Verified on</span>
-                    <span className="font-medium text-[#0F172A]">
-                      {new Date(
-                        company.verifiedAt || company.verifiedOn || company.updatedAt
-                      ).toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                )}
+            {/* Show date/admin only if dedicated verification metadata is provided */}
+            {company.verificationStatus === 'verified' &&
+              (company.verifiedAt || company.verifiedOn || company.verifiedBy || company.verifiedByName) && (
+                <div className="mt-4 space-y-3 border-t border-slate-100 pt-3 text-sm">
+                  {(company.verifiedAt || company.verifiedOn) && (
+                    <div>
+                      <span className="block text-xs text-[#64748B]">Verified on</span>
+                      <span className="font-medium text-[#0F172A]">
+                        {new Date(company.verifiedAt || company.verifiedOn).toLocaleDateString(
+                          'en-GB',
+                          {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          }
+                        )}
+                      </span>
+                    </div>
+                  )}
 
-                {(company.verifiedBy || company.verifiedByName) && (
-                  <div>
-                    <span className="block text-xs text-[#64748B]">Verified by</span>
-                    <span className="font-medium text-[#0F172A]">
-                      {company.verifiedBy || company.verifiedByName}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
+                  {(company.verifiedBy || company.verifiedByName) && (
+                    <div>
+                      <span className="block text-xs text-[#64748B]">Verified by</span>
+                      <span className="font-medium text-[#0F172A]">
+                        {company.verifiedBy || company.verifiedByName}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
           </div>
         </div>
       </div>
