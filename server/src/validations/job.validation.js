@@ -145,3 +145,16 @@ export const updateJobSchema = jobBaseSchema
 export const jobIdParamSchema = z.object({
   jobId: objectId,
 });
+
+export const closeJobSchema = z.object({
+  reason: z.string().trim().max(300).optional(),
+});
+
+export const reopenJobSchema = z.object({
+  deadline: z.coerce
+    .date()
+    .refine((date) => date > new Date(), {
+      message: 'Deadline must be a future date.',
+    })
+    .optional(),
+});
