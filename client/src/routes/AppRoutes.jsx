@@ -20,6 +20,10 @@ import JobsPage from '../features/public-jobs/pages/JobsPage.jsx';
 import JobDetailPage from '../features/public-jobs/pages/JobDetailPage.jsx';
 import AuthenticatedLayout from '../layouts/authenticated/AuthenticatedLayout.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
+import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.jsx';
+import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
+import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileCompletionPage.jsx';
+import SkillsPage from '../features/job-seeker-profile/pages/SkillsPage.jsx';
 
 function AppRoutes() {
   return (
@@ -62,6 +66,51 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <ReportDetails />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Job Seeker Profile - Job Seeker only */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <MyProfilePage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/edit"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <EditProfilePage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/completion"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <ProfileCompletionPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/skills"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <SkillsPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }

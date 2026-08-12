@@ -264,7 +264,6 @@ export const JOB_SEEKER_NAV_ITEMS = [
     label: 'My Profile',
     icon: UserIcon,
     path: '/profile',
-    disabled: true,
   },
   {
     label: 'Find Jobs',
