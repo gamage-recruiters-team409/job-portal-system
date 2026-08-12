@@ -21,6 +21,21 @@ const transporter = hasSmtpConfig
   : null;
 
 /**
+ * Escapes HTML special characters so dynamic values (job titles, names, etc.)
+ * cannot inject markup into the HTML email body. Values sent to this app
+ * (like a job title) can originate from user input, so they must never be
+ * placed into HTML unescaped.
+ */
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Send an email.
  *
  * When SMTP is not configured the rendered message (which includes the
@@ -104,6 +119,8 @@ export async function sendResetPasswordEmail(to, token) {
  * @param {string} jobTitle title of the job applied to
  */
 export async function sendApplicationSubmittedEmail(to, jobTitle) {
+  const safeTitle = escapeHtml(jobTitle);
+
   const text = [
     `Your application for "${jobTitle}" has been submitted successfully.`,
     '',
@@ -112,11 +129,19 @@ export async function sendApplicationSubmittedEmail(to, jobTitle) {
     'Thank you for using Gamage Recruiters.',
   ].join('\n');
 
+  const html = [
+    `Your application for "${safeTitle}" has been submitted successfully.`,
+    '',
+    'You can track your application status from your dashboard.',
+    '',
+    'Thank you for using Gamage Recruiters.',
+  ].join('<br/>');
+
   await sendMail({
     to,
     subject: `Application submitted — ${jobTitle}`,
     text,
-    html: text.replace(/\n/g, '<br/>'),
+    html,
   });
 }
 
@@ -127,17 +152,26 @@ export async function sendApplicationSubmittedEmail(to, jobTitle) {
  * @param {string} applicantName name of the applicant
  */
 export async function sendNewApplicationEmail(to, jobTitle, applicantName) {
+  const safeTitle = escapeHtml(jobTitle);
+  const safeName = escapeHtml(applicantName);
+
   const text = [
     `You have received a new application for "${jobTitle}" from ${applicantName}.`,
     '',
     'Log in to your employer dashboard to review the application.',
   ].join('\n');
 
+  const html = [
+    `You have received a new application for "${safeTitle}" from ${safeName}.`,
+    '',
+    'Log in to your employer dashboard to review the application.',
+  ].join('<br/>');
+
   await sendMail({
     to,
     subject: `New application received — ${jobTitle}`,
     text,
-    html: text.replace(/\n/g, '<br/>'),
+    html,
   });
 }
 
@@ -148,16 +182,25 @@ export async function sendNewApplicationEmail(to, jobTitle, applicantName) {
  * @param {string} newStatus the new application status
  */
 export async function sendApplicationStatusChangeEmail(to, jobTitle, newStatus) {
+  const safeTitle = escapeHtml(jobTitle);
+  const safeStatus = escapeHtml(newStatus);
+
   const text = [
     `Your application status for "${jobTitle}" has been updated to: ${newStatus}.`,
     '',
     'Log in to your dashboard to view the full details.',
   ].join('\n');
 
+  const html = [
+    `Your application status for "${safeTitle}" has been updated to: ${safeStatus}.`,
+    '',
+    'Log in to your dashboard to view the full details.',
+  ].join('<br/>');
+
   await sendMail({
     to,
     subject: `Application status updated — ${jobTitle}`,
     text,
-    html: text.replace(/\n/g, '<br/>'),
+    html,
   });
 }

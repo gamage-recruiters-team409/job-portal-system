@@ -67,6 +67,13 @@ export async function createNotification({ user, type, message, relatedJob }) {
  * Fires when a job seeker successfully submits an application.
  * Creates the in-app notification and sends the confirmation email.
  * Called by the Application module once the application is saved.
+ *
+ * The in-app Notification is the source of truth for this event — it is
+ * created first and always returned on success. Email delivery is
+ * best-effort: if it fails, the failure is logged and reported via
+ * `emailSent: false` rather than thrown, so a calling module never treats
+ * an already-persisted Notification as a failed operation (which could
+ * otherwise cause retries and duplicate notifications).
  */
 export async function notifyApplicationSubmitted({ jobSeekerId, jobSeekerEmail, jobId, jobTitle }) {
   const { notification } = await createNotification({
@@ -76,15 +83,24 @@ export async function notifyApplicationSubmitted({ jobSeekerId, jobSeekerEmail, 
     relatedJob: jobId,
   });
 
-  await sendApplicationSubmittedEmail(jobSeekerEmail, jobTitle);
+  let emailSent = true;
+  try {
+    await sendApplicationSubmittedEmail(jobSeekerEmail, jobTitle);
+  } catch (error) {
+    emailSent = false;
+    console.error('Failed to send application-submitted email:', error.message);
+  }
 
-  return { notification };
+  return { notification, emailSent };
 }
 
 /**
  * Fires when an employer receives a new application for their job.
  * Creates the in-app notification and sends the alert email.
  * Called by the Application module once the application is saved.
+ *
+ * Same best-effort email behaviour as notifyApplicationSubmitted — see
+ * that function's doc comment for details.
  */
 export async function notifyNewApplication({
   employerId,
@@ -100,15 +116,24 @@ export async function notifyNewApplication({
     relatedJob: jobId,
   });
 
-  await sendNewApplicationEmail(employerEmail, jobTitle, applicantName);
+  let emailSent = true;
+  try {
+    await sendNewApplicationEmail(employerEmail, jobTitle, applicantName);
+  } catch (error) {
+    emailSent = false;
+    console.error('Failed to send new-application email:', error.message);
+  }
 
-  return { notification };
+  return { notification, emailSent };
 }
 
 /**
  * Fires when an application's status changes (e.g. shortlisted, rejected).
  * Creates the in-app notification and sends the status-change email.
  * Called by the Applicant Management module (Kalana) when status is updated.
+ *
+ * Same best-effort email behaviour as notifyApplicationSubmitted — see
+ * that function's doc comment for details.
  */
 export async function notifyApplicationStatusChange({
   jobSeekerId,
@@ -124,7 +149,13 @@ export async function notifyApplicationStatusChange({
     relatedJob: jobId,
   });
 
-  await sendApplicationStatusChangeEmail(jobSeekerEmail, jobTitle, newStatus);
+  let emailSent = true;
+  try {
+    await sendApplicationStatusChangeEmail(jobSeekerEmail, jobTitle, newStatus);
+  } catch (error) {
+    emailSent = false;
+    console.error('Failed to send application-status-change email:', error.message);
+  }
 
-  return { notification };
+  return { notification, emailSent };
 }
