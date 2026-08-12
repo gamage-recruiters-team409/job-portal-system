@@ -4,8 +4,8 @@ import mongoose from 'mongoose';
 
 // Validation for GET /api/v1/admin/jobs query parameters
 export const getJobsQuerySchema = z.object({
-  page: z.string().regex(/^\d+$/, 'Page must be a positive integer').optional(),
-  limit: z.string().regex(/^\d+$/, 'Limit must be a positive integer').optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(10),
   search: z.string().optional(),
   status: z
     .string()
