@@ -1,27 +1,25 @@
 // server/src/controllers/application.controller.js
 
-import cloudinary from '../config/cloudinary.js';
 import Application from '../models/Application.js';
 import Job from '../models/Job.js';
 import JobSeekerProfile from '../models/JobSeekerProfile.js';
 import { ApiError } from '../utils/apiError.js';
 import { JOB_STATUSES } from '../constants/statuses.js';
+import cloudinary from '../config/cloudinary.js';
+import { generateJobSeekerCvDownloadUrl } from '../services/jobSeekerProfileMedia.service.js';
 
-// Correction #3: only these Job fields are safe to expose to a Job
-// Seeker viewing their own Application — excludes internal moderation
-// fields (reviewNote, reviewedBy, reviewedAt, statusHistory, isDeleted,
-// deletedAt, createdBy, viewsCount).
 const JOB_SAFE_FIELDS =
   'title location jobType workMode experienceYears salaryCurrency salaryMin salaryMax deadline status companyId category skills';
 
-// Correction #1: applying duplicates the current profile CV into a
-// dedicated, durable "application snapshot" folder in Cloudinary. This
-// keeps the Application's resume valid even if the Job Seeker later
-// replaces or deletes their profile CV (which deletes the original
-// Cloudinary asset). The snapshot is a private/authenticated asset,
-// downloadable only via the approved signed Employer/Admin flow.
+// Correction (re-review): the Profile CV is stored as an authenticated
+// Cloudinary asset, so its stored fileUrl is not a plain fetchable URL.
+// We generate a fresh, short-lived signed download URL from the trusted
+// publicId (the approved server-side flow) and upload FROM that signed
+// URL, rather than depending on the raw protected delivery URL.
 async function createApplicationCvSnapshot(profileCv, applicationId) {
-  const result = await cloudinary.uploader.upload(profileCv.fileUrl, {
+  const { downloadUrl } = generateJobSeekerCvDownloadUrl(profileCv.publicId);
+
+  const result = await cloudinary.uploader.upload(downloadUrl, {
     resource_type: 'raw',
     type: 'authenticated',
     folder: 'applications/cv_snapshots',
@@ -35,7 +33,24 @@ async function createApplicationCvSnapshot(profileCv, applicationId) {
   };
 }
 
+// Cleanup helper: if Application persistence fails after the Cloudinary
+// snapshot was already created, remove the orphaned snapshot asset.
+async function deleteApplicationCvSnapshot(publicId) {
+  if (!publicId) return;
+  try {
+    await cloudinary.uploader.destroy(publicId, {
+      resource_type: 'raw',
+      type: 'authenticated',
+      invalidate: true,
+    });
+  } catch {
+    // Best-effort cleanup — do not let cleanup failure mask the original error.
+  }
+}
+
 export async function applyToJob(req, res, next) {
+  let resumeSnapshot;
+
   try {
     const { jobId, coverLetter } = req.validatedBody;
 
@@ -59,19 +74,25 @@ export async function applyToJob(req, res, next) {
       throw new ApiError(400, 'Please upload a CV to your profile before applying for a job.');
     }
 
-    // Reserve the Application _id up front so it can be used as the
-    // stable Cloudinary public_id for the CV snapshot.
     const applicationId = new Application()._id;
 
-    const resumeSnapshot = await createApplicationCvSnapshot(profile.cv, applicationId);
+    resumeSnapshot = await createApplicationCvSnapshot(profile.cv, applicationId);
 
-    const application = await Application.create({
-      _id: applicationId,
-      job: jobId,
-      jobSeeker: req.user._id,
-      coverLetter,
-      resume: resumeSnapshot,
-    });
+    let application;
+    try {
+      application = await Application.create({
+        _id: applicationId,
+        job: jobId,
+        jobSeeker: req.user._id,
+        coverLetter,
+        resume: resumeSnapshot,
+      });
+    } catch (dbError) {
+      // Roll back the Cloudinary snapshot since the Application was
+      // never persisted (e.g. duplicate application or a DB failure).
+      await deleteApplicationCvSnapshot(resumeSnapshot.publicId);
+      throw dbError;
+    }
 
     return res.status(201).json({
       success: true,
