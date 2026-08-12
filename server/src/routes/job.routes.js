@@ -4,6 +4,7 @@ import {
   listEmployerJobsController,
   getJobController,
   updateJobController,
+  deleteJobController,
   submitJobForReviewController,
   closeJobController,
   reopenJobController,
@@ -46,6 +47,14 @@ jobRouter.patch(
   validate(jobIdParamSchema, 'params'),
   validate(updateJobSchema, 'body'),
   updateJobController
+);
+
+jobRouter.delete(
+  '/:jobId',
+  protect,
+  requireRole(USER_ROLES.EMPLOYER),
+  validate(jobIdParamSchema, 'params'),
+  deleteJobController
 );
 
 jobRouter.patch(

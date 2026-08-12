@@ -8,6 +8,7 @@ import {
   listEmployerJobs,
   getJobById,
   updateJob,
+  deleteJob,
   submitJobForReview,
   closeJob,
   reopenJob,
@@ -138,6 +139,25 @@ export async function updateJobController(req, res, next) {
     });
     return sendSuccess(res, {
       message: 'Job updated.',
+      data: { job },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * DELETE /jobs/:jobId — soft delete a job owned by the authenticated employer.
+ * Allowed only from draft, closed, or rejected statuses.
+ */
+export async function deleteJobController(req, res, next) {
+  try {
+    const job = await deleteJob({
+      jobId: req.params.jobId,
+      employerId: req.user._id,
+    });
+    return sendSuccess(res, {
+      message: 'Job deleted.',
       data: { job },
     });
   } catch (error) {
