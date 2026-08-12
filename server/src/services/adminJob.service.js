@@ -93,6 +93,11 @@ export async function moderateJob(jobId, adminUserId, status, reviewNote) {
     );
   }
 
+  // Prevent publishing jobs with expired deadlines
+  if (status === JOB_STATUSES.PUBLISHED && job.deadline && new Date(job.deadline) < new Date()) {
+    throw new ApiError(400, 'Cannot publish a job with an expired deadline.');
+  }
+
   job.status = status;
   job.reviewedBy = adminUserId;
   job.reviewedAt = new Date();
