@@ -95,7 +95,7 @@ export default function CreateJobPage() {
     setIsSubmitting(true);
     try {
       const payload = buildPayload(formValues);
-      const { data } = await createJob(payload);
+      await createJob(payload);
       setCreatedJobId(null);
       setSuccessMessage('Job saved as draft successfully.');
       topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -143,6 +143,9 @@ export default function CreateJobPage() {
       setIsSubmitting(false);
     }
   };
+
+  const handleSaveAsDraftClick = () => handleSubmit(onSaveAsDraft)();
+  const handleSubmitForReviewClick = () => handleSubmit(onSubmitForReview)();
 
   const labelClass = 'mb-2 block text-sm font-medium text-[#000000]';
   const inputClass =
@@ -345,7 +348,7 @@ export default function CreateJobPage() {
           <button
             type="button"
             disabled={isSubmitting}
-            onClick={handleSubmit(onSaveAsDraft)}
+            onClick={handleSaveAsDraftClick}
             className="rounded-lg border border-[#94A3B8] px-4 py-2 text-base font-semibold text-[#000000] hover:bg-[#94A3B8] disabled:opacity-50"
           >
             Save as draft
@@ -353,7 +356,7 @@ export default function CreateJobPage() {
           <button
             type="button"
             disabled={isSubmitting}
-            onClick={handleSubmit(onSubmitForReview)}
+            onClick={handleSubmitForReviewClick}
             className="rounded-lg bg-[#2563EB] px-4 py-2 text-base font-semibold text-white hover:bg-[#1E40AF] disabled:opacity-50"
           >
             Submit for review
