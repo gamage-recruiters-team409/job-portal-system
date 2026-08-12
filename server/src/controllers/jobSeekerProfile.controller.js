@@ -2,6 +2,11 @@ import { ApiError } from '../utils/apiError.js';
 import { sendSuccess } from '../utils/apiResponse.js';
 
 import {
+  getProfileCompletionByUserId,
+  updateProfileSkillsByUserId,
+  addPortfolioLinkByUserId,
+  deletePortfolioLinkByUserId,
+  updatePortfolioLinkByUserId,
   addEducationEntryByUserId,
   addExperienceEntryByUserId,
   deleteEducationEntryByUserId,
@@ -382,6 +387,114 @@ export async function deleteMyExperienceEntry(req, res, next) {
       message: 'Experience entry deleted successfully.',
       data: {
         experience: experienceEntry,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * POST /job-seeker-profile/me/portfolio
+ * Adds one portfolio link to the authenticated Job Seeker's profile.
+ */
+export async function addMyPortfolioLink(req, res, next) {
+  try {
+    const portfolioLink = await addPortfolioLinkByUserId(req.user._id, req.body);
+
+    return sendSuccess(res, {
+      message: 'Portfolio link added successfully.',
+      data: {
+        portfolioLink,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * PATCH /job-seeker-profile/me/portfolio/:entryId
+ * Updates one portfolio link owned by the authenticated Job Seeker.
+ */
+export async function updateMyPortfolioLink(req, res, next) {
+  try {
+    const portfolioLink = await updatePortfolioLinkByUserId(
+      req.user._id,
+      req.params.entryId,
+      req.body
+    );
+
+    if (!portfolioLink) {
+      throw new ApiError(404, 'Portfolio link not found.');
+    }
+
+    return sendSuccess(res, {
+      message: 'Portfolio link updated successfully.',
+      data: {
+        portfolioLink,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * DELETE /job-seeker-profile/me/portfolio/:entryId
+ * Deletes one portfolio link owned by the authenticated Job Seeker.
+ */
+export async function deleteMyPortfolioLink(req, res, next) {
+  try {
+    const portfolioLink = await deletePortfolioLinkByUserId(req.user._id, req.params.entryId);
+
+    if (!portfolioLink) {
+      throw new ApiError(404, 'Portfolio link not found.');
+    }
+
+    return sendSuccess(res, {
+      message: 'Portfolio link deleted successfully.',
+      data: {
+        portfolioLink,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * GET /job-seeker-profile/me/completion
+ * Returns the dynamically calculated profile completion status
+ * for the authenticated Job Seeker.
+ */
+export async function getMyProfileCompletion(req, res, next) {
+  try {
+    const completion = await getProfileCompletionByUserId(req.user._id);
+
+    return sendSuccess(res, {
+      message: 'Profile completion retrieved successfully.',
+      data: {
+        completion,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * PATCH /job-seeker-profile/me/skills
+ * Updates the Skill selections belonging to the authenticated Job Seeker.
+ */
+export async function updateMySkills(req, res, next) {
+  try {
+    const profile = await updateProfileSkillsByUserId(req.user._id, req.body.skills);
+
+    return sendSuccess(res, {
+      message: 'Profile skills updated successfully.',
+      data: {
+        skills: profile.skills,
       },
     });
   } catch (error) {
