@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Building2,
   CheckCircle2,
@@ -50,17 +49,18 @@ function VerificationBadge({ status }) {
 }
 
 export default function ViewCompanyProfile() {
-  const navigate = useNavigate();
   const [company, setCompany] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [is404, setIs404] = useState(false);
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
 
-  const fetchCompanyProfile = async () => {
-    setIsLoading(true);
-    setError(null);
-    setIs404(false);
+  const fetchCompanyProfile = async (resetStates = false) => {
+    if (resetStates) {
+      setIsLoading(true);
+      setError(null);
+      setIs404(false);
+    }
 
     try {
       const response = await getMyCompany();
@@ -85,7 +85,37 @@ export default function ViewCompanyProfile() {
   };
 
   useEffect(() => {
-    fetchCompanyProfile();
+    let isMounted = true;
+
+    getMyCompany()
+      .then((response) => {
+        if (!isMounted) return;
+        const companyData = response?.data?.company || response?.company;
+        if (!companyData) {
+          setIs404(true);
+        } else {
+          setCompany(companyData);
+        }
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        if (err.response?.status === 404) {
+          setIs404(true);
+        } else {
+          setError(
+            err.response?.data?.message || 'Failed to load company profile. Please try again.'
+          );
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleEditProfile = () => {
@@ -139,7 +169,7 @@ export default function ViewCompanyProfile() {
           <p className="mt-1 text-sm text-slate-600">{error}</p>
           <button
             type="button"
-            onClick={fetchCompanyProfile}
+            onClick={() => fetchCompanyProfile(true)}
             className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition"
           >
             <RefreshCw className="h-4 w-4" />
