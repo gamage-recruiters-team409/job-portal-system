@@ -15,6 +15,7 @@ export default function EditProfilePage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState(INITIAL_FORM);
+  const [profileImageUrl, setProfileImageUrl] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -33,12 +34,16 @@ export default function EditProfilePage() {
           location: profile?.location || '',
           careerSummary: profile?.careerSummary || '',
         });
+
+        setProfileImageUrl(profile?.profileImage?.imageUrl || '');
       } catch (requestError) {
         if (requestError?.response?.status !== 404 && active) {
           setError(requestError?.response?.data?.message || 'Unable to load your profile.');
         }
       } finally {
-        if (active) setIsLoading(false);
+        if (active) {
+          setIsLoading(false);
+        }
       }
     }
 
@@ -52,9 +57,26 @@ export default function EditProfilePage() {
   function handleChange(event) {
     const { name, value } = event.target;
 
+    let sanitizedValue = value;
+
+    if (name === 'currentPosition') {
+      // Letters and spaces only.
+      sanitizedValue = value.replace(/[^\p{L}\s]/gu, '');
+    }
+
+    if (name === 'location') {
+      // Letters, numbers and spaces only.
+      sanitizedValue = value.replace(/[^\p{L}\p{N}\s]/gu, '');
+    }
+
+    if (name === 'careerSummary') {
+      // Letters, numbers, spaces, commas and full stops only.
+      sanitizedValue = value.replace(/[^\p{L}\p{N}\s,.]/gu, '');
+    }
+
     setForm((current) => ({
       ...current,
-      [name]: value,
+      [name]: sanitizedValue,
     }));
   }
 
@@ -66,6 +88,7 @@ export default function EditProfilePage() {
       setError('');
 
       await updateMyProfile(form);
+
       navigate('/profile');
     } catch (requestError) {
       setError(requestError?.response?.data?.message || 'Unable to save your profile changes.');
@@ -76,119 +99,159 @@ export default function EditProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-full items-center justify-center p-6">
+      <div className="flex min-h-full items-center justify-center p-8">
         <p className="text-sm text-slate-500">Loading profile...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-full bg-slate-50 p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-3xl">
+    <div className="min-h-full bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[720px]">
         <form
           onSubmit={handleSubmit}
-          className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
+          className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
         >
-          <h1 className="text-xl font-bold text-slate-900">Edit profile</h1>
+          {/* Heading */}
+          <div className="border-b border-slate-100 px-6 py-5 sm:px-8">
+            <h1 className="text-xl font-bold text-slate-900">Edit profile</h1>
+          </div>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Update your professional profile information.
-          </p>
+          <div className="p-6 sm:p-8">
+            {error && (
+              <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
-          {error && (
-            <div className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              {error}
+            {/* Account information + profile image */}
+            <div className="grid items-start gap-8 border-b border-slate-100 pb-7 sm:grid-cols-[minmax(0,430px)_150px] sm:justify-between">
+              {/* Name and Email */}
+              <div className="space-y-5">
+                <div>
+                  <label
+                    htmlFor="profile-name"
+                    className="mb-2 block text-sm font-medium text-slate-700"
+                  >
+                    Name
+                  </label>
+
+                  <input
+                    id="profile-name"
+                    type="text"
+                    value={user?.name || ''}
+                    disabled
+                    className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-500"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="profile-email"
+                    className="mb-2 block text-sm font-medium text-slate-700"
+                  >
+                    Email
+                  </label>
+
+                  <input
+                    id="profile-email"
+                    type="email"
+                    value={user?.email || ''}
+                    disabled
+                    className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-500"
+                  />
+                </div>
+              </div>
+
+              {/* Profile image */}
+              <div className="flex -mt-1 flex-col items-center justify-start">
+                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-blue-100 bg-blue-50 text-3xl font-semibold text-blue-600">
+                  {profileImageUrl ? (
+                    <img
+                      src={profileImageUrl}
+                      alt={user?.name || 'Profile'}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    (user?.name || 'U').charAt(0).toUpperCase()
+                  )}
+                </div>
+
+                <p className="mt-3 text-center text-xs font-medium text-slate-400">Profile photo</p>
+              </div>
             </div>
-          )}
 
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Name</label>
-              <input
-                type="text"
-                value={user?.name || ''}
-                disabled
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-500"
-              />
-              <p className="mt-1 text-xs text-slate-400">
-                Account information is managed separately.
-              </p>
+            {/* Current Position + Location */}
+            <div className="mt-7 grid gap-5 sm:grid-cols-2">
+              <div>
+                <label
+                  htmlFor="currentPosition"
+                  className="mb-2 block text-sm font-medium text-slate-700"
+                >
+                  Current position
+                </label>
+
+                <input
+                  id="currentPosition"
+                  name="currentPosition"
+                  type="text"
+                  maxLength={150}
+                  value={form.currentPosition}
+                  onChange={handleChange}
+                  placeholder="e.g. Software Engineering Undergraduate"
+                  autoComplete="off"
+                  className="w-full rounded-lg border border-slate-300 px-3.5 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="location" className="mb-2 block text-sm font-medium text-slate-700">
+                  Location
+                </label>
+
+                <input
+                  id="location"
+                  name="location"
+                  type="text"
+                  maxLength={150}
+                  value={form.location}
+                  onChange={handleChange}
+                  placeholder="e.g. Colombo 07"
+                  autoComplete="off"
+                  className="w-full rounded-lg border border-slate-300 px-3.5 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">Email</label>
-              <input
-                type="email"
-                value={user?.email || ''}
-                disabled
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-500"
-              />
-            </div>
+            {/* Career Summary */}
+            <div className="mt-6">
+              <div className="mb-2 flex items-center justify-between gap-4">
+                <label htmlFor="careerSummary" className="text-sm font-medium text-slate-700">
+                  Career summary
+                </label>
 
-            <div>
-              <label
-                htmlFor="currentPosition"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
-                Current position
-              </label>
-              <input
-                id="currentPosition"
-                name="currentPosition"
-                type="text"
-                maxLength={150}
-                value={form.currentPosition}
+                <span className="text-xs text-slate-400">{form.careerSummary.length}/2000</span>
+              </div>
+
+              <textarea
+                id="careerSummary"
+                name="careerSummary"
+                rows={7}
+                maxLength={2000}
+                value={form.careerSummary}
                 onChange={handleChange}
-                placeholder="e.g. Software Engineering Undergraduate"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="location" className="mb-2 block text-sm font-medium text-slate-700">
-                Location
-              </label>
-              <input
-                id="location"
-                name="location"
-                type="text"
-                maxLength={150}
-                value={form.location}
-                onChange={handleChange}
-                placeholder="e.g. Colombo, Sri Lanka"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                placeholder="Tell employers about your experience, strengths and career interests..."
+                className="w-full resize-y rounded-lg border border-slate-300 px-3.5 py-3 text-sm leading-6 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
             </div>
           </div>
 
-          <div className="mt-5">
-            <label
-              htmlFor="careerSummary"
-              className="mb-2 block text-sm font-medium text-slate-700"
-            >
-              Career summary
-            </label>
-            <textarea
-              id="careerSummary"
-              name="careerSummary"
-              rows={6}
-              maxLength={2000}
-              value={form.careerSummary}
-              onChange={handleChange}
-              placeholder="Tell employers about your experience, strengths and career interests..."
-              className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            />
-
-            <p className="mt-1 text-right text-xs text-slate-400">
-              {form.careerSummary.length}/2000
-            </p>
-          </div>
-
-          <div className="mt-7 flex justify-end gap-3">
+          {/* Actions */}
+          <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-4 sm:flex-row sm:justify-end sm:px-8">
             <button
               type="button"
               onClick={() => navigate('/profile')}
-              className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
             >
               Cancel
             </button>
@@ -196,7 +259,7 @@ export default function EditProfilePage() {
             <button
               type="submit"
               disabled={isSaving}
-              className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSaving ? 'Saving...' : 'Save changes'}
             </button>

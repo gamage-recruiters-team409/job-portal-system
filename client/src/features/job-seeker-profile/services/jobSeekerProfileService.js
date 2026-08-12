@@ -19,3 +19,11 @@ export async function getActiveSkills() {
   const { data } = await apiClient.get('/skills');
   return data.data.skills;
 }
+
+export async function updateMySkills(skillIds) {
+  const { data } = await apiClient.patch('/job-seeker-profile/me/skills', {
+    skills: skillIds,
+  });
+
+  return data.data.profile;
+}
