@@ -91,7 +91,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/company/profile"
         element={

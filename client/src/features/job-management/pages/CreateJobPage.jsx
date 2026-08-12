@@ -309,7 +309,11 @@ export default function CreateJobPage() {
 
           <div>
             <label className={labelClass}>Salary Currency</label>
-            <select className={selectClass} style={selectArrowStyle} {...register('salaryCurrency')}>
+            <select
+              className={selectClass}
+              style={selectArrowStyle}
+              {...register('salaryCurrency')}
+            >
               {Object.values(SALARY_CURRENCIES).map((currency) => (
                 <option key={currency} value={currency}>
                   {currency}
