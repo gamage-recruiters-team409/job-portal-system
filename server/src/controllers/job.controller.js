@@ -148,7 +148,7 @@ export async function updateJobController(req, res, next) {
 
 /**
  * DELETE /jobs/:jobId — soft delete a job owned by the authenticated employer.
- * Allowed only from draft, closed, rejected, or suspended statuses.
+ * Allowed only from draft, closed, or rejected statuses.
  */
 export async function deleteJobController(req, res, next) {
   try {
