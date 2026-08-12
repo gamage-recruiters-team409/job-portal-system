@@ -37,6 +37,7 @@ export const moderateJobSchema = z.object({
     .string({
       required_error: 'Review note is required for moderation',
     })
+    .trim()
     .min(10, 'Review note must be at least 10 characters long')
     .max(500, 'Review note cannot exceed 500 characters'),
 });
