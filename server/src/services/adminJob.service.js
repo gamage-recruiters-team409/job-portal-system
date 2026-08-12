@@ -1,5 +1,6 @@
 import Job from '../models/Job.js';
 import { ApiError } from '../utils/apiError.js';
+import { JOB_STATUSES } from '../constants/statuses.js';
 
 const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -60,7 +61,17 @@ export async function getJobById(jobId) {
 }
 
 /**
- * Admin changes a job's status (suspend / reject) with a mandatory review note.
+ * Valid Admin status transitions.
+ * Key = current status, Value = array of allowed target statuses.
+ */
+const VALID_ADMIN_TRANSITIONS = Object.freeze({
+  [JOB_STATUSES.PENDING_REVIEW]: [JOB_STATUSES.PUBLISHED, JOB_STATUSES.REJECTED],
+  [JOB_STATUSES.PUBLISHED]: [JOB_STATUSES.SUSPENDED],
+});
+
+/**
+ * Admin changes a job's status (publish / suspend / reject) with a mandatory review note.
+ * Enforces valid source → target status transitions.
  */
 export async function moderateJob(jobId, adminUserId, status, reviewNote) {
   const job = await Job.findById(jobId);
@@ -71,6 +82,15 @@ export async function moderateJob(jobId, adminUserId, status, reviewNote) {
 
   if (job.status === status) {
     throw new ApiError(400, `Job is already ${status}.`);
+  }
+
+  // Enforce valid status transitions
+  const allowedTargets = VALID_ADMIN_TRANSITIONS[job.status];
+  if (!allowedTargets || !allowedTargets.includes(status)) {
+    throw new ApiError(
+      400,
+      `Invalid status transition: cannot change from '${job.status}' to '${status}'.`
+    );
   }
 
   job.status = status;

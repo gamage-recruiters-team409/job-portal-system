@@ -26,9 +26,13 @@ export const jobIdParamSchema = z.object({
 export const moderateJobSchema = z.object({
   status: z
     .string()
-    .refine((val) => [JOB_STATUSES.SUSPENDED, JOB_STATUSES.REJECTED].includes(val), {
-      message: `Status must be either '${JOB_STATUSES.SUSPENDED}' or '${JOB_STATUSES.REJECTED}' for moderation`,
-    }),
+    .refine(
+      (val) =>
+        [JOB_STATUSES.PUBLISHED, JOB_STATUSES.SUSPENDED, JOB_STATUSES.REJECTED].includes(val),
+      {
+        message: `Status must be '${JOB_STATUSES.PUBLISHED}', '${JOB_STATUSES.SUSPENDED}' or '${JOB_STATUSES.REJECTED}' for moderation`,
+      }
+    ),
   reviewNote: z
     .string({
       required_error: 'Review note is required for moderation',
