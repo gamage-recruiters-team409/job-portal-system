@@ -1,10 +1,26 @@
 import JobSeekerProfile from '../models/JobSeekerProfile.js';
+import Skill from '../models/Skill.js';
+import { ApiError } from '../utils/apiError.js';
+
 import {
+  createPortfolioLinkSchema,
   educationRecordSchema,
   experienceRecordSchema,
 } from '../validations/jobSeekerProfile.validation.js';
 
 const editableProfileFields = ['currentPosition', 'careerSummary', 'location'];
+
+const PROFILE_COMPLETION_WEIGHTS = Object.freeze({
+  basicProfile: 20,
+  skills: 15,
+  education: 15,
+  experience: 15,
+  cv: 15,
+  profileImage: 10,
+  portfolio: 10,
+});
+
+const hasTextValue = (value) => typeof value === 'string' && value.trim().length > 0;
 
 const selectEditableProfileFields = (profileData) =>
   Object.fromEntries(
@@ -41,6 +57,66 @@ export const mergeExperienceUpdate = (existingExperience, experienceUpdates) => 
   };
 
   return experienceRecordSchema.parse(mergedExperience);
+};
+
+export const mergePortfolioLinkUpdate = (existingPortfolioLink, portfolioUpdates) => {
+  const mergedPortfolioLink = {
+    ...existingPortfolioLink,
+    ...portfolioUpdates,
+  };
+
+  return createPortfolioLinkSchema.parse(mergedPortfolioLink);
+};
+
+export const calculateProfileCompletion = (profile) => {
+  const sectionStatus = {
+    basicProfile:
+      hasTextValue(profile?.currentPosition) &&
+      hasTextValue(profile?.careerSummary) &&
+      hasTextValue(profile?.location),
+
+    skills: Array.isArray(profile?.skills) && profile.skills.length > 0,
+
+    education: Array.isArray(profile?.education) && profile.education.length > 0,
+
+    experience: Array.isArray(profile?.experience) && profile.experience.length > 0,
+
+    cv: Boolean(profile?.cv?.publicId),
+
+    profileImage: Boolean(profile?.profileImage?.publicId),
+
+    portfolio: Array.isArray(profile?.portfolioLinks) && profile.portfolioLinks.length > 0,
+  };
+
+  const completedSections = Object.entries(sectionStatus)
+    .filter(([, completed]) => completed)
+    .map(([section]) => section);
+
+  const missingSections = Object.entries(sectionStatus)
+    .filter(([, completed]) => !completed)
+    .map(([section]) => section);
+
+  const percentage = completedSections.reduce(
+    (total, section) => total + PROFILE_COMPLETION_WEIGHTS[section],
+    0
+  );
+
+  const sections = Object.fromEntries(
+    Object.entries(sectionStatus).map(([section, completed]) => [
+      section,
+      {
+        completed,
+        weight: PROFILE_COMPLETION_WEIGHTS[section],
+      },
+    ])
+  );
+
+  return {
+    percentage,
+    completedSections,
+    missingSections,
+    sections,
+  };
 };
 
 export const getJobSeekerProfileByUserId = async (userId) => {
@@ -280,4 +356,117 @@ export const deleteExperienceEntryByUserId = async (userId, entryId) => {
   await profile.save();
 
   return removedExperience;
+};
+
+export const addPortfolioLinkByUserId = async (userId, portfolioData) => {
+  let profile = await JobSeekerProfile.findOne({
+    user: userId,
+  }).exec();
+
+  if (!profile) {
+    profile = new JobSeekerProfile({
+      user: userId,
+    });
+  }
+
+  profile.portfolioLinks.push(portfolioData);
+
+  await profile.save();
+
+  return profile.portfolioLinks[profile.portfolioLinks.length - 1];
+};
+
+export const updatePortfolioLinkByUserId = async (userId, entryId, portfolioUpdates) => {
+  const profile = await JobSeekerProfile.findOne({
+    user: userId,
+  }).exec();
+
+  if (!profile) {
+    return null;
+  }
+
+  const portfolioLink = profile.portfolioLinks.id(entryId);
+
+  if (!portfolioLink) {
+    return null;
+  }
+
+  const currentPortfolioLink = convertEntryToPlainObject(portfolioLink);
+
+  const validatedPortfolioLink = mergePortfolioLinkUpdate(currentPortfolioLink, portfolioUpdates);
+
+  portfolioLink.set(validatedPortfolioLink);
+
+  await profile.save();
+
+  return portfolioLink;
+};
+
+export const deletePortfolioLinkByUserId = async (userId, entryId) => {
+  const profile = await JobSeekerProfile.findOne({
+    user: userId,
+  }).exec();
+
+  if (!profile) {
+    return null;
+  }
+
+  const portfolioLink = profile.portfolioLinks.id(entryId);
+
+  if (!portfolioLink) {
+    return null;
+  }
+
+  const removedPortfolioLink = portfolioLink.toObject({
+    virtuals: false,
+    versionKey: false,
+  });
+
+  profile.portfolioLinks.pull(entryId);
+
+  await profile.save();
+
+  return removedPortfolioLink;
+};
+
+export const getProfileCompletionByUserId = async (userId) => {
+  const profile = await JobSeekerProfile.findOne({
+    user: userId,
+  })
+    .lean()
+    .exec();
+
+  return calculateProfileCompletion(profile);
+};
+
+export const updateProfileSkillsByUserId = async (userId, skillIds) => {
+  if (skillIds.length > 0) {
+    const activeSkillCount = await Skill.countDocuments({
+      _id: {
+        $in: skillIds,
+      },
+      isActive: true,
+    });
+
+    if (activeSkillCount !== skillIds.length) {
+      throw new ApiError(400, 'One or more selected skills are invalid or inactive.');
+    }
+  }
+
+  return JobSeekerProfile.findOneAndUpdate(
+    {
+      user: userId,
+    },
+    {
+      $set: {
+        skills: skillIds,
+      },
+    },
+    {
+      new: true,
+      upsert: true,
+      runValidators: true,
+      setDefaultsOnInsert: true,
+    }
+  ).exec();
 };
