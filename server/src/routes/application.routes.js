@@ -8,12 +8,11 @@ import {
   getApplicationHistory,
   getApplicationDetails,
 } from '../controllers/application.controller.js';
-import { applyToJobSchema } from '../validations/application.validation.js';
+import {
+  applyToJobSchema,
+  applicationIdParamSchema,
+} from '../validations/application.validation.js';
 import { USER_ROLES } from '../constants/statuses.js';
-import { z } from 'zod';
-
-const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ID format.');
-const applicationIdParamSchema = z.object({ id: objectId });
 
 const router = Router();
 
