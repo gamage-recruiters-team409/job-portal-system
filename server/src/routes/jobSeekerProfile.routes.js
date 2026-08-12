@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { USER_ROLES } from '../constants/statuses.js';
 
 import {
+  addMyPortfolioLink,
+  deleteMyPortfolioLink,
+  updateMyPortfolioLink,
   addMyEducationEntry,
   addMyExperienceEntry,
   deleteMyEducationEntry,
@@ -10,9 +13,11 @@ import {
   deleteMyProfileImage,
   getMyCvDownloadUrl,
   getMyProfile,
+  getMyProfileCompletion,
   updateMyEducationEntry,
   updateMyExperienceEntry,
   updateMyProfile,
+  updateMySkills,
   uploadMyCv,
   uploadMyProfileImage,
 } from '../controllers/jobSeekerProfile.controller.js';
@@ -29,10 +34,13 @@ import { validate } from '../middleware/validate.js';
 import {
   createEducationSchema,
   createExperienceSchema,
+  createPortfolioLinkSchema,
   profileEntryIdSchema,
   updateEducationSchema,
   updateExperienceSchema,
   updateJobSeekerProfileSchema,
+  updatePortfolioLinkSchema,
+  updateProfileSkillsSchema,
 } from '../validations/jobSeekerProfile.validation.js';
 
 const jobSeekerProfileRouter = Router();
@@ -142,5 +150,49 @@ jobSeekerProfileRouter.delete(
   validate(profileEntryIdSchema, 'params'),
   deleteMyExperienceEntry
 );
+
+/**
+ * POST /api/v1/job-seeker-profile/me/portfolio
+ * Add one portfolio link to the authenticated Job Seeker's profile.
+ */
+jobSeekerProfileRouter.post(
+  '/me/portfolio',
+  validate(createPortfolioLinkSchema),
+  addMyPortfolioLink
+);
+
+/**
+ * PATCH /api/v1/job-seeker-profile/me/portfolio/:entryId
+ * Update one portfolio link belonging to the authenticated Job Seeker.
+ */
+jobSeekerProfileRouter.patch(
+  '/me/portfolio/:entryId',
+  validate(profileEntryIdSchema, 'params'),
+  validate(updatePortfolioLinkSchema),
+  updateMyPortfolioLink
+);
+
+/**
+ * DELETE /api/v1/job-seeker-profile/me/portfolio/:entryId
+ * Delete one portfolio link belonging to the authenticated Job Seeker.
+ */
+jobSeekerProfileRouter.delete(
+  '/me/portfolio/:entryId',
+  validate(profileEntryIdSchema, 'params'),
+  deleteMyPortfolioLink
+);
+
+/**
+ * GET /api/v1/job-seeker-profile/me/completion
+ * Retrieve the dynamically calculated completion status
+ * for the authenticated Job Seeker's profile.
+ */
+jobSeekerProfileRouter.get('/me/completion', getMyProfileCompletion);
+
+/**
+ * PATCH /api/v1/job-seeker-profile/me/skills
+ * Update the Skill selections for the authenticated Job Seeker.
+ */
+jobSeekerProfileRouter.patch('/me/skills', validate(updateProfileSkillsSchema), updateMySkills);
 
 export default jobSeekerProfileRouter;
