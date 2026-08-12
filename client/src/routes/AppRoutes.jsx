@@ -19,6 +19,7 @@ import SupportFormPage from '../features/help-support/pages/SupportFormPage.jsx'
 import JobsPage from '../features/public-jobs/pages/JobsPage.jsx';
 import JobDetailPage from '../features/public-jobs/pages/JobDetailPage.jsx';
 import AuthenticatedLayout from '../layouts/authenticated/AuthenticatedLayout.jsx';
+import ViewCompanyProfile from '../features/employer-profile/pages/ViewCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.jsx';
 import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
@@ -111,6 +112,29 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <SkillsPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Employer & Company Profile */}
+      <Route
+        path="/employer/company"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <ViewCompanyProfile />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/company/profile"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <ViewCompanyProfile />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }

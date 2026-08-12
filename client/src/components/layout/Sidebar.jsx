@@ -243,7 +243,7 @@ export const EMPLOYER_NAV_ITEMS = [
     label: 'Company profile',
     icon: BuildingIcon,
     path: '/employer/company',
-    disabled: true,
+    altPaths: ['/company/profile'],
   },
   {
     label: 'Settings',
@@ -341,11 +341,15 @@ function Sidebar({ navItems = EMPLOYER_NAV_ITEMS, onLogout, isOpen = false, onCl
     };
   }, [isOpen]);
 
-  /** Is the given path active? */
-  function isActive(path) {
+  /** Is the given nav item's path active? */
+  function isActive(item) {
+    const { path, altPaths } = item;
     if (!path) return false;
     if (path === '/') return location.pathname === '/';
-    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+    const allPaths = [path, ...(altPaths || [])];
+    return allPaths.some(
+      (p) => location.pathname === p || location.pathname.startsWith(`${p}/`)
+    );
   }
 
   return (
@@ -370,7 +374,7 @@ function Sidebar({ navItems = EMPLOYER_NAV_ITEMS, onLogout, isOpen = false, onCl
         {/* ── Navigation items ───────────────────────────────────────── */}
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
           {navItems.map((item) => {
-            const active = isActive(item.path);
+            const active = isActive(item);
 
             // Not-yet-available destinations render as inert, visually muted
             // items so the sidebar never links to a page that 404s.
