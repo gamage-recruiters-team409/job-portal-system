@@ -12,6 +12,7 @@ import jobSeekerProfileRouter from './jobSeekerProfile.routes.js';
 import companyRouter from './company.routes.js';
 import statisticsRouter from './statistics.routes.js';
 import applicationRouter from './application.routes.js';
+import adminEmployerRouter from './adminEmployer.routes.js';
 import applicantRouter from './applicant.routes.js';
 import adminUserRouter from './adminUser.routes.js';
 
@@ -30,6 +31,7 @@ apiRouter.use('/job-seeker-profile', jobSeekerProfileRouter);
 apiRouter.use('/companies', companyRouter);
 apiRouter.use('/statistics', statisticsRouter);
 apiRouter.use('/applications', applicationRouter);
+apiRouter.use('/admin/employers', adminEmployerRouter);
 apiRouter.use('/applicants', applicantRouter);
 apiRouter.use('/admin/users', adminUserRouter);
 
