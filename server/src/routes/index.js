@@ -14,6 +14,7 @@ import statisticsRouter from './statistics.routes.js';
 import adminEmployerRouter from './adminEmployer.routes.js';
 import applicantRouter from './applicant.routes.js';
 import adminUserRouter from './adminUser.routes.js';
+import adminJobRouter from './adminJob.routes.js';
 
 const apiRouter = Router();
 
@@ -32,5 +33,6 @@ apiRouter.use('/statistics', statisticsRouter);
 apiRouter.use('/admin/employers', adminEmployerRouter);
 apiRouter.use('/applicants', applicantRouter);
 apiRouter.use('/admin/users', adminUserRouter);
+apiRouter.use('/admin/jobs', adminJobRouter);
 
 export default apiRouter;
