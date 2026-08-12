@@ -78,7 +78,8 @@ const applicationSchema = new Schema(
     // CV even if the job seeker later replaces their profile CV.
     resume: {
       fileName: { type: String, required: true },
-      fileUrl: { type: String, required: true },
+      fileUrl: { type: String },
+      publicId: { type: String, required: true },
       fileSize: { type: Number },
     },
     statusHistory: {
