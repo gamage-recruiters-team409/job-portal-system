@@ -8,6 +8,7 @@ export default function TopNavbar({
   notificationCount = 0,
   searchPlaceholder = 'search...',
   profilePath = '/profile',
+  profileDisabled = false,
   onMenuClick = () => {},
   onSearch = () => {},
   onLogout = () => {},
@@ -244,7 +245,15 @@ export default function TopNavbar({
 
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
-                {onProfileClick ? (
+                {profileDisabled ? (
+                  <span
+                    aria-disabled="true"
+                    title="Coming soon"
+                    className="block px-4 py-2 text-sm text-[#CBD5E1] cursor-not-allowed font-medium"
+                  >
+                    My Profile
+                  </span>
+                ) : onProfileClick ? (
                   <button
                     type="button"
                     onClick={onProfileClick}
