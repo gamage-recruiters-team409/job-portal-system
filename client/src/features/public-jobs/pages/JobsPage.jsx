@@ -111,6 +111,21 @@ export default function JobsPage() {
     fetchJobsData();
   }, [q, location, page, category, jobType, workMode, minSalary, maxSalary, minExperience, maxExperience, postedDate]);
 
+  const FILTER_KEYS = [
+    'category',
+    'jobType',
+    'workMode',
+    'minSalary',
+    'maxSalary',
+    'minExperience',
+    'maxExperience',
+    'postedDate',
+  ];
+
+  // Search and structured filters hit separate API endpoints (/jobs/search vs
+  // /jobs/filter) that do not combine. Keep them mutually exclusive so any
+  // criteria shown in the URL actually affect the results: running a search
+  // clears filters, and applying filters clears the search terms.
   function handleSearch({ q: newQ, location: newLoc }) {
     const next = new URLSearchParams(searchParams);
     if (newQ) next.set('q', newQ);
@@ -119,23 +134,26 @@ export default function JobsPage() {
     if (newLoc) next.set('location', newLoc);
     else next.delete('location');
 
+    // A search endpoint is used — structured filters no longer apply.
+    FILTER_KEYS.forEach((k) => next.delete(k));
+
     next.set('page', '1');
     setSearchParams(next);
   }
 
   function handleApplyFilters(filters) {
     const next = new URLSearchParams(searchParams);
-    // Clear old filters
-    ['category', 'jobType', 'workMode', 'minSalary', 'maxSalary', 'minExperience', 'maxExperience', 'postedDate'].forEach(
-      (k) => next.delete(k)
-    );
-
-    // Apply new filters
+    // Clear old filters, then apply new ones.
+    FILTER_KEYS.forEach((k) => next.delete(k));
     Object.entries(filters).forEach(([k, v]) => {
       if (v != null && v !== '') {
         next.set(k, String(v));
       }
     });
+
+    // Structured filters are used — search terms no longer apply.
+    next.delete('q');
+    next.delete('location');
 
     next.set('page', '1');
     setSearchParams(next);
@@ -167,7 +185,7 @@ export default function JobsPage() {
         </p>
 
         <div className="mt-6">
-          <JobSearchBar initial={{ q, location }} onSearch={handleSearch} />
+          <JobSearchBar key={`${q}-${location}`} initial={{ q, location }} onSearch={handleSearch} />
         </div>
       </div>
 

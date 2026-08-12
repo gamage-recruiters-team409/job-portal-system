@@ -32,7 +32,7 @@ export default function JobSearchBar({ initial = {}, onSearch, placeholder = 'Jo
         className="h-12 flex-1 rounded-xl bg-slate-50 px-4 text-sm text-slate-900 outline-none ring-1 ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-600"
       />
 
-      {locations.length > 0 && (
+      {locations.length > 0 ? (
         <select
           value={location}
           onChange={(e) => setLocation(e.target.value)}
@@ -45,6 +45,14 @@ export default function JobSearchBar({ initial = {}, onSearch, placeholder = 'Jo
             </option>
           ))}
         </select>
+      ) : (
+        <input
+          type="text"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          placeholder="Location"
+          className="h-12 rounded-xl bg-slate-50 px-4 text-sm text-slate-900 outline-none ring-1 ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-600 sm:w-48"
+        />
       )}
 
       <button

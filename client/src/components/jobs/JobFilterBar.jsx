@@ -20,18 +20,20 @@ const inputCls =
   'h-11 rounded-xl bg-white px-3 text-sm text-slate-700 outline-none ring-1 ring-slate-300 focus:ring-2 focus:ring-blue-600';
 const labelCls = 'text-xs font-medium text-slate-500';
 
-function ChipGroup({ label, options, selected, onToggle, mapLabel = (o) => o }) {
+// Single-select chip group: exactly one option (or none) is active, matching
+// the backend's single jobType / workMode contract.
+function ChipGroup({ label, options, value, onChange, mapLabel = (o) => o }) {
   return (
     <div>
       <p className={labelCls}>{label}</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {options.map((opt) => {
-          const active = selected.includes(opt);
+          const active = value === opt;
           return (
             <button
               key={opt}
               type="button"
-              onClick={() => onToggle(opt)}
+              onClick={() => onChange(opt)}
               className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                 active ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
@@ -46,21 +48,21 @@ function ChipGroup({ label, options, selected, onToggle, mapLabel = (o) => o }) 
 }
 
 export default function JobFilterBar({ onApply }) {
-  const [jobTypes, setJobTypes] = useState([]);
-  const [workModes, setWorkModes] = useState([]);
+  const [jobType, setJobType] = useState('');
+  const [workMode, setWorkMode] = useState('');
   const [minSalary, setMinSalary] = useState('');
   const [maxSalary, setMaxSalary] = useState('');
   const [minExp, setMinExp] = useState('');
   const [maxExp, setMaxExp] = useState('');
   const [postedDate, setPostedDate] = useState('');
 
-  const toggle = (list, setList, value) =>
-    setList((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
+  // Toggle a single-select value: selecting the active chip clears it.
+  const toggleSingle = (current, setValue, value) => setValue(current === value ? '' : value);
 
   function buildFilters() {
     const f = {};
-    if (jobTypes.length === 1) f.jobType = jobTypes[0];
-    if (workModes.length === 1) f.workMode = workModes[0];
+    if (jobType) f.jobType = jobType;
+    if (workMode) f.workMode = workMode;
     if (minSalary !== '') f.minSalary = Number(minSalary);
     if (maxSalary !== '') f.maxSalary = Number(maxSalary);
     if (minExp !== '') f.minExperience = Number(minExp);
@@ -70,8 +72,8 @@ export default function JobFilterBar({ onApply }) {
   }
 
   function reset() {
-    setJobTypes([]);
-    setWorkModes([]);
+    setJobType('');
+    setWorkMode('');
     setMinSalary('');
     setMaxSalary('');
     setMinExp('');
@@ -85,15 +87,15 @@ export default function JobFilterBar({ onApply }) {
         <ChipGroup
           label="Job type"
           options={JOB_TYPES}
-          selected={jobTypes}
-          onToggle={(v) => toggle(jobTypes, setJobTypes, v)}
+          value={jobType}
+          onChange={(v) => toggleSingle(jobType, setJobType, v)}
           mapLabel={(v) => v.charAt(0).toUpperCase() + v.slice(1)}
         />
         <ChipGroup
           label="Work mode"
           options={WORK_MODES}
-          selected={workModes}
-          onToggle={(v) => toggle(workModes, setWorkModes, v)}
+          value={workMode}
+          onChange={(v) => toggleSingle(workMode, setWorkMode, v)}
           mapLabel={(v) => v.charAt(0).toUpperCase() + v.slice(1)}
         />
         <div>
