@@ -23,18 +23,31 @@ export const reportIdParamSchema = z.object({
 });
 
 // Validation for PATCH /api/v1/admin/reports/:reportId/review
-export const reviewReportSchema = z.object({
-  status: z
-    .string()
-    .refine((val) => [REPORT_STATUSES.RESOLVED, REPORT_STATUSES.DISMISSED].includes(val), {
-      message: `Status must be '${REPORT_STATUSES.RESOLVED}' or '${REPORT_STATUSES.DISMISSED}' for review`,
-    }),
-  reviewNote: z
-    .string({
-      required_error: 'Review note is required for report resolution/dismissal',
-    })
-    .trim()
-    .min(10, 'Review note must be at least 10 characters long')
-    .max(500, 'Review note cannot exceed 500 characters'),
-  jobAction: z.enum(['keep', 'suspend']).optional().default('keep'),
-});
+export const reviewReportSchema = z
+  .object({
+    status: z
+      .string()
+      .refine((val) => [REPORT_STATUSES.RESOLVED, REPORT_STATUSES.DISMISSED].includes(val), {
+        message: `Status must be '${REPORT_STATUSES.RESOLVED}' or '${REPORT_STATUSES.DISMISSED}' for review`,
+      }),
+    reviewNote: z
+      .string({
+        required_error: 'Review note is required for report resolution/dismissal',
+      })
+      .trim()
+      .min(10, 'Review note must be at least 10 characters long')
+      .max(500, 'Review note cannot exceed 500 characters'),
+    jobAction: z.enum(['keep', 'suspend']).optional().default('keep'),
+  })
+  .refine(
+    (data) => {
+      if (data.status === REPORT_STATUSES.DISMISSED && data.jobAction === 'suspend') {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "A dismissed report cannot trigger a job suspension. Set jobAction to 'keep'.",
+      path: ['jobAction'], // Error will point to the jobAction field
+    }
+  );
