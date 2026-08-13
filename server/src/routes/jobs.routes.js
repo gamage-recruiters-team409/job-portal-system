@@ -7,6 +7,7 @@ import {
   jobIdSchema,
 } from '../validations/job.validation.js';
 import { validate } from '../middleware/validate.js';
+import { attachUserIfPresent } from '../middleware/auth.js';
 
 const jobsRouter = Router();
 
@@ -16,6 +17,8 @@ jobsRouter.get('/', validate(listJobsSchema, 'query'), list);
 jobsRouter.get('/search', validate(searchJobsSchema, 'query'), search);
 jobsRouter.get('/filter', validate(filterJobsSchema, 'query'), filter);
 // Static paths are declared before the dynamic :id to avoid /:id swallowing them.
-jobsRouter.get('/:id', validate(jobIdSchema, 'params'), detail);
+// attachUserIfPresent lets us know if the viewer is logged in, without requiring it,
+// so getJobDetail can skip the view-count increment for the job's own employer.
+jobsRouter.get('/:id', attachUserIfPresent, validate(jobIdSchema, 'params'), detail);
 
 export default jobsRouter;
