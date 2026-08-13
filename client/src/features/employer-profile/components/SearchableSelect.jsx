@@ -15,7 +15,6 @@ export default function SearchableSelect({
   placeholder = 'Select...',
   searchPlaceholder = 'Search...',
   error,
-  reverifyTag = false,
   allowCustom = false,
   disabled = false,
 }) {
@@ -68,11 +67,6 @@ export default function SearchableSelect({
       {label && (
         <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-[#0F172A]">
           {label}
-          {reverifyTag && (
-            <span className="rounded-full bg-[#FEF3C7] px-2 py-0.5 text-xs font-semibold text-[#D97706]">
-              Needs re-verification
-            </span>
-          )}
         </label>
       )}
 
@@ -82,7 +76,11 @@ export default function SearchableSelect({
           onClick={handleToggle}
           disabled={disabled}
           className={`flex h-11 w-full items-center justify-between rounded-[10px] border bg-white px-3 text-sm outline-none transition disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 ${
-            error ? 'border-[#DC2626]' : isOpen ? 'border-[#2563EB] ring-1 ring-[#2563EB]' : 'border-[#E2E8F0]'
+            error
+              ? 'border-[#DC2626]'
+              : isOpen
+                ? 'border-[#2563EB] ring-1 ring-[#2563EB]'
+                : 'border-[#E2E8F0]'
           }`}
         >
           <span
@@ -113,7 +111,9 @@ export default function SearchableSelect({
                     type="button"
                     onClick={() => handleSelect(opt.value)}
                     className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition hover:bg-slate-50 ${
-                      opt.value === value ? 'bg-blue-50 text-[#2563EB] font-medium' : 'text-[#0F172A]'
+                      opt.value === value
+                        ? 'bg-blue-50 text-[#2563EB] font-medium'
+                        : 'text-[#0F172A]'
                     }`}
                   >
                     <span className="min-w-0 truncate">{opt.label}</span>

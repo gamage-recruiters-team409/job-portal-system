@@ -158,10 +158,14 @@ const inputCls = (hasError) =>
 
 const labelCls = 'mb-1.5 flex items-center gap-2 text-sm font-medium text-[#0F172A]';
 
-function ReverifyTag() {
+// Almost every field resets verification to pending when changed (see the
+// note above the warning banner below), so tagging each one individually was
+// repetitive and noisy. Only the one exception — companyDescription — gets a
+// tag, styled as a calm "safe" note rather than a warning.
+function SafeFieldTag() {
   return (
-    <span className="rounded-full bg-[#FEF3C7] px-2 py-0.5 text-xs font-semibold text-[#D97706]">
-      Needs re-verification
+    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-[#64748B]">
+      No re-verification needed
     </span>
   );
 }
@@ -310,12 +314,21 @@ export default function CompanyProfileForm({
         </div>
 
         {/* Re-verification warning */}
+        {/* Matches the backend's actual reset rule (company.service.js
+            REVERIFICATION_FIELDS + the companyName/companyEmail checks in
+            updateCompany + the unconditional reset in updateLogo): every
+            field resets verification to pending when changed EXCEPT
+            companyDescription. Because that's almost every field, we tag the
+            one exception (see SafeFieldTag on the description below) instead
+            of repeating a "needs re-verification" pill on every other field
+            — do not narrow the warning back down to just name/email without
+            updating the backend rule first. */}
         {showReverifyWarning && (
           <div className="mt-6 flex items-start gap-3 rounded-xl border border-[#FDE68A] bg-[#FEF3C7] p-4">
             <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#D97706]" />
             <p className="min-w-0 text-sm font-medium text-[#D97706]">
-              Changing your company name or work email will send your profile back for
-              re-verification.
+              Changing any company detail below — except the description — will send your profile
+              back for re-verification.
             </p>
           </div>
         )}
@@ -377,10 +390,7 @@ export default function CompanyProfileForm({
 
           <div className="mt-4 grid grid-cols-1 gap-5">
             <div>
-              <label className={labelCls}>
-                Company name
-                {showReverifyWarning && <ReverifyTag />}
-              </label>
+              <label className={labelCls}>Company name</label>
               <input
                 type="text"
                 value={values.companyName}
@@ -457,10 +467,7 @@ export default function CompanyProfileForm({
             </div>
 
             <div>
-              <label className={labelCls}>
-                Work email
-                {showReverifyWarning && <ReverifyTag />}
-              </label>
+              <label className={labelCls}>Work email</label>
               <input
                 type="email"
                 value={values.companyEmail}
@@ -504,7 +511,10 @@ export default function CompanyProfileForm({
         <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
           <h2 className="text-lg font-bold text-[#0F172A]">About</h2>
           <div className="mt-4">
-            <label className={labelCls}>Company description</label>
+            <label className={labelCls}>
+              Company description
+              {showReverifyWarning && <SafeFieldTag />}
+            </label>
             <textarea
               value={values.companyDescription}
               onChange={handleDescriptionChange}

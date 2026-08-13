@@ -192,8 +192,8 @@ export default function ViewCompanyProfile() {
           </div>
           <h2 className="mt-4 text-xl font-bold text-[#0F172A]">No Company Profile Found</h2>
           <p className="mt-2 text-sm text-[#475569]">
-            You haven't created a company profile yet. Create a profile to showcase your organization,
-            post job openings, and manage job applications.
+            You haven't created a company profile yet. Create a profile to showcase your
+            organization, post job openings, and manage job applications.
           </p>
           <button
             type="button"
@@ -346,7 +346,8 @@ export default function ViewCompanyProfile() {
                 Job management integration coming soon
               </p>
               <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
-                Your posted job openings and applicant counts will be displayed here once the Employer Job Management module is integrated.
+                Your posted job openings and applicant counts will be displayed here once the
+                Employer Job Management module is integrated.
               </p>
             </div>
           </div>
@@ -360,29 +361,21 @@ export default function ViewCompanyProfile() {
             <div className="mt-4 divide-y divide-slate-100 text-sm">
               <div className="flex items-center justify-between py-2.5">
                 <span className="text-[#64748B]">Industry</span>
-                <span className="font-medium text-[#0F172A]">
-                  {company.industry || '—'}
-                </span>
+                <span className="font-medium text-[#0F172A]">{company.industry || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2.5">
                 <span className="text-[#64748B]">Company size</span>
                 <span className="font-medium text-[#0F172A]">
-                  {company.companySize ? (
-                    company.companySize.toLowerCase().includes('employee') ? (
-                      company.companySize
-                    ) : (
-                      `${company.companySize} employees`
-                    )
-                  ) : (
-                    '—'
-                  )}
+                  {company.companySize
+                    ? company.companySize.toLowerCase().includes('employee')
+                      ? company.companySize
+                      : `${company.companySize} employees`
+                    : '—'}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2.5">
                 <span className="text-[#64748B]">Founded</span>
-                <span className="font-medium text-[#0F172A]">
-                  {company.foundedYear || '—'}
-                </span>
+                <span className="font-medium text-[#0F172A]">{company.foundedYear || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2.5">
                 <span className="text-[#64748B]">Website</span>
@@ -444,7 +437,10 @@ export default function ViewCompanyProfile() {
 
             {/* Show date/admin only if dedicated verification metadata is provided */}
             {company.verificationStatus === 'verified' &&
-              (company.verifiedAt || company.verifiedOn || company.verifiedBy || company.verifiedByName) && (
+              (company.verifiedAt ||
+                company.verifiedOn ||
+                company.verifiedBy ||
+                company.verifiedByName) && (
                 <div className="mt-4 space-y-3 border-t border-slate-100 pt-3 text-sm">
                   {(company.verifiedAt || company.verifiedOn) && (
                     <div>

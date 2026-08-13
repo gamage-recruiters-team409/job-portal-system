@@ -28,7 +28,9 @@ export default function CreateCompanyProfile() {
         try {
           await uploadCompanyLogo(logoFile);
         } catch {
-          toast.error('Company created, but the logo upload failed. You can add it from the profile page.');
+          toast.error(
+            'Company created, but the logo upload failed. You can add it from the profile page.'
+          );
         }
       }
 

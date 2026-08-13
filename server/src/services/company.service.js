@@ -288,19 +288,26 @@ export async function updateLogo(userId, secureUrl, publicId) {
 // company is deleted while jobs still point at it, every one of those jobs
 // becomes permanently orphaned (Job.companyId would resolve to nothing, and
 // there is no cascade-delete or reassignment path for jobs elsewhere in the
-// codebase). deleteCompany() below MUST refuse to delete while any non-soft-
-// deleted job still references this company — this is a hard product
-// constraint, not just a nice-to-have, until/unless Disura's module adds an
-// explicit cascade or reassignment flow. The current rule (block on ANY
-// active job in ANY status: draft/pending_review/published/closed/suspended/
-// rejected) is the safe default pending final confirmation with Disura on
-// whether e.g. closed jobs should be allowed to block deletion too — do not
-// loosen this guard without re-confirming with them first.
+// codebase). This MUST count soft-deleted jobs too (isDeleted: true), not
+// just active ones — Job soft-delete exists specifically to retain the
+// document for history, and a soft-deleted Job still has a required,
+// still-valid companyId pointing at this Company. Filtering on
+// isDeleted: false here would let an employer soft-delete every job and then
+// hard-delete the Company, leaving those retained historical Job documents
+// pointing at a Company that no longer exists. So deleteCompany() below
+// refuses to delete while ANY job document (active or soft-deleted) still
+// references this company — a hard product constraint, not just a
+// nice-to-have, until/unless an explicitly approved cascade/snapshot/
+// Company-soft-delete strategy exists.
+// Flagged by @SithumBuddhika in PR review — do not loosen this guard without
+// re-confirming with him and the PR Team Leader first.
 /**
  * Delete the logged-in employer's company profile.
- * Refuses (409) if any active (non-soft-deleted) job still references this
- * company, so deletion can never orphan job data. Cleans up the Cloudinary
- * logo (if any) before removing the company document.
+ * Refuses (409) if ANY job — active or soft-deleted — still references this
+ * company, so deletion can never orphan job data (including retained
+ * historical/soft-deleted job records). The database deletion happens first,
+ * and the Cloudinary logo is cleaned up best-effort afterward — see the note
+ * below for why the order matters.
  *
  * @param {string} userId - ID of the authenticated employer user
  * @returns {Promise<void>}
@@ -311,24 +318,26 @@ export async function deleteCompany(userId) {
     throw new ApiError(404, 'Company profile not found.');
   }
 
-  const activeJobCount = await Job.countDocuments({
-    companyId: company._id,
-    isDeleted: false,
-  });
-  if (activeJobCount > 0) {
-    throw new ApiError(
-      409,
-      'Cannot delete: this company has active job posts. Remove them first.'
-    );
+  const jobCount = await Job.countDocuments({ companyId: company._id });
+  if (jobCount > 0) {
+    throw new ApiError(409, 'Cannot delete: this company has active job posts. Remove them first.');
   }
+
+  // Delete the database record BEFORE touching Cloudinary — same ordering
+  // principle updateLogo already follows for updates. If Cloudinary were
+  // deleted first and company.deleteOne() then failed, the API would report
+  // the deletion as failed while the Company document still exists, now
+  // pointing at a logo asset that's already gone. Deleting the DB record
+  // first means the only failure mode left is "logo asset leaked in
+  // Cloudinary after a successful deletion," which is a harmless orphan
+  // (logged, not surfaced to the employer) rather than a corrupted record.
+  await company.deleteOne();
 
   if (company.companyLogoPublicId) {
     try {
       await deleteFromCloudinary(company.companyLogoPublicId);
     } catch (error) {
-      console.error('Failed to delete company logo from Cloudinary during company deletion:', error);
+      console.error('Failed to delete company logo from Cloudinary after company deletion:', error);
     }
   }
-
-  await company.deleteOne();
 }

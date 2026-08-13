@@ -98,7 +98,9 @@ export default function EditCompanyProfile() {
         try {
           await uploadCompanyLogo(logoFile);
         } catch {
-          toast.error('Profile updated, but the logo upload failed. You can try again from the profile page.');
+          toast.error(
+            'Profile updated, but the logo upload failed. You can try again from the profile page.'
+          );
         }
       }
 
@@ -183,8 +185,8 @@ export default function EditCompanyProfile() {
         <div>
           <p className="text-sm font-semibold text-[#0F172A]">Delete company profile</p>
           <p className="mt-1 text-sm text-[#64748B]">
-            Permanently remove this company profile. This cannot be undone, and is blocked while
-            you still have active job posts.
+            Permanently remove this company profile. This cannot be undone, and is blocked while you
+            still have active job posts.
           </p>
         </div>
         <button

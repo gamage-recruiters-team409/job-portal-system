@@ -52,9 +52,7 @@ export default function ChangeLogoModal({ isOpen, onClose, onSuccess, currentLog
       }
       handleClose();
     } catch (err) {
-      setError(
-        err.response?.data?.message || 'Failed to upload company logo. Please try again.'
-      );
+      setError(err.response?.data?.message || 'Failed to upload company logo. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
