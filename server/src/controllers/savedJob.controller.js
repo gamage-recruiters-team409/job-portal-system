@@ -15,9 +15,6 @@ export async function saveJob(req, res, next) {
   try {
     const { jobId } = req.validatedBody;
 
-    // Verify the Job actually exists, is not soft-deleted, is
-    // published, and has not passed its deadline before allowing it
-    // to be saved (mirrors the Apply Job eligibility check).
     const job = await Job.findOne({ _id: jobId, isDeleted: false });
 
     if (!job) {
@@ -54,9 +51,6 @@ export async function removeSavedJob(req, res, next) {
   try {
     const { jobId } = req.validatedParams;
 
-    // No eligibility check here — a Job Seeker must always be able to
-    // unsave/remove a job, even if it was later closed, deleted, or its
-    // deadline has passed. Removing a saved item should never be blocked.
     const deleted = await SavedJob.findOneAndDelete({
       job: jobId,
       jobSeeker: req.user._id,
@@ -77,18 +71,24 @@ export async function removeSavedJob(req, res, next) {
 
 export async function getSavedJobs(req, res, next) {
   try {
+    // The populate `match` excludes soft-deleted Jobs (isDeleted: true).
+    // When a Job is soft-deleted, Mongoose sets `job` to null on that
+    // SavedJob instead of populating the deleted document — so the
+    // existing `jobIsGone = !job` check below correctly treats a
+    // soft-deleted Job the same as a hard-deleted/missing one, without
+    // ever exposing the deleted Job's details. The SavedJob record
+    // itself is untouched, so the Job Seeker can still unsave it.
     const savedJobs = await SavedJob.find({ jobSeeker: req.user._id })
-      .populate('job', JOB_SAFE_FIELDS)
+      .populate({
+        path: 'job',
+        select: JOB_SAFE_FIELDS,
+        match: { isDeleted: false },
+      })
       .sort({ createdAt: -1 });
 
-    // Shape each entry for the Card/List UI, and flag jobs that are no
-    // longer valid (deleted by the employer, deadline passed, or no
-    // longer published) so the frontend can automatically disable the
-    // card/button and show a clear reason instead of a broken or
-    // misleading saved item.
     const data = savedJobs.map((savedJob) => {
       const job = savedJob.job;
-      const jobIsGone = !job; // employer deleted/soft-deleted the Job
+      const jobIsGone = !job; // covers both hard-deleted and soft-deleted Jobs
       const jobExpired = Boolean(job?.deadline && job.deadline < new Date());
       const jobNotPublished = Boolean(job) && job.status !== JOB_STATUSES.PUBLISHED;
       const jobUnavailable = jobIsGone || jobExpired || jobNotPublished;
