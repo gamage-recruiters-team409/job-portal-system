@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Building2,
   CheckCircle2,
@@ -13,7 +14,6 @@ import {
   Loader2,
   Briefcase,
 } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { getMyCompany } from '../../../services/companyService.js';
 import ChangeLogoModal from '../components/ChangeLogoModal.jsx';
 
@@ -49,6 +49,7 @@ function VerificationBadge({ status }) {
 }
 
 export default function ViewCompanyProfile() {
+  const navigate = useNavigate();
   const [company, setCompany] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -119,11 +120,11 @@ export default function ViewCompanyProfile() {
   }, []);
 
   const handleEditProfile = () => {
-    toast('Edit company profile feature coming soon!', { icon: 'ℹ️' });
+    navigate('/employer/company/edit');
   };
 
   const handleCreateCompany = () => {
-    toast('Create company profile feature coming soon!', { icon: 'ℹ️' });
+    navigate('/employer/company/create');
   };
 
   const handleLogoUpdated = (updatedCompany) => {

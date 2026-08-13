@@ -20,6 +20,8 @@ import JobsPage from '../features/public-jobs/pages/JobsPage.jsx';
 import JobDetailPage from '../features/public-jobs/pages/JobDetailPage.jsx';
 import AuthenticatedLayout from '../layouts/authenticated/AuthenticatedLayout.jsx';
 import ViewCompanyProfile from '../features/employer-profile/pages/ViewCompanyProfile.jsx';
+import CreateCompanyProfile from '../features/employer-profile/pages/CreateCompanyProfile.jsx';
+import EditCompanyProfile from '../features/employer-profile/pages/EditCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 
 function AppRoutes() {
@@ -85,6 +87,26 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
               <ViewCompanyProfile />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employer/company/create"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <CreateCompanyProfile />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employer/company/edit"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <EditCompanyProfile />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
