@@ -85,7 +85,9 @@ export default function SearchableSelect({
             error ? 'border-[#DC2626]' : isOpen ? 'border-[#2563EB] ring-1 ring-[#2563EB]' : 'border-[#E2E8F0]'
           }`}
         >
-          <span className={selectedOption ? 'text-[#0F172A]' : 'text-[#64748B]'}>
+          <span
+            className={`min-w-0 truncate text-left ${selectedOption ? 'text-[#0F172A]' : 'text-[#64748B]'}`}
+          >
             {selectedOption ? selectedOption.label : placeholder}
           </span>
           <ChevronDown className="h-4 w-4 flex-shrink-0 text-[#64748B]" />
@@ -114,8 +116,8 @@ export default function SearchableSelect({
                       opt.value === value ? 'bg-blue-50 text-[#2563EB] font-medium' : 'text-[#0F172A]'
                     }`}
                   >
-                    {opt.label}
-                    {opt.value === value && <Check className="h-4 w-4" />}
+                    <span className="min-w-0 truncate">{opt.label}</span>
+                    {opt.value === value && <Check className="h-4 w-4 flex-shrink-0" />}
                   </button>
                 </li>
               ))}

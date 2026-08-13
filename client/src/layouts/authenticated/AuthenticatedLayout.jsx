@@ -53,7 +53,12 @@ export default function AuthenticatedLayout({ children, navItems }) {
         />
 
         {/* Content View Area */}
-        <main className="flex-1 overflow-y-auto">{children || <Outlet />}</main>
+        {/* min-w-0 overrides the flex item's default min-width:auto — without
+            it, wide content anywhere on a page can stretch main past the
+            viewport instead of wrapping/scrolling within it (the classic
+            "flex child won't shrink below its content" bug), which the
+            overflow-hidden row above then clips instead of exposing. */}
+        <main className="min-w-0 flex-1 overflow-y-auto">{children || <Outlet />}</main>
       </div>
     </div>
   );
