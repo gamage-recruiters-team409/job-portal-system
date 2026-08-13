@@ -75,8 +75,12 @@ function validateField(name, value) {
       if (trimmed.length > 100) return 'Company name cannot exceed 100 characters';
       return '';
     }
-    case 'industry':
-      return (value || '').trim() ? '' : 'Industry is required';
+    case 'industry': {
+      const trimmed = (value || '').trim();
+      if (!trimmed) return 'Industry is required';
+      if (trimmed.length > 100) return 'Industry cannot exceed 100 characters';
+      return '';
+    }
     case 'companySize':
       return value ? '' : 'Company size is required';
     case 'companyAddress': {

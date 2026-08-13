@@ -24,6 +24,12 @@ export default function SearchableSelect({
   const searchInputRef = useRef(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
+  // `value` can be a free-text entry that isn't in `options` when allowCustom
+  // is set (e.g. a typed Industry). Fall back to showing it directly instead
+  // of silently reverting to the placeholder just because there's no preset
+  // match.
+  const hasValue = Boolean(selectedOption || value);
+  const displayLabel = selectedOption ? selectedOption.label : value;
 
   const filteredOptions = useMemo(() => {
     if (!query.trim()) return options;
@@ -84,9 +90,9 @@ export default function SearchableSelect({
           }`}
         >
           <span
-            className={`min-w-0 truncate text-left ${selectedOption ? 'text-[#0F172A]' : 'text-[#64748B]'}`}
+            className={`min-w-0 truncate text-left ${hasValue ? 'text-[#0F172A]' : 'text-[#64748B]'}`}
           >
-            {selectedOption ? selectedOption.label : placeholder}
+            {hasValue ? displayLabel : placeholder}
           </span>
           <ChevronDown className="h-4 w-4 flex-shrink-0 text-[#64748B]" />
         </button>
