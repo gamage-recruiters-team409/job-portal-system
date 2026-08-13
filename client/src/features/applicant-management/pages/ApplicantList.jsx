@@ -260,8 +260,9 @@ export default function ApplicantList() {
       setJobsLoading(true);
       try {
         const response = await getEmployerJobs();
-        const jobs = Array.isArray(response?.data)
-          ? response.data
+        // ✅ FIX: Access response.data.jobs instead of response.data
+        const jobs = Array.isArray(response?.data?.jobs)
+          ? response.data.jobs
           : Array.isArray(response)
             ? response
             : [];
