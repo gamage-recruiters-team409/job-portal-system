@@ -10,14 +10,6 @@ import {
 const MAX_PROFILE_SKILLS = 50;
 const MAX_SEARCH_LENGTH = 50;
 
-function getSkillId(skill) {
-  if (typeof skill === 'string') {
-    return skill;
-  }
-
-  return skill?._id ? String(skill._id) : '';
-}
-
 export default function SkillsPage() {
   const navigate = useNavigate();
 
@@ -26,63 +18,68 @@ export default function SkillsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isInitialDataReady, setIsInitialDataReady] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let active = true;
 
     async function loadSkills() {
-      try {
-        setIsLoading(true);
-        setError('');
+      setIsLoading(true);
+      setIsInitialDataReady(false);
+      setError('');
 
-        /*
-         * Load the active shared Skill catalogue and the Job Seeker Profile
-         * independently.
-         *
-         * A new Job Seeker may not have a Profile yet, so GET /me can return
-         * 404. That is a valid empty-selection state because PATCH /me/skills
-         * can create/upsert the Profile when the first Skills are saved.
-         */
-        const [skillsResult, profileResult] = await Promise.allSettled([
+      try {
+        const [skills, profileResult] = await Promise.all([
           getActiveSkills(),
-          getMyProfile(),
+          getMyProfile()
+            .then((profile) => ({
+              profile,
+              profileMissing: false,
+            }))
+            .catch((requestError) => {
+              if (requestError?.response?.status === 404) {
+                return {
+                  profile: null,
+                  profileMissing: true,
+                };
+              }
+
+              throw requestError;
+            }),
         ]);
 
         if (!active) return;
 
-        if (skillsResult.status === 'rejected') {
-          throw skillsResult.reason;
-        }
+        const activeSkills = Array.isArray(skills) ? skills : [];
 
-        const skills = skillsResult.value || [];
-        setAvailableSkills(skills);
+        const activeSkillIds = new Set(
+          activeSkills
+            .map((skill) => skill?._id)
+            .filter(Boolean)
+            .map((skillId) => String(skillId))
+        );
 
-        let existingSkillIds = [];
+        const existingSkillIds = (profileResult.profile?.skills || [])
+          .map((skill) => (typeof skill === 'string' ? skill : skill?._id))
+          .filter(Boolean)
+          .map((skillId) => String(skillId))
+          .filter((skillId) => activeSkillIds.has(skillId));
 
-        if (profileResult.status === 'fulfilled') {
-          existingSkillIds = (profileResult.value?.skills || []).map(getSkillId).filter(Boolean);
-        } else if (profileResult.reason?.response?.status !== 404) {
-          throw profileResult.reason;
-        }
-
-        /*
-         * The shared Skills API returns active Skills only.
-         * Normalize existing Profile Skill references against the active
-         * catalogue so stale/deactivated Skill IDs are never submitted.
-         */
-        const activeSkillIds = new Set(skills.map((skill) => getSkillId(skill)).filter(Boolean));
-
-        const normalizedSelectedSkillIds = [
-          ...new Set(existingSkillIds.filter((skillId) => activeSkillIds.has(String(skillId)))),
-        ];
-
-        setSelectedSkillIds(normalizedSelectedSkillIds);
+        setAvailableSkills(activeSkills);
+        setSelectedSkillIds(existingSkillIds);
+        setIsInitialDataReady(true);
       } catch (requestError) {
         if (!active) return;
 
+        setAvailableSkills([]);
+        setSelectedSkillIds([]);
+        setIsInitialDataReady(false);
+
         setError(
-          requestError?.response?.data?.message || 'Unable to load Skills. Please try again.'
+          requestError?.response?.data?.message ||
+            'Unable to load Skills. Please retry before making changes.'
         );
       } finally {
         if (active) {
@@ -96,7 +93,7 @@ export default function SkillsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [reloadKey]);
 
   function normalizeSearchValue(value) {
     return value.replace(/\s+/g, ' ').trim().toLowerCase();
@@ -120,14 +117,21 @@ export default function SkillsPage() {
     setSearchTerm(event.target.value.slice(0, MAX_SEARCH_LENGTH));
   }
 
+  function handleRetry() {
+    setReloadKey((current) => current + 1);
+  }
+
   function handleSkillToggle(skillId) {
+    if (!isInitialDataReady) return;
+
     setError('');
 
     setSelectedSkillIds((current) => {
-      const isAlreadySelected = current.includes(skillId);
+      const normalizedSkillId = String(skillId);
+      const isAlreadySelected = current.includes(normalizedSkillId);
 
       if (isAlreadySelected) {
-        return current.filter((id) => id !== skillId);
+        return current.filter((id) => id !== normalizedSkillId);
       }
 
       if (current.length >= MAX_PROFILE_SKILLS) {
@@ -136,11 +140,15 @@ export default function SkillsPage() {
         return current;
       }
 
-      return [...current, skillId];
+      return [...current, normalizedSkillId];
     });
   }
 
   async function handleSave() {
+    if (!isInitialDataReady || isLoading || isSaving) {
+      return;
+    }
+
     try {
       setIsSaving(true);
       setError('');
@@ -195,7 +203,6 @@ export default function SkillsPage() {
 
               <div>
                 <h1 className="text-lg font-bold text-slate-900">Skills</h1>
-
                 <p className="mt-0.5 text-xs text-slate-400">{selectedSkillIds.length} selected</p>
               </div>
             </div>
@@ -203,76 +210,95 @@ export default function SkillsPage() {
 
           <div className="p-6">
             {error && (
-              <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {error}
+              <div
+                className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                role="alert"
+              >
+                <p>{error}</p>
+
+                {!isInitialDataReady && (
+                  <button
+                    type="button"
+                    onClick={handleRetry}
+                    className="mt-3 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50"
+                  >
+                    Retry
+                  </button>
+                )}
               </div>
             )}
 
-            {/* Search */}
-            <div>
-              <label
-                htmlFor="skill-search"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
-                Search Skills
-              </label>
+            {isInitialDataReady && (
+              <>
+                {/* Search */}
+                <div>
+                  <label
+                    htmlFor="skill-search"
+                    className="mb-2 block text-sm font-medium text-slate-700"
+                  >
+                    Search Skills
+                  </label>
 
-              <input
-                id="skill-search"
-                type="text"
-                value={searchTerm}
-                onChange={handleSearchChange}
-                maxLength={MAX_SEARCH_LENGTH}
-                autoComplete="off"
-                placeholder="Search available Skills..."
-                className="w-full rounded-lg border border-slate-300 px-3.5 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
+                  <input
+                    id="skill-search"
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    maxLength={MAX_SEARCH_LENGTH}
+                    autoComplete="off"
+                    placeholder="Search available Skills..."
+                    className="w-full rounded-lg border border-slate-300 px-3.5 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
 
-            {/* Available shared Skills */}
-            <div className="mt-6">
-              <h2 className="text-sm font-semibold text-slate-900">Available Skills</h2>
+                {/* Available shared Skills */}
+                <div className="mt-6">
+                  <h2 className="text-sm font-semibold text-slate-900">Available Skills</h2>
 
-              <div className="mt-3 space-y-3">
-                {filteredSkills.length > 0 ? (
-                  filteredSkills.map((skill) => {
-                    const skillId = getSkillId(skill);
-                    const isSelected = selectedSkillIds.includes(skillId);
+                  <div className="mt-3 space-y-3">
+                    {filteredSkills.length > 0 ? (
+                      filteredSkills.map((skill) => {
+                        const skillId = String(skill._id);
+                        const isSelected = selectedSkillIds.includes(skillId);
 
-                    return (
-                      <label
-                        key={skillId}
-                        className={[
-                          'flex cursor-pointer items-center gap-4 rounded-lg border px-4 py-3 transition-colors',
-                          isSelected
-                            ? 'border-blue-200 bg-blue-50'
-                            : 'border-slate-200 bg-white hover:bg-slate-50',
-                        ].join(' ')}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleSkillToggle(skillId)}
-                          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                        />
+                        return (
+                          <label
+                            key={skillId}
+                            className={[
+                              'flex cursor-pointer items-center gap-4 rounded-lg border px-4 py-3 transition-colors',
+                              isSelected
+                                ? 'border-blue-200 bg-blue-50'
+                                : 'border-slate-200 bg-white hover:bg-slate-50',
+                            ].join(' ')}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleSkillToggle(skillId)}
+                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            />
 
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-slate-800">{skill.skillName}</p>
-                        </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-slate-800">
+                                {skill.skillName}
+                              </p>
+                            </div>
 
-                        {isSelected && (
-                          <span className="text-xs font-medium text-blue-600">Selected</span>
-                        )}
-                      </label>
-                    );
-                  })
-                ) : (
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-center">
-                    <p className="text-sm text-slate-500">No matching Skills found.</p>
+                            {isSelected && (
+                              <span className="text-xs font-medium text-blue-600">Selected</span>
+                            )}
+                          </label>
+                        );
+                      })
+                    ) : (
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                        <p className="text-sm text-slate-500">No matching Skills found.</p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Actions */}
@@ -288,7 +314,7 @@ export default function SkillsPage() {
             <button
               type="button"
               onClick={handleSave}
-              disabled={isSaving}
+              disabled={!isInitialDataReady || isLoading || isSaving}
               className="rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSaving ? 'Saving...' : 'Save Skills'}
