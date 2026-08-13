@@ -96,10 +96,12 @@ export async function filter(req, res, next) {
 
 /**
  * GET /jobs/:id — job detail + similar jobs.
+ * If the viewer is logged in (attachUserIfPresent), their ID is passed through
+ * so the service can skip incrementing viewsCount for the job's own employer.
  */
 export async function detail(req, res, next) {
   try {
-    const result = await getJobDetail(req.validatedParams.id);
+    const result = await getJobDetail(req.validatedParams.id, req.user?._id);
     return sendSuccess(res, {
       message: 'Job retrieved.',
       data: result,
