@@ -23,6 +23,7 @@ import ViewCompanyProfile from '../features/employer-profile/pages/ViewCompanyPr
 import CreateCompanyProfile from '../features/employer-profile/pages/CreateCompanyProfile.jsx';
 import EditCompanyProfile from '../features/employer-profile/pages/EditCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
+import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
 
 function AppRoutes() {
   return (
@@ -70,6 +71,17 @@ function AppRoutes() {
         }
       />
 
+      <Route
+        path="/jobs/create"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <CreateJobPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
       {/* Employer & Company Profile */}
       <Route
         path="/employer/company"
@@ -81,6 +93,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/company/profile"
         element={
