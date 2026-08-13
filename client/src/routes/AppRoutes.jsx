@@ -11,6 +11,8 @@ import ForgotPasswordPage from '../features/authentication/ForgotPasswordPage.js
 import ResetPasswordPage from '../features/authentication/ResetPasswordPage.jsx';
 import MyReportedJobs from '../features/reported-jobs/job-seeker/pages/MyReportedJobs.jsx';
 import ReportDetails from '../features/reported-jobs/job-seeker/pages/ReportDetails.jsx';
+import ApplicantList from '../features/applicant-management/pages/ApplicantList.jsx';
+import ApplicantDetails from '../features/applicant-management/pages/ApplicantDetails.jsx';
 import AboutPage from '../features/help-support/pages/AboutPage.jsx';
 import ContactPage from '../features/help-support/pages/ContactPage.jsx';
 import FAQPage from '../features/help-support/pages/FAQPage.jsx';
@@ -22,7 +24,10 @@ import AuthenticatedLayout from '../layouts/authenticated/AuthenticatedLayout.js
 import ViewCompanyProfile from '../features/employer-profile/pages/ViewCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
-import SavedJobsPage from '../features/saved-jobs/pages/SavedJobsPage.jsx';
+import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.jsx';
+import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
+import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileCompletionPage.jsx';
+import SkillsPage from '../features/job-seeker-profile/pages/SkillsPage.jsx';
 
 function AppRoutes() {
   return (
@@ -70,13 +75,24 @@ function AppRoutes() {
         }
       />
 
-      {/* Saved Jobs - Job Seeker only */}
+      {/* Applicant Management - Employer ONLY (Admin removed) */}
       <Route
-        path="/saved-jobs"
+        path="/applicants"
         element={
-          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
-              <SavedJobsPage />
+              <ApplicantList />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/applicants/:id"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <ApplicantDetails />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
@@ -111,6 +127,51 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
               <ViewCompanyProfile />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Job Seeker Profile - Job Seeker only */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <MyProfilePage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/edit"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <EditProfilePage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/completion"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <ProfileCompletionPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/skills"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <SkillsPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
