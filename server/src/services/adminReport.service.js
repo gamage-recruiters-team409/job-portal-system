@@ -2,6 +2,7 @@ import Report from '../models/Report.js';
 import Job from '../models/Job.js';
 import { ApiError } from '../utils/apiError.js';
 import { REPORT_STATUSES, JOB_STATUSES } from '../constants/statuses.js';
+import { moderateJob } from './adminJob.service.js';
 
 const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -107,27 +108,8 @@ export async function reviewReport(reportId, adminUserId, status, reviewNote, jo
   let updatedJob = null;
 
   if (jobAction === 'suspend') {
-    const job = await Job.findById(report.jobId);
-
-    if (!job) {
-      throw new ApiError(404, 'Associated job not found.');
-    }
-
-    if (job.status !== JOB_STATUSES.SUSPENDED) {
-      job.status = JOB_STATUSES.SUSPENDED;
-      job.reviewedBy = adminUserId;
-      job.reviewedAt = new Date();
-      job.reviewNote = reviewNote; // Record the admin's note on the job
-
-      job.statusHistory.push({
-        status: JOB_STATUSES.SUSPENDED,
-        changedBy: adminUserId,
-        note: reviewNote,
-      });
-
-      await job.save();
-      updatedJob = job;
-    }
+    // Reuse existing Admin Job lifecycle rules to prevent suspending deleted/closed/draft jobs
+    updatedJob = await moderateJob(report.jobId, adminUserId, JOB_STATUSES.SUSPENDED, reviewNote);
   }
 
   await report.save();
