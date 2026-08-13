@@ -53,6 +53,43 @@ export async function protect(req, _res, next) {
 }
 
 /**
+ * Optional authentication — attaches req.user if a valid token is present,
+ * but never blocks the request if the token is missing or invalid.
+ * Used on public routes that behave differently for a logged-in user
+ * (e.g. skipping view-count increments when the job's own employer views it).
+ */
+export async function attachUserIfPresent(req, _res, next) {
+  try {
+    const header = req.headers.authorization || '';
+    const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+
+    if (!token) {
+      return next();
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, env.jwtSecret);
+    } catch {
+      return next();
+    }
+
+    const user = await User.findById(decoded.id);
+    if (
+      user &&
+      user.accountStatus === ACCOUNT_STATUSES.ACTIVE &&
+      (decoded.tokenVersion ?? 0) === (user.tokenVersion ?? 0)
+    ) {
+      req.user = user;
+    }
+
+    return next();
+  } catch {
+    return next();
+  }
+}
+
+/**
  * Restricts a route to one or more roles. Must run after `protect`.
  * e.g. `requireRole(USER_ROLES.ADMIN)` or `requireRole(USER_ROLES.EMPLOYER, USER_ROLES.ADMIN)`.
  */
