@@ -22,6 +22,7 @@ import AuthenticatedLayout from '../layouts/authenticated/AuthenticatedLayout.js
 import ViewCompanyProfile from '../features/employer-profile/pages/ViewCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
+import SavedJobsPage from '../features/saved-jobs/pages/SavedJobsPage.jsx';
 
 function AppRoutes() {
   return (
@@ -64,6 +65,18 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <ReportDetails />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Saved Jobs - Job Seeker only */}
+      <Route
+        path="/saved-jobs"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <SavedJobsPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }

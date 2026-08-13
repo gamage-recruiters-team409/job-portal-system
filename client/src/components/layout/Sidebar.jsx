@@ -282,7 +282,7 @@ export const JOB_SEEKER_NAV_ITEMS = [
     label: 'Saved Jobs',
     icon: BookmarkIcon,
     path: '/saved-jobs',
-    disabled: true,
+    
   },
   {
     label: 'My Applications',
