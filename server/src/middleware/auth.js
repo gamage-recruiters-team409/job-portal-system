@@ -74,7 +74,9 @@ export async function attachUserIfPresent(req, _res, next) {
       return next();
     }
 
-    const user = await User.findById(decoded.id);
+    // tokenVersion is select:false by default but is needed here to correctly
+    // identify a user whose password was reset (see protect's comment above).
+    const user = await User.findById(decoded.id).select('+tokenVersion');
     if (
       user &&
       user.accountStatus === ACCOUNT_STATUSES.ACTIVE &&
