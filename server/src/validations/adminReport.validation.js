@@ -49,13 +49,13 @@ export const reviewReportSchema = z
   })
   .refine(
     (data) => {
-      if (data.status === REPORT_STATUSES.DISMISSED && data.jobAction === 'suspend') {
+      if (data.status !== REPORT_STATUSES.RESOLVED && data.jobAction === 'suspend') {
         return false;
       }
       return true;
     },
     {
-      message: "A dismissed report cannot trigger a job suspension. Set jobAction to 'keep'.",
+      message: "Only a 'resolved' report can trigger a job suspension. Set jobAction to 'keep'.",
       path: ['jobAction'], // Error will point to the jobAction field
     }
   );
