@@ -16,6 +16,7 @@ import adminEmployerRouter from './adminEmployer.routes.js';
 import applicantRouter from './applicant.routes.js';
 import adminUserRouter from './adminUser.routes.js';
 import adminJobRouter from './adminJob.routes.js';
+import savedJobRouter from './savedJob.routes.js';
 
 const apiRouter = Router();
 
@@ -36,5 +37,6 @@ apiRouter.use('/admin/employers', adminEmployerRouter);
 apiRouter.use('/applicants', applicantRouter);
 apiRouter.use('/admin/users', adminUserRouter);
 apiRouter.use('/admin/jobs', adminJobRouter);
+apiRouter.use('/saved-jobs', savedJobRouter);
 
 export default apiRouter;
