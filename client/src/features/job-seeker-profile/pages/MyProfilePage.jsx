@@ -132,6 +132,39 @@ function SectionCard({ title, action, children }) {
   );
 }
 
+function formatMonthYear(value) {
+  if (!value) {
+    return '';
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat('en', {
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+}
+
+function getExperienceDateRange(experience) {
+  if (!experience) {
+    return '';
+  }
+
+  const startDate = formatMonthYear(experience.startDate);
+
+  const endDate = experience.isCurrentRole ? 'Present' : formatMonthYear(experience.endDate);
+
+  if (startDate && endDate) {
+    return `${startDate} – ${endDate}`;
+  }
+
+  return startDate || endDate;
+}
+
 export default function MyProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -230,6 +263,8 @@ export default function MyProfilePage() {
 
   const firstEducation = profile?.education?.[0];
   const firstExperience = profile?.experience?.[0];
+  const firstExperienceDateRange = getExperienceDateRange(firstExperience);
+
   const portfolioLinks = profile?.portfolioLinks || [];
   const hasPortfolioLinks = portfolioLinks.length > 0;
 
@@ -406,13 +441,19 @@ export default function MyProfilePage() {
 
                 <div className="min-w-0">
                   <h3 className="text-sm font-semibold text-slate-900">
-                    {firstExperience.jobTitle}
+                    {firstExperience.rolePosition}
                   </h3>
 
-                  <p className="mt-1 text-sm text-slate-600">{firstExperience.companyName}</p>
+                  <p className="mt-1 text-sm text-slate-600">{firstExperience.organization}</p>
 
-                  {firstExperience.employmentType && (
-                    <p className="mt-1 text-xs text-slate-400">{firstExperience.employmentType}</p>
+                  {firstExperienceDateRange && (
+                    <p className="mt-1 text-xs text-slate-400">{firstExperienceDateRange}</p>
+                  )}
+
+                  {firstExperience.description && (
+                    <p className="mt-2 text-xs leading-5 text-slate-500">
+                      {firstExperience.description}
+                    </p>
                   )}
                 </div>
               </div>
@@ -511,7 +552,7 @@ export default function MyProfilePage() {
                       rel="noreferrer"
                       className="flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2.5 text-sm text-slate-600 transition-colors hover:text-blue-600"
                     >
-                      <span className="min-w-0 truncate">{link.title || 'Portfolio link'}</span>
+                      <span className="min-w-0 truncate">{link.label || 'Portfolio link'}</span>
 
                       <span className="shrink-0 text-slate-300">↗</span>
                     </a>

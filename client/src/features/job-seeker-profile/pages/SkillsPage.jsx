@@ -10,6 +10,14 @@ import {
 const MAX_PROFILE_SKILLS = 50;
 const MAX_SEARCH_LENGTH = 50;
 
+function getSkillId(skill) {
+  if (typeof skill === 'string') {
+    return skill;
+  }
+
+  return skill?._id ? String(skill._id) : '';
+}
+
 export default function SkillsPage() {
   const navigate = useNavigate();
 
@@ -28,17 +36,48 @@ export default function SkillsPage() {
         setIsLoading(true);
         setError('');
 
-        const [profile, skills] = await Promise.all([getMyProfile(), getActiveSkills()]);
+        /*
+         * Load the active shared Skill catalogue and the Job Seeker Profile
+         * independently.
+         *
+         * A new Job Seeker may not have a Profile yet, so GET /me can return
+         * 404. That is a valid empty-selection state because PATCH /me/skills
+         * can create/upsert the Profile when the first Skills are saved.
+         */
+        const [skillsResult, profileResult] = await Promise.allSettled([
+          getActiveSkills(),
+          getMyProfile(),
+        ]);
 
         if (!active) return;
 
-        setAvailableSkills(skills || []);
+        if (skillsResult.status === 'rejected') {
+          throw skillsResult.reason;
+        }
 
-        const existingSkillIds = (profile?.skills || [])
-          .map((skill) => (typeof skill === 'string' ? skill : skill?._id))
-          .filter(Boolean);
+        const skills = skillsResult.value || [];
+        setAvailableSkills(skills);
 
-        setSelectedSkillIds(existingSkillIds);
+        let existingSkillIds = [];
+
+        if (profileResult.status === 'fulfilled') {
+          existingSkillIds = (profileResult.value?.skills || []).map(getSkillId).filter(Boolean);
+        } else if (profileResult.reason?.response?.status !== 404) {
+          throw profileResult.reason;
+        }
+
+        /*
+         * The shared Skills API returns active Skills only.
+         * Normalize existing Profile Skill references against the active
+         * catalogue so stale/deactivated Skill IDs are never submitted.
+         */
+        const activeSkillIds = new Set(skills.map((skill) => getSkillId(skill)).filter(Boolean));
+
+        const normalizedSelectedSkillIds = [
+          ...new Set(existingSkillIds.filter((skillId) => activeSkillIds.has(String(skillId)))),
+        ];
+
+        setSelectedSkillIds(normalizedSelectedSkillIds);
       } catch (requestError) {
         if (!active) return;
 
@@ -205,11 +244,12 @@ export default function SkillsPage() {
               <div className="mt-3 space-y-3">
                 {filteredSkills.length > 0 ? (
                   filteredSkills.map((skill) => {
-                    const isSelected = selectedSkillIds.includes(skill._id);
+                    const skillId = getSkillId(skill);
+                    const isSelected = selectedSkillIds.includes(skillId);
 
                     return (
                       <label
-                        key={skill._id}
+                        key={skillId}
                         className={[
                           'flex cursor-pointer items-center gap-4 rounded-lg border px-4 py-3 transition-colors',
                           isSelected
@@ -220,7 +260,7 @@ export default function SkillsPage() {
                         <input
                           type="checkbox"
                           checked={isSelected}
-                          onChange={() => handleSkillToggle(skill._id)}
+                          onChange={() => handleSkillToggle(skillId)}
                           className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                         />
 

@@ -57,26 +57,13 @@ export default function EditProfilePage() {
   function handleChange(event) {
     const { name, value } = event.target;
 
-    let sanitizedValue = value;
-
-    if (name === 'currentPosition') {
-      // Letters and spaces only.
-      sanitizedValue = value.replace(/[^\p{L}\s]/gu, '');
-    }
-
-    if (name === 'location') {
-      // Letters, numbers and spaces only.
-      sanitizedValue = value.replace(/[^\p{L}\p{N}\s]/gu, '');
-    }
-
-    if (name === 'careerSummary') {
-      // Letters, numbers, spaces, commas and full stops only.
-      sanitizedValue = value.replace(/[^\p{L}\p{N}\s,.]/gu, '');
-    }
-
+    /*
+     * Preserve legitimate professional text exactly as entered.
+     * The approved backend contract handles trimming and maximum lengths.
+     */
     setForm((current) => ({
       ...current,
-      [name]: sanitizedValue,
+      [name]: value,
     }));
   }
 
@@ -164,7 +151,7 @@ export default function EditProfilePage() {
               </div>
 
               {/* Profile image */}
-              <div className="flex -mt-1 flex-col items-center justify-start">
+              <div className="-mt-1 flex flex-col items-center justify-start">
                 <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-blue-100 bg-blue-50 text-3xl font-semibold text-blue-600">
                   {profileImageUrl ? (
                     <img
