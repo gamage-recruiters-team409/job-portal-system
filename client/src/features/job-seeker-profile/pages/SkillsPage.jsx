@@ -99,11 +99,7 @@ export default function SkillsPage() {
   }, []);
 
   function normalizeSearchValue(value) {
-    return value
-      .replace(/[^\p{L}\p{N}\s]/gu, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
+    return value.replace(/\s+/g, ' ').trim().toLowerCase();
   }
 
   const filteredSkills = useMemo(() => {
@@ -121,11 +117,7 @@ export default function SkillsPage() {
   }, [availableSkills, searchTerm]);
 
   function handleSearchChange(event) {
-    const sanitizedValue = event.target.value
-      .replace(/[^\p{L}\p{N}\s]/gu, '')
-      .slice(0, MAX_SEARCH_LENGTH);
-
-    setSearchTerm(sanitizedValue);
+    setSearchTerm(event.target.value.slice(0, MAX_SEARCH_LENGTH));
   }
 
   function handleSkillToggle(skillId) {

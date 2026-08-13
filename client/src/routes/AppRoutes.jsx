@@ -107,7 +107,7 @@ function AppRoutes() {
         }
       />
 
-            {/* Job Seeker Profile - Job Seeker only */}
+      {/* Job Seeker Profile - Job Seeker only */}
       <Route
         path="/profile"
         element={
@@ -156,7 +156,5 @@ function AppRoutes() {
     </Routes>
   );
 }
-
-
 
 export default AppRoutes;
