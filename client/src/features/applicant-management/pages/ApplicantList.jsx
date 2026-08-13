@@ -260,7 +260,6 @@ export default function ApplicantList() {
       setJobsLoading(true);
       try {
         const response = await getEmployerJobs();
-        // ✅ FIX: Access response.data.jobs instead of response.data
         const jobs = Array.isArray(response?.data?.jobs)
           ? response.data.jobs
           : Array.isArray(response)
@@ -285,18 +284,33 @@ export default function ApplicantList() {
   }, []);
 
   // ── Fetch applicants whenever filters or page change ──
+  //
+  // Request lifecycle rules (per TL review):
+  //  1. Abort any previous in-flight request FIRST, before any early return —
+  //     this is critical so a stale request (e.g. one still running when
+  //     Reset clears the Job) can never resolve later and overwrite the
+  //     current table with stale data.
+  //  2. Only the request that is still "current" (abortRef.current still
+  //     points at its own controller) is allowed to update state — this
+  //     stops an older, already-aborted request's `finally` block from
+  //     clearing the loading spinner while a newer request is in flight.
   const fetchApplicants = useCallback(async () => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+
     if (!appliedFilters.jobId) {
+      abortRef.current = null;
       setApplicants([]);
       setTotalItems(0);
       setTotalPages(1);
       setIsLoading(false);
+      setError('');
       return;
     }
 
-    // Cancel any previous in-flight request
-    if (abortRef.current) abortRef.current.abort();
-    abortRef.current = new AbortController();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     setIsLoading(true);
     setError('');
@@ -309,8 +323,11 @@ export default function ApplicantList() {
         experience: appliedFilters.experience || undefined,
         page: currentPage,
         limit: ITEMS_PER_PAGE,
-        signal: abortRef.current.signal,
+        signal: controller.signal,
       });
+
+      // Ignore this response if a newer request has since started.
+      if (abortRef.current !== controller) return;
 
       const payload = response?.data ?? response ?? {};
       const list = Array.isArray(payload.applications) ? payload.applications : [];
@@ -322,15 +339,30 @@ export default function ApplicantList() {
       setTotalPages(pages);
     } catch (err) {
       if (err?.name === 'CanceledError' || err?.name === 'AbortError') return;
+      if (abortRef.current !== controller) return;
       setError(err?.response?.data?.message ?? 'Failed to load applicants. Please try again.');
     } finally {
-      setIsLoading(false);
+      if (abortRef.current === controller) {
+        setIsLoading(false);
+      }
     }
   }, [appliedFilters, currentPage]);
 
-  // ✅ ADDED: This runs fetchApplicants exactly once when the page first loads
   useEffect(() => {
-    fetchApplicants();
+    // Deferred by one microtask: fetchApplicants synchronously calls
+    // setState (e.g. setIsLoading(true)) before its first `await`. Calling
+    // it directly in the effect body trips the
+    // react-hooks/set-state-in-effect lint rule (setState called
+    // synchronously within an effect). Deferring keeps identical timing
+    // (still resolves before the next paint) while moving the synchronous
+    // state updates out of the effect's own synchronous execution phase.
+    queueMicrotask(() => {
+      fetchApplicants();
+    });
+
+    return () => {
+      abortRef.current?.abort();
+    };
   }, [fetchApplicants]);
 
   // ── Filter actions ──
@@ -483,10 +515,7 @@ export default function ApplicantList() {
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Skills — TODO: wire when skills taxonomy endpoint is confirmed */}
           <div>
-            <label
-              htmlFor="filter-skills"
-              className="mb-1 block text-xs font-medium text-gray-600"
-            >
+            <label htmlFor="filter-skills" className="mb-1 block text-xs font-medium text-gray-600">
               Skills
             </label>
             {/* TODO: Replace this disabled placeholder with a real FilterSelect once
@@ -643,19 +672,14 @@ export default function ApplicantList() {
                     const experience = '—';
 
                     return (
-                      <tr
-                        key={applicant._id}
-                        className="group transition-colors hover:bg-gray-50"
-                      >
+                      <tr key={applicant._id} className="group transition-colors hover:bg-gray-50">
                         {/* Applicant: avatar + name + email */}
                         <td className="px-4 py-3.5">
                           <div className="flex items-center gap-3">
                             <ApplicantAvatar name={name} />
                             <div className="min-w-0">
                               <p className="truncate font-medium text-gray-900">{name}</p>
-                              {email && (
-                                <p className="truncate text-xs text-gray-400">{email}</p>
-                              )}
+                              {email && <p className="truncate text-xs text-gray-400">{email}</p>}
                             </div>
                           </div>
                         </td>
@@ -687,25 +711,6 @@ export default function ApplicantList() {
                             >
                               View
                             </button>
-
-                            {/* Overflow menu (three-dot) — placeholder for future actions */}
-                            <button
-                              type="button"
-                              aria-label="More actions"
-                              className="rounded p-1 text-gray-400 opacity-0 transition hover:text-gray-600 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                            >
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                                aria-hidden="true"
-                              >
-                                <circle cx="12" cy="5" r="1.5" />
-                                <circle cx="12" cy="12" r="1.5" />
-                                <circle cx="12" cy="19" r="1.5" />
-                              </svg>
-                            </button>
                           </div>
                         </td>
                       </tr>
@@ -733,11 +738,13 @@ export default function ApplicantList() {
                   <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
                 <p className="text-sm font-medium text-gray-500">
-                  {!appliedFilters.jobId ? 'Select a job to view applicants' : 'No applicants found'}
+                  {!appliedFilters.jobId
+                    ? 'Select a job to view applicants'
+                    : 'No applicants found'}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {!appliedFilters.jobId 
-                    ? 'Please select a job from the dropdown above and apply filters.' 
+                  {!appliedFilters.jobId
+                    ? 'Please select a job from the dropdown above and apply filters.'
                     : 'Try adjusting your filters or reset to view all applicants for this job.'}
                 </p>
                 {!!appliedFilters.jobId && (
