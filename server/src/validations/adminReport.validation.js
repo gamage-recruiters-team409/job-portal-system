@@ -27,9 +27,17 @@ export const reviewReportSchema = z
   .object({
     status: z
       .string()
-      .refine((val) => [REPORT_STATUSES.RESOLVED, REPORT_STATUSES.DISMISSED].includes(val), {
-        message: `Status must be '${REPORT_STATUSES.RESOLVED}' or '${REPORT_STATUSES.DISMISSED}' for review`,
-      }),
+      .refine(
+        (val) =>
+          [
+            REPORT_STATUSES.RESOLVED,
+            REPORT_STATUSES.DISMISSED,
+            REPORT_STATUSES.UNDER_REVIEW,
+          ].includes(val),
+        {
+          message: `Status must be '${REPORT_STATUSES.RESOLVED}', '${REPORT_STATUSES.DISMISSED}', or '${REPORT_STATUSES.UNDER_REVIEW}' for review`,
+        }
+      ),
     reviewNote: z
       .string({
         required_error: 'Review note is required for report resolution/dismissal',

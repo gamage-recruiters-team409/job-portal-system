@@ -1,5 +1,4 @@
 import Report from '../models/Report.js';
-import Job from '../models/Job.js';
 import { ApiError } from '../utils/apiError.js';
 import { REPORT_STATUSES, JOB_STATUSES } from '../constants/statuses.js';
 import { moderateJob } from './adminJob.service.js';
