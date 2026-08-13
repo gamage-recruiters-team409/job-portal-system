@@ -257,13 +257,14 @@ async function getOwnedCompany(employerId) {
 }
 
 /**
- * Auto-closes any of this employer's published jobs whose deadline has passed.
- * Runs as a lazy bulk update before fetching, so the frontend can trust the
- * real `status` field directly instead of computing an "effective" status.
+ * Auto-closes ANY published job (across all employers) whose deadline has passed.
+ * Intended to run on a periodic scheduler (see jobs/expiredJobsScheduler.js),
+ * not per-request — this keeps the database itself accurate for every reader,
+ * including the public job listing.
  */
-async function autoCloseExpiredJobs(filter) {
-  await Job.updateMany(
-    { ...filter, status: JOB_STATUSES.PUBLISHED, deadline: { $lt: new Date() } },
+export async function autoCloseAllExpiredJobs() {
+  const result = await Job.updateMany(
+    { status: JOB_STATUSES.PUBLISHED, isDeleted: false, deadline: { $lt: new Date() } },
     {
       $set: { status: JOB_STATUSES.CLOSED },
       $push: {
@@ -275,6 +276,8 @@ async function autoCloseExpiredJobs(filter) {
       },
     }
   );
+
+  return result.modifiedCount;
 }
 
 export async function createJob({ employerId, payload }) {
@@ -297,21 +300,25 @@ export async function createJob({ employerId, payload }) {
 }
 
 export async function listEmployerJobs({ employerId }) {
-  const filter = { createdBy: employerId, isDeleted: false };
-  await autoCloseExpiredJobs(filter);
+  const jobs = await Job.find({
+    createdBy: employerId,
+    isDeleted: false,
+  }).sort({ createdAt: -1 });
 
-  const jobs = await Job.find(filter).sort({ createdAt: -1 });
   return jobs;
 }
 
 export async function getJobById({ jobId, employerId }) {
-  const filter = { _id: jobId, createdBy: employerId, isDeleted: false };
-  await autoCloseExpiredJobs(filter);
+  const job = await Job.findOne({
+    _id: jobId,
+    createdBy: employerId,
+    isDeleted: false,
+  });
 
-  const job = await Job.findOne(filter);
   if (!job) {
     throw new ApiError(404, 'Job not found.');
   }
+
   return job;
 }
 
