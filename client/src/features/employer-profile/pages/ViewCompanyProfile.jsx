@@ -13,6 +13,7 @@ import {
   RefreshCw,
   Loader2,
   Briefcase,
+  ImageUp,
 } from 'lucide-react';
 import { getMyCompany } from '../../../services/companyService.js';
 import ChangeLogoModal from '../components/ChangeLogoModal.jsx';
@@ -288,7 +289,15 @@ export default function ViewCompanyProfile() {
           </div>
 
           {/* Top-Right Action Buttons */}
-          <div className="flex flex-col items-start gap-1.5 sm:items-end flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsLogoModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-sm font-semibold text-[#2563EB] border border-blue-100 hover:bg-blue-100 transition"
+            >
+              <ImageUp className="h-4 w-4" />
+              <span>Change logo</span>
+            </button>
             <button
               type="button"
               onClick={handleEditProfile}
@@ -296,13 +305,6 @@ export default function ViewCompanyProfile() {
             >
               <Pencil className="h-4 w-4" />
               <span>Edit profile</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsLogoModalOpen(true)}
-              className="text-xs font-medium text-[#2563EB] hover:text-blue-700 hover:underline transition self-end sm:self-auto"
-            >
-              Change logo
             </button>
           </div>
         </div>

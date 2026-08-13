@@ -15,6 +15,11 @@ export const updateCompany = async (payload) => {
   return data;
 };
 
+export const deleteCompany = async () => {
+  const { data } = await apiClient.delete('/companies/me');
+  return data;
+};
+
 export const uploadCompanyLogo = async (file) => {
   const formData = new FormData();
   formData.append('companyLogo', file);

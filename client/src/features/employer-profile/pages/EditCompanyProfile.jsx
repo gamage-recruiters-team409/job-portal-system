@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CompanyProfileForm from '../components/CompanyProfileForm.jsx';
-import { getMyCompany, updateCompany, uploadCompanyLogo } from '../../../services/companyService.js';
+import ConfirmDeleteCompanyModal from '../components/ConfirmDeleteCompanyModal.jsx';
+import {
+  getMyCompany,
+  updateCompany,
+  uploadCompanyLogo,
+  deleteCompany,
+} from '../../../services/companyService.js';
 
 // Maps the backend's 409 duplicate-field messages to the form field they apply to.
 function mapDuplicateError(message) {
@@ -20,6 +26,9 @@ export default function EditCompanyProfile() {
   const [loadError, setLoadError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [serverErrors, setServerErrors] = useState({});
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   // Retry button re-runs this directly (an event handler, not an effect), so
   // it can freely call setState without tripping react-hooks/set-state-in-effect.
@@ -114,6 +123,30 @@ export default function EditCompanyProfile() {
     }
   };
 
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
+    setDeleteError('');
+
+    try {
+      // Guarded server-side (409) if the company still has active job posts
+      // — Company is a shared model referenced by Jobs, so deletion is never
+      // allowed to orphan job data. See the NOTE in company.service.js.
+      await deleteCompany();
+      toast.success('Company profile deleted.');
+      setIsDeleteModalOpen(false);
+      navigate('/employer/company/create');
+    } catch (err) {
+      const message =
+        err.response?.data?.message || 'Failed to delete company profile. Please try again.';
+      setDeleteError(message);
+      if (err.response?.status !== 409) {
+        toast.error(message);
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center p-8 text-slate-500">
@@ -143,16 +176,53 @@ export default function EditCompanyProfile() {
     );
   }
 
+  const dangerZone = (
+    <div className="rounded-xl border border-[#DC2626]/30 bg-white p-6 shadow-xs">
+      <h2 className="text-lg font-bold text-[#DC2626]">Danger zone</h2>
+      <div className="mt-4 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <p className="text-sm font-semibold text-[#0F172A]">Delete company profile</p>
+          <p className="mt-1 text-sm text-[#64748B]">
+            Permanently remove this company profile. This cannot be undone, and is blocked while
+            you still have active job posts.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setDeleteError('');
+            setIsDeleteModalOpen(true);
+          }}
+          className="inline-flex h-11 flex-shrink-0 items-center gap-2 rounded-[10px] border border-[#DC2626] px-4 text-sm font-semibold text-[#DC2626] transition hover:bg-red-50"
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete company profile
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <CompanyProfileForm
-      mode="edit"
-      initialValues={company}
-      currentLogoUrl={company.companyLogo}
-      submitting={submitting}
-      showReverifyWarning
-      serverErrors={serverErrors}
-      onSubmit={handleSubmit}
-      onCancel={() => navigate('/employer/company')}
-    />
+    <>
+      <CompanyProfileForm
+        mode="edit"
+        initialValues={company}
+        currentLogoUrl={company.companyLogo}
+        submitting={submitting}
+        showReverifyWarning
+        serverErrors={serverErrors}
+        onSubmit={handleSubmit}
+        onCancel={() => navigate('/employer/company')}
+        dangerZone={dangerZone}
+      />
+
+      <ConfirmDeleteCompanyModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
+        errorMessage={deleteError}
+      />
+    </>
   );
 }

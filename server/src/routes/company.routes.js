@@ -5,6 +5,7 @@ import {
   getCompanyById,
   updateCompany,
   uploadLogo,
+  deleteCompany,
 } from '../controllers/company.controller.js';
 import { companySchema, updateCompanySchema } from '../validations/company.validation.js';
 import { validate } from '../middleware/validate.js';
@@ -32,6 +33,11 @@ companyRouter.put(
   validate(updateCompanySchema),
   updateCompany
 );
+
+// Deletion is blocked by a 409 guard (see the NOTE in company.service.js) if
+// the company still has active job posts — Company is shared with Jobs and
+// must never be deleted out from under them.
+companyRouter.delete('/me', protect, requireRole(USER_ROLES.EMPLOYER), deleteCompany);
 
 // Logo upload route (POST & PUT supported)
 companyRouter.post(

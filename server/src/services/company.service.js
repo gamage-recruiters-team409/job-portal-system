@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Company from '../models/company.model.js';
+import Job from '../models/Job.js';
 import { ApiError } from '../utils/apiError.js';
 import { EMPLOYER_VERIFICATION_STATUSES } from '../constants/statuses.js';
 import { deleteFromCloudinary } from './cloudinary.service.js';
@@ -280,4 +281,54 @@ export async function updateLogo(userId, secureUrl, publicId) {
   }
 
   return company;
+}
+
+// NOTE (Company <-> Job integrity guard): Company is a shared model — Jobs
+// (Disura's module) reference it via Job.companyId, required + indexed. If a
+// company is deleted while jobs still point at it, every one of those jobs
+// becomes permanently orphaned (Job.companyId would resolve to nothing, and
+// there is no cascade-delete or reassignment path for jobs elsewhere in the
+// codebase). deleteCompany() below MUST refuse to delete while any non-soft-
+// deleted job still references this company — this is a hard product
+// constraint, not just a nice-to-have, until/unless Disura's module adds an
+// explicit cascade or reassignment flow. The current rule (block on ANY
+// active job in ANY status: draft/pending_review/published/closed/suspended/
+// rejected) is the safe default pending final confirmation with Disura on
+// whether e.g. closed jobs should be allowed to block deletion too — do not
+// loosen this guard without re-confirming with them first.
+/**
+ * Delete the logged-in employer's company profile.
+ * Refuses (409) if any active (non-soft-deleted) job still references this
+ * company, so deletion can never orphan job data. Cleans up the Cloudinary
+ * logo (if any) before removing the company document.
+ *
+ * @param {string} userId - ID of the authenticated employer user
+ * @returns {Promise<void>}
+ */
+export async function deleteCompany(userId) {
+  const company = await Company.findOne({ employerUserId: userId });
+  if (!company) {
+    throw new ApiError(404, 'Company profile not found.');
+  }
+
+  const activeJobCount = await Job.countDocuments({
+    companyId: company._id,
+    isDeleted: false,
+  });
+  if (activeJobCount > 0) {
+    throw new ApiError(
+      409,
+      'Cannot delete: this company has active job posts. Remove them first.'
+    );
+  }
+
+  if (company.companyLogoPublicId) {
+    try {
+      await deleteFromCloudinary(company.companyLogoPublicId);
+    } catch (error) {
+      console.error('Failed to delete company logo from Cloudinary during company deletion:', error);
+    }
+  }
+
+  await company.deleteOne();
 }

@@ -182,6 +182,8 @@ function FieldError({ message }) {
  * @param {string} currentLogoUrl - Persisted logo URL (edit mode).
  * @param {() => void} onCancel
  * @param {object} serverErrors - Field-keyed error messages from the API (e.g. 409 duplicates).
+ * @param {React.ReactNode} dangerZone - Optional content rendered below the form
+ *   (outside the <form> element) — e.g. the Edit page's "Delete company profile" section.
  */
 export default function CompanyProfileForm({
   initialValues,
@@ -192,6 +194,7 @@ export default function CompanyProfileForm({
   currentLogoUrl = null,
   onCancel,
   serverErrors = {},
+  dangerZone = null,
 }) {
   // `initialValues` is only ever set once (the parent page gates rendering
   // this form until fetched data is ready in edit mode), so a plain useState
@@ -281,11 +284,247 @@ export default function CompanyProfileForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="min-h-screen bg-[#F8FAFC] p-4 font-[Inter,sans-serif] md:p-8">
-      {/* Header row */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-[#0F172A]">{title}</h1>
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-[#F8FAFC] p-4 font-[Inter,sans-serif] md:p-8">
+      <form onSubmit={handleSubmit}>
+        {/* Header row */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-2xl font-bold text-[#0F172A]">{title}</h1>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={submitting}
+              className="h-11 rounded-[10px] border border-[#E2E8F0] px-4 text-sm font-medium text-[#475569] transition hover:bg-slate-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-60"
+            >
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              <span>Save changes</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Re-verification warning */}
+        {showReverifyWarning && (
+          <div className="mt-6 flex items-start gap-3 rounded-xl border border-[#FDE68A] bg-[#FEF3C7] p-4">
+            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#D97706]" />
+            <p className="text-sm font-medium text-[#D97706]">
+              Changing your company name or work email will send your profile back for
+              re-verification.
+            </p>
+          </div>
+        )}
+
+        {/* Company logo card */}
+        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+          <h2 className="text-lg font-bold text-[#0F172A]">Company logo</h2>
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E2E8F0] bg-slate-100">
+              {displayedLogo ? (
+                <img
+                  src={displayedLogo}
+                  alt="Company logo preview"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <Building2 className="h-9 w-9 text-slate-400" />
+              )}
+            </div>
+
+            <div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleLogoButtonClick}
+                  className="inline-flex items-center gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-semibold text-[#0F172A] transition hover:bg-slate-50"
+                >
+                  <Upload className="h-4 w-4" />
+                  {mode === 'edit' || displayedLogo ? 'Replace logo' : 'Add logo'}
+                </button>
+
+                {(mode === 'edit' || logoFile) && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveLogo}
+                    disabled={!logoFile}
+                    className="text-sm font-semibold text-[#DC2626] transition hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline"
+                  >
+                    Remove
+                  </button>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg"
+                  onChange={handleLogoFileChange}
+                  className="hidden"
+                />
+              </div>
+              <p className="mt-2 text-xs text-[#64748B]">PNG or JPG, max 2MB, min 200x200px</p>
+              {logoError && <FieldError message={logoError} />}
+            </div>
+          </div>
+        </div>
+
+        {/* Company details card */}
+        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+          <h2 className="text-lg font-bold text-[#0F172A]">Company details</h2>
+
+          <div className="mt-4 grid grid-cols-1 gap-5">
+            <div>
+              <label className={labelCls}>
+                Company name
+                {showReverifyWarning && <ReverifyTag />}
+              </label>
+              <input
+                type="text"
+                value={values.companyName}
+                onChange={(e) => handleChange('companyName', e.target.value)}
+                onBlur={() => handleBlur('companyName')}
+                className={inputCls(fieldError('companyName'))}
+                placeholder="e.g. Acme Corporation"
+              />
+              <FieldError message={fieldError('companyName')} />
+            </div>
+
+            <SearchableSelect
+              label="Industry"
+              value={values.industry}
+              onChange={(v) => handleChange('industry', v)}
+              options={INDUSTRY_OPTIONS}
+              placeholder="Select industry"
+              searchPlaceholder="Search industry..."
+              error={errors.industry}
+              allowCustom
+            />
+
+            <SearchableSelect
+              label="Number of employees"
+              value={values.companySize}
+              onChange={(v) => handleChange('companySize', v)}
+              options={COMPANY_SIZE_OPTIONS}
+              placeholder="Select company size"
+              searchPlaceholder="Search number of employees..."
+              error={errors.companySize}
+            />
+
+            <div>
+              <label className={labelCls}>Founded year</label>
+              <input
+                type="number"
+                value={values.foundedYear}
+                onChange={(e) => handleChange('foundedYear', e.target.value)}
+                onBlur={() => handleBlur('foundedYear')}
+                className={inputCls(errors.foundedYear)}
+                placeholder="e.g. 2018"
+                min="1900"
+                max={currentYear}
+              />
+              <FieldError message={errors.foundedYear} />
+            </div>
+
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <label className={labelCls}>Website</label>
+                <input
+                  type="text"
+                  value={values.website}
+                  onChange={(e) => handleChange('website', e.target.value)}
+                  onBlur={() => handleBlur('website')}
+                  className={inputCls(errors.website)}
+                  placeholder="https://example.com"
+                />
+                <FieldError message={errors.website} />
+              </div>
+
+              <div>
+                <label className={labelCls}>Company phone</label>
+                <input
+                  type="text"
+                  value={values.companyTelephone}
+                  onChange={(e) => handleChange('companyTelephone', e.target.value)}
+                  onBlur={() => handleBlur('companyTelephone')}
+                  className={inputCls(errors.companyTelephone)}
+                  placeholder="+94 11 234 5678"
+                />
+                <FieldError message={errors.companyTelephone} />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelCls}>
+                Work email
+                {showReverifyWarning && <ReverifyTag />}
+              </label>
+              <input
+                type="email"
+                value={values.companyEmail}
+                onChange={(e) => handleChange('companyEmail', e.target.value)}
+                onBlur={() => handleBlur('companyEmail')}
+                className={inputCls(fieldError('companyEmail'))}
+                placeholder="hr@example.com"
+              />
+              <FieldError message={fieldError('companyEmail')} />
+            </div>
+
+            <div>
+              <label className={labelCls}>Address</label>
+              <input
+                type="text"
+                value={values.companyAddress}
+                onChange={(e) => handleChange('companyAddress', e.target.value)}
+                onBlur={() => handleBlur('companyAddress')}
+                className={inputCls(errors.companyAddress)}
+                placeholder="42 Galle Road, Colombo 03"
+              />
+              <FieldError message={errors.companyAddress} />
+            </div>
+
+            <div>
+              <label className={labelCls}>Location</label>
+              <input
+                type="text"
+                value={values.companyLocation}
+                onChange={(e) => handleChange('companyLocation', e.target.value)}
+                onBlur={() => handleBlur('companyLocation')}
+                className={inputCls(errors.companyLocation)}
+                placeholder="e.g. Colombo, Sri Lanka"
+              />
+              <FieldError message={errors.companyLocation} />
+            </div>
+          </div>
+        </div>
+
+        {/* About card */}
+        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+          <h2 className="text-lg font-bold text-[#0F172A]">About</h2>
+          <div className="mt-4">
+            <label className={labelCls}>Company description</label>
+            <textarea
+              value={values.companyDescription}
+              onChange={handleDescriptionChange}
+              onBlur={() => handleBlur('companyDescription')}
+              rows={6}
+              maxLength={500}
+              className={`${inputCls(errors.companyDescription)} h-auto resize-none py-2.5`}
+              placeholder="Tell candidates about your company..."
+            />
+            <div className="mt-1 flex items-center justify-between">
+              <FieldError message={errors.companyDescription} />
+              <span className="ml-auto text-xs text-[#64748B]">
+                {values.companyDescription.length}/500
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom action row */}
+        <div className="mt-6 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={onCancel}
@@ -303,237 +542,9 @@ export default function CompanyProfileForm({
             <span>Save changes</span>
           </button>
         </div>
-      </div>
+      </form>
 
-      {/* Re-verification warning */}
-      {showReverifyWarning && (
-        <div className="mt-6 flex items-start gap-3 rounded-xl border border-[#FDE68A] bg-[#FEF3C7] p-4">
-          <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#D97706]" />
-          <p className="text-sm font-medium text-[#D97706]">
-            Changing your company name or work email will send your profile back for
-            re-verification.
-          </p>
-        </div>
-      )}
-
-      {/* Company logo card */}
-      <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
-        <h2 className="text-lg font-bold text-[#0F172A]">Company logo</h2>
-        <div className="mt-4 flex flex-wrap items-center gap-4">
-          <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E2E8F0] bg-slate-100">
-            {displayedLogo ? (
-              <img src={displayedLogo} alt="Company logo preview" className="h-full w-full object-cover" />
-            ) : (
-              <Building2 className="h-9 w-9 text-slate-400" />
-            )}
-          </div>
-
-          <div>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleLogoButtonClick}
-                className="inline-flex items-center gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-semibold text-[#0F172A] transition hover:bg-slate-50"
-              >
-                <Upload className="h-4 w-4" />
-                {mode === 'edit' || displayedLogo ? 'Replace logo' : 'Add logo'}
-              </button>
-
-              {(mode === 'edit' || logoFile) && (
-                <button
-                  type="button"
-                  onClick={handleRemoveLogo}
-                  disabled={!logoFile}
-                  className="text-sm font-semibold text-[#DC2626] transition hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline"
-                >
-                  Remove
-                </button>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png, image/jpeg, image/jpg"
-                onChange={handleLogoFileChange}
-                className="hidden"
-              />
-            </div>
-            <p className="mt-2 text-xs text-[#64748B]">PNG or JPG, max 2MB, min 200x200px</p>
-            {logoError && <FieldError message={logoError} />}
-          </div>
-        </div>
-      </div>
-
-      {/* Company details card */}
-      <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
-        <h2 className="text-lg font-bold text-[#0F172A]">Company details</h2>
-
-        <div className="mt-4 grid grid-cols-1 gap-5">
-          <div>
-            <label className={labelCls}>
-              Company name
-              {showReverifyWarning && <ReverifyTag />}
-            </label>
-            <input
-              type="text"
-              value={values.companyName}
-              onChange={(e) => handleChange('companyName', e.target.value)}
-              onBlur={() => handleBlur('companyName')}
-              className={inputCls(fieldError('companyName'))}
-              placeholder="e.g. Acme Corporation"
-            />
-            <FieldError message={fieldError('companyName')} />
-          </div>
-
-          <SearchableSelect
-            label="Industry"
-            value={values.industry}
-            onChange={(v) => handleChange('industry', v)}
-            options={INDUSTRY_OPTIONS}
-            placeholder="Select industry"
-            searchPlaceholder="Search industry..."
-            error={errors.industry}
-            allowCustom
-          />
-
-          <SearchableSelect
-            label="Number of employees"
-            value={values.companySize}
-            onChange={(v) => handleChange('companySize', v)}
-            options={COMPANY_SIZE_OPTIONS}
-            placeholder="Select company size"
-            searchPlaceholder="Search number of employees..."
-            error={errors.companySize}
-          />
-
-          <div>
-            <label className={labelCls}>Founded year</label>
-            <input
-              type="number"
-              value={values.foundedYear}
-              onChange={(e) => handleChange('foundedYear', e.target.value)}
-              onBlur={() => handleBlur('foundedYear')}
-              className={inputCls(errors.foundedYear)}
-              placeholder="e.g. 2018"
-              min="1900"
-              max={currentYear}
-            />
-            <FieldError message={errors.foundedYear} />
-          </div>
-
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div>
-              <label className={labelCls}>Website</label>
-              <input
-                type="text"
-                value={values.website}
-                onChange={(e) => handleChange('website', e.target.value)}
-                onBlur={() => handleBlur('website')}
-                className={inputCls(errors.website)}
-                placeholder="https://example.com"
-              />
-              <FieldError message={errors.website} />
-            </div>
-
-            <div>
-              <label className={labelCls}>Company phone</label>
-              <input
-                type="text"
-                value={values.companyTelephone}
-                onChange={(e) => handleChange('companyTelephone', e.target.value)}
-                onBlur={() => handleBlur('companyTelephone')}
-                className={inputCls(errors.companyTelephone)}
-                placeholder="+94 11 234 5678"
-              />
-              <FieldError message={errors.companyTelephone} />
-            </div>
-          </div>
-
-          <div>
-            <label className={labelCls}>
-              Work email
-              {showReverifyWarning && <ReverifyTag />}
-            </label>
-            <input
-              type="email"
-              value={values.companyEmail}
-              onChange={(e) => handleChange('companyEmail', e.target.value)}
-              onBlur={() => handleBlur('companyEmail')}
-              className={inputCls(fieldError('companyEmail'))}
-              placeholder="hr@example.com"
-            />
-            <FieldError message={fieldError('companyEmail')} />
-          </div>
-
-          <div>
-            <label className={labelCls}>Address</label>
-            <input
-              type="text"
-              value={values.companyAddress}
-              onChange={(e) => handleChange('companyAddress', e.target.value)}
-              onBlur={() => handleBlur('companyAddress')}
-              className={inputCls(errors.companyAddress)}
-              placeholder="42 Galle Road, Colombo 03"
-            />
-            <FieldError message={errors.companyAddress} />
-          </div>
-
-          <div>
-            <label className={labelCls}>Location</label>
-            <input
-              type="text"
-              value={values.companyLocation}
-              onChange={(e) => handleChange('companyLocation', e.target.value)}
-              onBlur={() => handleBlur('companyLocation')}
-              className={inputCls(errors.companyLocation)}
-              placeholder="e.g. Colombo, Sri Lanka"
-            />
-            <FieldError message={errors.companyLocation} />
-          </div>
-        </div>
-      </div>
-
-      {/* About card */}
-      <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
-        <h2 className="text-lg font-bold text-[#0F172A]">About</h2>
-        <div className="mt-4">
-          <label className={labelCls}>Company description</label>
-          <textarea
-            value={values.companyDescription}
-            onChange={handleDescriptionChange}
-            onBlur={() => handleBlur('companyDescription')}
-            rows={6}
-            maxLength={500}
-            className={`${inputCls(errors.companyDescription)} h-auto resize-none py-2.5`}
-            placeholder="Tell candidates about your company..."
-          />
-          <div className="mt-1 flex items-center justify-between">
-            <FieldError message={errors.companyDescription} />
-            <span className="ml-auto text-xs text-[#64748B]">
-              {values.companyDescription.length}/500
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom action row */}
-      <div className="mt-6 flex items-center justify-end gap-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={submitting}
-          className="h-11 rounded-[10px] border border-[#E2E8F0] px-4 text-sm font-medium text-[#475569] transition hover:bg-slate-50 disabled:opacity-50"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={submitting}
-          className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-60"
-        >
-          {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-          <span>Save changes</span>
-        </button>
-      </div>
-    </form>
+      {dangerZone && <div className="mt-6">{dangerZone}</div>}
+    </div>
   );
 }
