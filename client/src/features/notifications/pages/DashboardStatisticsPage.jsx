@@ -44,6 +44,10 @@ export default function DashboardStatisticsPage() {
     })();
   }, [fetchStats]);
 
+  // Shows "—" when the request failed (unknown value), the real number when
+  // the API succeeded, or 0 only if the API succeeded with a genuine zero count.
+  const displayValue = (field) => (error ? '—' : (stats?.[field] ?? 0));
+
   return (
     <div className="space-y-6 p-6">
       {/* Breadcrumb & Header */}
@@ -85,28 +89,28 @@ export default function DashboardStatisticsPage() {
         <StatCard
           icon={FileText}
           label="Total Applications Received"
-          value={stats?.totalApplicationsReceived ?? 0}
+          value={displayValue('totalApplicationsReceived')}
           color="blue"
           loading={loading}
         />
         <StatCard
           icon={Briefcase}
           label="Total Job Posts"
-          value={stats?.totalJobPosts ?? 0}
+          value={displayValue('totalJobPosts')}
           color="green"
           loading={loading}
         />
         <StatCard
           icon={CheckCircle}
           label="Active Jobs"
-          value={stats?.activeJobs ?? 0}
+          value={displayValue('activeJobs')}
           color="amber"
           loading={loading}
         />
         <StatCard
           icon={XCircle}
           label="Closed Jobs"
-          value={stats?.closedJobs ?? 0}
+          value={displayValue('closedJobs')}
           color="sky"
           loading={loading}
         />
