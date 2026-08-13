@@ -71,11 +71,11 @@ function AppRoutes() {
         }
       />
 
-      {/* Applicant Management - Employer / Admin */}
+      {/* Applicant Management - Employer ONLY (Admin removed) */}
       <Route
         path="/applicants"
         element={
-          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER, USER_ROLES.ADMIN]}>
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
               <ApplicantList />
             </AuthenticatedLayout>
@@ -86,7 +86,7 @@ function AppRoutes() {
       <Route
         path="/applicants/:id"
         element={
-          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER, USER_ROLES.ADMIN]}>
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
               <ApplicantDetails />
             </AuthenticatedLayout>

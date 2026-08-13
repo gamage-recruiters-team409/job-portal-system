@@ -9,18 +9,20 @@ import apiClient from './apiClient.js';
  *   @param {string}  [search]  - Free-text search against applicant name / email.
  *   @param {number}  [page]    - 1-based page number.
  *   @param {number}  [limit]   - Items per page.
+ *   @param {AbortSignal} [signal] - Optional AbortSignal to cancel the request.
  *
  * @returns {Promise<object>} The raw `data` envelope from the API response.
  */
-export const getApplicants = async ({ jobId, status, search, page, limit } = {}) => {
+export const getApplicants = async ({ jobId, status, search, page, limit, signal } = {}) => {
   const { data } = await apiClient.get('/applicants', {
     params: {
-      ...(jobId   && { jobId }),
-      ...(status  && { status }),
-      ...(search  && { search }),
-      ...(page    && { page }),
-      ...(limit   && { limit }),
+      ...(jobId && { jobId }),
+      ...(status && { status }),
+      ...(search && { search }),
+      ...(page && { page }),
+      ...(limit && { limit }),
     },
+    signal, // <--- This passes the abort signal to axios
   });
 
   return data;

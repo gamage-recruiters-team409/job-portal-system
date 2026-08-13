@@ -309,6 +309,7 @@ export default function ApplicantList() {
         experience: appliedFilters.experience || undefined,
         page: currentPage,
         limit: ITEMS_PER_PAGE,
+        signal: abortRef.current.signal,
       });
 
       const payload = response?.data ?? response ?? {};
@@ -327,9 +328,9 @@ export default function ApplicantList() {
     }
   }, [appliedFilters, currentPage]);
 
+  // ✅ ADDED: This runs fetchApplicants exactly once when the page first loads
   useEffect(() => {
     fetchApplicants();
-    return () => abortRef.current?.abort();
   }, [fetchApplicants]);
 
   // ── Filter actions ──
