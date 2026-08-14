@@ -20,8 +20,9 @@ export const removeSavedJob = async (jobId) => {
 
 /**
  * Get all saved jobs for the authenticated Job Seeker.
+ * Returns array of saved jobs directly (matching shared Saved Jobs service contract).
  */
 export const getSavedJobs = async () => {
   const { data } = await apiClient.get('/saved-jobs');
-  return data;
+  return data.data;
 };

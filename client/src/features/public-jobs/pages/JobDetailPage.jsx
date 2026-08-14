@@ -87,8 +87,7 @@ export default function JobDetailPage() {
     async function checkSavedStatus() {
       if (!isAuthenticated || !isJobSeeker || !id) return;
       try {
-        const res = await getSavedJobs();
-        const savedList = res?.data ?? [];
+        const savedList = (await getSavedJobs()) ?? [];
         const exists = savedList.some((item) => item.job && item.job._id === id);
         setIsSaved(exists);
       } catch (err) {
@@ -224,7 +223,7 @@ export default function JobDetailPage() {
               <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
                 <div className="flex w-full flex-wrap items-center gap-2.5 sm:w-auto">
                   <Link
-                    to={isAuthenticated ? `/jobs/${id}/apply` : `/login`}
+                    to="/login"
                     className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-center text-sm font-semibold text-white shadow transition-colors hover:bg-blue-700 sm:flex-initial"
                   >
                     Apply Now

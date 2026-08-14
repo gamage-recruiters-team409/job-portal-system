@@ -18,7 +18,16 @@ export default function PublicLayout() {
   const location = useLocation();
 
   const isEmployer = user?.role === USER_ROLES.EMPLOYER;
-  const profilePath = isEmployer ? '/employer/company' : '/profile';
+  const isJobSeeker = user?.role === USER_ROLES.JOB_SEEKER;
+  const isAdmin = user?.role === USER_ROLES.ADMIN;
+
+  const profilePath = isJobSeeker
+    ? '/profile'
+    : isEmployer
+      ? '/employer/company'
+      : isAdmin
+        ? '/jobs'
+        : '/jobs';
   const displayName = user?.fullName || user?.name || (user?.email ? user.email.split('@')[0] : 'User');
 
   const initials = displayName
