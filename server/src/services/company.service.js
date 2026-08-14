@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Company from '../models/company.model.js';
+import Job from '../models/Job.js';
 import { ApiError } from '../utils/apiError.js';
 import { EMPLOYER_VERIFICATION_STATUSES } from '../constants/statuses.js';
 import { deleteFromCloudinary } from './cloudinary.service.js';
@@ -280,4 +281,66 @@ export async function updateLogo(userId, secureUrl, publicId) {
   }
 
   return company;
+}
+
+// NOTE (Company <-> Job integrity guard): Company is a shared model — Jobs
+// (Disura's module) reference it via Job.companyId, required + indexed. If a
+// company is deleted while jobs still point at it, every one of those jobs
+// becomes permanently orphaned (Job.companyId would resolve to nothing, and
+// there is no cascade-delete or reassignment path for jobs elsewhere in the
+// codebase). This MUST count soft-deleted jobs too (isDeleted: true), not
+// just active ones — Job soft-delete exists specifically to retain the
+// document for history, and a soft-deleted Job still has a required,
+// still-valid companyId pointing at this Company. Filtering on
+// isDeleted: false here would let an employer soft-delete every job and then
+// hard-delete the Company, leaving those retained historical Job documents
+// pointing at a Company that no longer exists. So deleteCompany() below
+// refuses to delete while ANY job document (active or soft-deleted) still
+// references this company — a hard product constraint, not just a
+// nice-to-have, until/unless an explicitly approved cascade/snapshot/
+// Company-soft-delete strategy exists.
+// Flagged by @SithumBuddhika in PR review — do not loosen this guard without
+// re-confirming with him and the PR Team Leader first.
+/**
+ * Delete the logged-in employer's company profile.
+ * Refuses (409) if ANY job — active or soft-deleted — still references this
+ * company, so deletion can never orphan job data (including retained
+ * historical/soft-deleted job records). The database deletion happens first,
+ * and the Cloudinary logo is cleaned up best-effort afterward — see the note
+ * below for why the order matters.
+ *
+ * @param {string} userId - ID of the authenticated employer user
+ * @returns {Promise<void>}
+ */
+export async function deleteCompany(userId) {
+  const company = await Company.findOne({ employerUserId: userId });
+  if (!company) {
+    throw new ApiError(404, 'Company profile not found.');
+  }
+
+  const jobCount = await Job.countDocuments({ companyId: company._id });
+  if (jobCount > 0) {
+    throw new ApiError(
+      409,
+      'Cannot delete this company because it has associated job records (including closed or archived positions). Companies with retained job history cannot currently be permanently deleted.'
+    );
+  }
+
+  // Delete the database record BEFORE touching Cloudinary — same ordering
+  // principle updateLogo already follows for updates. If Cloudinary were
+  // deleted first and company.deleteOne() then failed, the API would report
+  // the deletion as failed while the Company document still exists, now
+  // pointing at a logo asset that's already gone. Deleting the DB record
+  // first means the only failure mode left is "logo asset leaked in
+  // Cloudinary after a successful deletion," which is a harmless orphan
+  // (logged, not surfaced to the employer) rather than a corrupted record.
+  await company.deleteOne();
+
+  if (company.companyLogoPublicId) {
+    try {
+      await deleteFromCloudinary(company.companyLogoPublicId);
+    } catch (error) {
+      console.error('Failed to delete company logo from Cloudinary after company deletion:', error);
+    }
+  }
 }
