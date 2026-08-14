@@ -31,6 +31,7 @@ import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.js
 import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
 import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileCompletionPage.jsx';
 import SkillsPage from '../features/job-seeker-profile/pages/SkillsPage.jsx';
+import EditJobPage from '../features/job-management/pages/EditJobPage.jsx';
 
 function AppRoutes() {
   return (
@@ -107,6 +108,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
               <CreateJobPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/jobs/:jobId/edit"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <EditJobPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
