@@ -23,7 +23,9 @@ const STATUS_BADGES = {
 };
 
 function getBadge(job) {
-  return STATUS_BADGES[job.status] || { label: job.status, className: 'bg-[#F1F5F9] text-[#475569]' };
+  return (
+    STATUS_BADGES[job.status] || { label: job.status, className: 'bg-[#F1F5F9] text-[#475569]' }
+  );
 }
 
 function formatDate(dateString) {
@@ -46,7 +48,6 @@ export default function ManageJobsPage() {
   const [busyJobId, setBusyJobId] = useState(null);
 
   const loadJobs = async () => {
-    setIsLoading(true);
     try {
       const { data } = await getEmployerJobs();
       setJobs(data.jobs || []);
@@ -58,7 +59,16 @@ export default function ManageJobsPage() {
   };
 
   useEffect(() => {
-    loadJobs();
+    (async () => {
+      try {
+        const { data } = await getEmployerJobs();
+        setJobs(data.jobs || []);
+      } catch (error) {
+        setActionError(error.response?.data?.message || 'Failed to load jobs.');
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }, []);
 
   const filteredJobs = useMemo(() => {
@@ -141,13 +151,31 @@ export default function ManageJobsPage() {
 
     if (job.status === JOB_STATUSES.DRAFT || job.status === JOB_STATUSES.REJECTED) {
       actions.push(
-        <button key="edit" type="button" className={linkClass} onClick={() => navigate(`/jobs/${job._id}/edit`)} disabled={disabled}>
+        <button
+          key="edit"
+          type="button"
+          className={linkClass}
+          onClick={() => navigate(`/jobs/${job._id}/edit`)}
+          disabled={disabled}
+        >
           Edit
         </button>,
-        <button key="submit" type="button" className={linkClass} onClick={() => handleSubmitForReview(job._id)} disabled={disabled}>
+        <button
+          key="submit"
+          type="button"
+          className={linkClass}
+          onClick={() => handleSubmitForReview(job._id)}
+          disabled={disabled}
+        >
           Submit
         </button>,
-        <button key="delete" type="button" className={dangerLinkClass} onClick={() => handleDelete(job._id)} disabled={disabled}>
+        <button
+          key="delete"
+          type="button"
+          className={dangerLinkClass}
+          onClick={() => handleDelete(job._id)}
+          disabled={disabled}
+        >
           Delete
         </button>
       );
@@ -155,7 +183,13 @@ export default function ManageJobsPage() {
 
     if (job.status === JOB_STATUSES.PUBLISHED) {
       actions.push(
-        <button key="close" type="button" className={linkClass} onClick={() => handleClose(job._id)} disabled={disabled}>
+        <button
+          key="close"
+          type="button"
+          className={linkClass}
+          onClick={() => handleClose(job._id)}
+          disabled={disabled}
+        >
           Close
         </button>
       );
@@ -163,10 +197,22 @@ export default function ManageJobsPage() {
 
     if (job.status === JOB_STATUSES.CLOSED) {
       actions.push(
-        <button key="reopen" type="button" className={linkClass} onClick={() => handleReopen(job._id)} disabled={disabled}>
+        <button
+          key="reopen"
+          type="button"
+          className={linkClass}
+          onClick={() => handleReopen(job._id)}
+          disabled={disabled}
+        >
           Reopen
         </button>,
-        <button key="delete" type="button" className={dangerLinkClass} onClick={() => handleDelete(job._id)} disabled={disabled}>
+        <button
+          key="delete"
+          type="button"
+          className={dangerLinkClass}
+          onClick={() => handleDelete(job._id)}
+          disabled={disabled}
+        >
           Delete
         </button>
       );
@@ -209,7 +255,11 @@ export default function ManageJobsPage() {
             stroke="currentColor"
             strokeWidth="2"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
           </svg>
           <input
             type="text"
@@ -267,7 +317,9 @@ export default function ManageJobsPage() {
                   <tr key={job._id} className="border-t border-[#E2E8F0]">
                     <td className="px-4 py-3 font-medium text-[#0F172A]">{job.title}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-1 text-xs font-medium ${badge.className}`}>
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs font-medium ${badge.className}`}
+                      >
                         {badge.label}
                       </span>
                     </td>
