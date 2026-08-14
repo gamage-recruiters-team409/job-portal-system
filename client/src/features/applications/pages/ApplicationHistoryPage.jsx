@@ -47,20 +47,22 @@ export default function ApplicationHistoryPage() {
   }, []);
 
   async function fetchHistory() {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getApplicationHistory();
-      setApplications(data ?? []);
-    } catch (err) {
-      console.error('Error fetching application history:', err);
-      setError(
-        err?.response?.data?.message || 'Failed to load your applications. Please try again.'
-      );
-    } finally {
-      setLoading(false);
-    }
+  setLoading(true);
+  setError(null);
+  try {
+    const data = await getApplicationHistory();
+    setApplications(data ?? []);
+  } catch (err) {
+    console.error('Error fetching application history:', err);
+    setError(err?.response?.data?.message || 'Failed to load your applications. Please try again.');
+  } finally {
+    setLoading(false);
   }
+}
+
+useEffect(() => {
+  fetchHistory();
+}, []);
 
   const normalizedSearch = search.trim().toLowerCase();
 
