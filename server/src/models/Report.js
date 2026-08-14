@@ -57,6 +57,11 @@ const reportSchema = new Schema(
     reviewedAt: {
       type: Date,
     },
+
+    reviewNote: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,

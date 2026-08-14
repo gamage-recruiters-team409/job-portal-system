@@ -225,7 +225,6 @@ export const EMPLOYER_NAV_ITEMS = [
     label: 'Dashboard',
     icon: DashboardIcon,
     path: '/employer/dashboard',
-    disabled: true,
   },
   {
     label: 'Jobs',
@@ -238,7 +237,6 @@ export const EMPLOYER_NAV_ITEMS = [
     label: 'Applicants',
     icon: UsersIcon,
     path: '/applicants',
-    disabled: true,
   },
   {
     label: 'Company profile',
@@ -265,7 +263,6 @@ export const JOB_SEEKER_NAV_ITEMS = [
     label: 'My Profile',
     icon: UserIcon,
     path: '/profile',
-    disabled: true,
   },
   {
     label: 'Find Jobs',

@@ -178,12 +178,49 @@ export async function filterJobs(filters = {}) {
  * left as raw ids because the Category/Skill models are not yet registered on
  * the shared codebase. Also returns up to 4 similar jobs
  * matched on category and jobType.
+ *
+ * If viewerId is provided (the viewer is logged in), the job's own employer
+ * viewing their own posting does not count toward viewsCount. Anonymous and
+ * job-seeker views always increment it.
  */
-export async function getJobDetail(id) {
-  const job = await Job.findOne({ _id: id, ...publicBaseFilter() })
-    .select(PUBLIC_JOB_PROJECTION)
-    .populate(COMPANY_POPULATION)
-    .lean();
+export async function getJobDetail(id, viewerId) {
+  let job;
+
+  if (viewerId) {
+    const existing = await Job.findOne({ _id: id, ...publicBaseFilter() })
+      .select('createdBy')
+      .lean();
+
+    if (!existing) {
+      throw new ApiError(404, 'Job not found.');
+    }
+
+    const isOwnerViewing = String(existing.createdBy) === String(viewerId);
+
+    job = isOwnerViewing
+      ? await Job.findOne({ _id: id, ...publicBaseFilter() })
+          .select(PUBLIC_JOB_PROJECTION)
+          .populate(COMPANY_POPULATION)
+          .lean()
+      : await Job.findOneAndUpdate(
+          { _id: id, ...publicBaseFilter() },
+          { $inc: { viewsCount: 1 } },
+          { new: true }
+        )
+          .select(PUBLIC_JOB_PROJECTION)
+          .populate(COMPANY_POPULATION)
+          .lean();
+  } else {
+    job = await Job.findOneAndUpdate(
+      { _id: id, ...publicBaseFilter() },
+      { $inc: { viewsCount: 1 } },
+      { new: true }
+    )
+      .select(PUBLIC_JOB_PROJECTION)
+      .populate(COMPANY_POPULATION)
+      .lean();
+  }
+
   if (!job) {
     throw new ApiError(404, 'Job not found.');
   }
@@ -217,6 +254,30 @@ async function getOwnedCompany(employerId) {
   }
 
   return company;
+}
+
+/**
+ * Auto-closes ANY published job (across all employers) whose deadline has passed.
+ * Intended to run on a periodic scheduler (see jobs/expiredJobsScheduler.js),
+ * not per-request — this keeps the database itself accurate for every reader,
+ * including the public job listing.
+ */
+export async function autoCloseAllExpiredJobs() {
+  const result = await Job.updateMany(
+    { status: JOB_STATUSES.PUBLISHED, isDeleted: false, deadline: { $lt: new Date() } },
+    {
+      $set: { status: JOB_STATUSES.CLOSED },
+      $push: {
+        statusHistory: {
+          status: JOB_STATUSES.CLOSED,
+          changedAt: new Date(),
+          note: 'Automatically closed — deadline passed',
+        },
+      },
+    }
+  );
+
+  return result.modifiedCount;
 }
 
 export async function createJob({ employerId, payload }) {
