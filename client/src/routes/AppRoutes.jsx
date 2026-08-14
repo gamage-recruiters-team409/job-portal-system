@@ -33,6 +33,7 @@ import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.js
 import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
 import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileCompletionPage.jsx';
 import SkillsPage from '../features/job-seeker-profile/pages/SkillsPage.jsx';
+import EducationPage from '../features/job-seeker-profile/pages/EducationPage.jsx';
 
 function AppRoutes() {
   return (
@@ -237,8 +238,19 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/profile/education"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <EducationPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+  
 
-      <Route path="*" element={<NotFoundPage />} />
+       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

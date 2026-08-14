@@ -93,14 +93,25 @@ async function assertJobOwnership(jobId, reqUser) {
 export async function listApplicants(query, reqUser) {
   const { jobId, status, search, page, limit } = query;
 
-  // Ownership check first — throws if not allowed
-  await assertJobOwnership(jobId, reqUser);
-
   // Build the aggregation pipeline
   const pipeline = [];
+  const matchStage = {};
 
-  // Stage 1: filter by job (uses the index on Application.job)
-  const matchStage = { job: new mongoose.Types.ObjectId(jobId) };
+  if (jobId) {
+    // Ownership check first — throws if not allowed
+    await assertJobOwnership(jobId, reqUser);
+    matchStage.job = new mongoose.Types.ObjectId(jobId);
+  } else {
+    // No jobId provided: scoped to employer's jobs only
+    if (reqUser.role === USER_ROLES.ADMIN) {
+      throw new ApiError(400, 'jobId is required for admin requests.');
+    }
+
+    const employerJobs = await Job.find({ createdBy: reqUser._id, isDeleted: false }).select('_id');
+    const jobIds = employerJobs.map((j) => j._id);
+    matchStage.job = { $in: jobIds };
+  }
+
   if (status) {
     matchStage.status = status;
   }
@@ -117,6 +128,18 @@ export async function listApplicants(query, reqUser) {
     },
   });
   pipeline.push({ $unwind: '$jobSeekerData' });
+
+  // Join with Jobs to get title for display across multiple jobs
+  pipeline.push({
+    $lookup: {
+      from: 'jobs',
+      localField: 'job',
+      foreignField: '_id',
+      as: 'jobData',
+      pipeline: [{ $project: { title: 1 } }],
+    },
+  });
+  pipeline.push({ $unwind: '$jobData' });
 
   // Stage 3: optional search — case-insensitive regex on name or email.
   // Input is escaped so it is always treated as literal text, never as a
@@ -147,6 +170,10 @@ export async function listApplicants(query, reqUser) {
         _id: '$jobSeekerData._id',
         name: '$jobSeekerData.name',
         email: '$jobSeekerData.email',
+      },
+      job: {
+        _id: '$jobData._id',
+        title: '$jobData.title',
       },
     },
   });
