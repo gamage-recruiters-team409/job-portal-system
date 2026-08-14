@@ -27,3 +27,21 @@ export async function updateMySkills(skillIds) {
 
   return data.data.profile;
 }
+
+export async function addMyEducation(payload) {
+  const { data } = await apiClient.post('/job-seeker-profile/me/education', payload);
+
+  return data.data.education;
+}
+
+export async function updateMyEducation(entryId, payload) {
+  const { data } = await apiClient.patch(`/job-seeker-profile/me/education/${entryId}`, payload);
+
+  return data.data.education;
+}
+
+export async function deleteMyEducation(entryId) {
+  const { data } = await apiClient.delete(`/job-seeker-profile/me/education/${entryId}`);
+
+  return data.data.education;
+}
