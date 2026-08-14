@@ -7,6 +7,7 @@ import {
   getCompanyById as getCompanyByIdService,
   updateCompany as updateCompanyService,
   updateLogo as updateLogoService,
+  deleteCompany as deleteCompanyService,
 } from '../services/company.service.js';
 
 /**
@@ -108,6 +109,26 @@ export async function uploadLogo(req, res, next) {
   }
 }
 
+/**
+ * DELETE /companies/me — Delete the authenticated employer's company profile.
+ * Company is a shared model referenced by Jobs (see the NOTE in
+ * company.service.js) — deleteCompanyService refuses with 409 if ANY job post
+ * is still linked to the company (active, closed, or soft-deleted/archived),
+ * so this can never orphan job data.
+ */
+export async function deleteCompany(req, res, next) {
+  try {
+    await deleteCompanyService(req.user.id);
+    return sendSuccess(res, {
+      statusCode: 200,
+      message: 'Company profile deleted successfully.',
+      data: null,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 // Aliases for compatibility
 export {
   createCompany as createCompanyController,
@@ -115,4 +136,5 @@ export {
   getCompanyById as getCompanyByIdController,
   updateCompany as updateCompanyController,
   uploadLogo as updateLogoController,
+  deleteCompany as deleteCompanyController,
 };
