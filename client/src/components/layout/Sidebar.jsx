@@ -230,7 +230,6 @@ export const EMPLOYER_NAV_ITEMS = [
     label: 'Jobs',
     icon: BriefcaseIcon,
     path: '/jobs',
-    disabled: true,
   },
   {
     label: 'Applicants',
@@ -267,7 +266,6 @@ export const JOB_SEEKER_NAV_ITEMS = [
     label: 'Find Jobs',
     icon: BriefcaseIcon,
     path: '/jobs',
-    disabled: true,
   },
   {
     label: 'Messages',
