@@ -76,7 +76,7 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
               <LogoIcon className="h-4 w-4 text-white" />
             </div>
             <span className="text-sm font-bold tracking-tight text-slate-900">
-              Gamage<span className="text-[#2563EB]">Recruiters</span>
+              Job<span className="text-[#2563EB]">Portal</span>
             </span>
           </div>
           <h1 className="text-[22px] font-bold leading-tight text-slate-900">JobPortal Admin</h1>

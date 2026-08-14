@@ -198,7 +198,7 @@ export default function JobsPage() {
           Explore Your Next Opportunity
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-blue-100 sm:text-base">
-          Browse verified job openings from top employers with Gamage Recruiters.
+          Browse verified job openings from top employers with Job Portal.
         </p>
 
         <div className="mt-6">

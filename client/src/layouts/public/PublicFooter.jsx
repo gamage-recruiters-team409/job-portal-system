@@ -18,10 +18,10 @@ export default function PublicFooter() {
         {/* Brand */}
         <div>
           <p className="text-lg font-bold text-slate-900">
-            Gamage <span className="text-blue-600">Recruiters</span>
+            Job <span className="text-blue-600">Portal</span>
           </p>
           <p className="mt-3 text-sm leading-6 text-slate-500">
-            Find your dream job and build your career with Gamage Recruiters.
+            Find your dream job and build your career with Job Portal.
           </p>
         </div>
 
@@ -98,7 +98,7 @@ export default function PublicFooter() {
       </div>
 
       <div className="border-t border-slate-100 py-5 text-center text-xs text-slate-400">
-        © {new Date().getFullYear()} Gamage Recruiters. All rights reserved.
+        © {new Date().getFullYear()} Job Portal. All rights reserved.
       </div>
     </footer>
   );

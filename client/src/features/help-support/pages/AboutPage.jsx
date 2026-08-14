@@ -141,7 +141,7 @@ function AboutPage() {
           <h2 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">Who We Are</h2>
 
           <p className="text-sm sm:text-[15px] text-slate-600 leading-relaxed max-w-4xl">
-            Gamage Recruiters&apos; Job Portal connects job seekers and employers through a simple
+            Job Portal connects job seekers and employers through a simple
             and transparent hiring experience. We help candidates discover suitable opportunities
             and support companies in building strong teams.
           </p>

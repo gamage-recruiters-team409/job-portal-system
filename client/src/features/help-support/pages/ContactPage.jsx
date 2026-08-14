@@ -198,7 +198,7 @@ function ContactPage() {
                   hover:shadow-md
                 "
               >
-                Gamage Recruiters, Panadura
+                Job Portal, Panadura
               </div>
             </div>
           </div>

@@ -8,7 +8,7 @@ export default function AuthLayout({ title, subtitle, children }) {
       <section className="w-full max-w-md">
         <div className="mb-8 text-center">
           <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
-            Gamage Recruiters
+            Job Portal
           </p>
           <h1 className="mt-3 text-2xl font-bold text-slate-900">{title}</h1>
           {subtitle && <p className="mt-2 text-sm leading-6 text-slate-600">{subtitle}</p>}
