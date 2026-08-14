@@ -16,7 +16,10 @@ const STATUS_STYLES = {
 };
 
 function StatusBadge({ status }) {
-  const style = STATUS_STYLES[status] ?? { label: status, className: 'bg-slate-100 text-slate-600' };
+  const style = STATUS_STYLES[status] ?? {
+    label: status,
+    className: 'bg-slate-100 text-slate-600',
+  };
   return (
     <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${style.className}`}>
       {style.label}
@@ -51,14 +54,21 @@ export default function ApplicationHistoryPage() {
       setApplications(data ?? []);
     } catch (err) {
       console.error('Error fetching application history:', err);
-      setError(err?.response?.data?.message || 'Failed to load your applications. Please try again.');
+      setError(
+        err?.response?.data?.message || 'Failed to load your applications. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
   }
 
+  const normalizedSearch = search.trim().toLowerCase();
+
   const filtered = applications.filter((app) => {
-    const matchesSearch = !search.trim() || app.job?.title?.toLowerCase().includes(search.toLowerCase());
+    const title = app.job?.title?.toLowerCase() ?? '';
+    const company = app.job?.companyId?.companyName?.toLowerCase() ?? '';
+    const matchesSearch =
+      !normalizedSearch || title.includes(normalizedSearch) || company.includes(normalizedSearch);
     const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -66,9 +76,7 @@ export default function ApplicationHistoryPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-          Application History
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900">Application History</h1>
         <p className="mt-2 text-sm text-slate-500">
           Track every job you've applied to and its current status.
         </p>
@@ -92,7 +100,7 @@ export default function ApplicationHistoryPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by job title"
+            placeholder="Search by job title or company name"
             className="w-full rounded-xl border border-slate-300 py-2.5 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
@@ -137,7 +145,8 @@ export default function ApplicationHistoryPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtered.map((app) => {
-                const lastUpdated = app.statusHistory?.[app.statusHistory.length - 1]?.changedAt ?? app.updatedAt;
+                const lastUpdated =
+                  app.statusHistory?.[app.statusHistory.length - 1]?.changedAt ?? app.updatedAt;
                 return (
                   <tr key={app._id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 font-medium text-slate-900">
@@ -152,7 +161,10 @@ export default function ApplicationHistoryPage() {
                     </td>
                     <td className="px-4 py-3 text-slate-500">{formatDate(lastUpdated)}</td>
                     <td className="px-4 py-3">
-                      <Link to={`/my-applications/${app._id}`} className="font-medium text-blue-600 hover:underline">
+                      <Link
+                        to={`/my-applications/${app._id}`}
+                        className="font-medium text-blue-600 hover:underline"
+                      >
                         View
                       </Link>
                     </td>
