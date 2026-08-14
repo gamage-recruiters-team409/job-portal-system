@@ -105,8 +105,28 @@ export default function ManageJobsPage() {
     runAction(jobId, (id) => closeJob(id, reason || undefined), 'Job closed.');
   };
 
-  const handleReopen = (jobId) => {
-    runAction(jobId, (id) => reopenJob(id), 'Job reopened.');
+  const handleReopen = (job) => {
+    const isJobExpired = new Date(job.deadline) < new Date();
+
+    if (!isJobExpired) {
+      runAction(job._id, (id) => reopenJob(id), 'Job reopened.');
+      return;
+    }
+
+    const newDeadlineInput = window.prompt(
+      'This job has expired. Enter a new deadline (YYYY-MM-DD):'
+    );
+    if (!newDeadlineInput) {
+      return;
+    }
+
+    const parsedDate = new Date(newDeadlineInput);
+    if (Number.isNaN(parsedDate.getTime()) || parsedDate <= new Date()) {
+      setActionError('Please enter a valid future date in YYYY-MM-DD format.');
+      return;
+    }
+
+    runAction(job._id, (id) => reopenJob(id, parsedDate.toISOString()), 'Job reopened.');
   };
 
   const handleDelete = (jobId) => {
@@ -128,38 +148,24 @@ export default function ManageJobsPage() {
 
   const renderActions = (job) => {
     const disabled = busyJobId === job._id;
-    const actions = [
-      <button
-        key="status"
-        type="button"
-        className={linkClass}
-        onClick={() => navigate(`/jobs/${job._id}/status`)}
-        disabled={disabled}
-      >
-        Status
-      </button>,
-      <button
-        key="preview"
-        type="button"
-        className={linkClass}
-        onClick={() => window.open(`/jobs/${job._id}`, '_blank')}
-        disabled={disabled}
-      >
-        Preview
-      </button>,
-    ];
+    const actions = [];
+
+    if (job.status === JOB_STATUSES.PUBLISHED) {
+      actions.push(
+        <button
+          key="preview"
+          type="button"
+          className={linkClass}
+          onClick={() => window.open(`/jobs/${job._id}`, '_blank')}
+          disabled={disabled}
+        >
+          Preview
+        </button>
+      );
+    }
 
     if (job.status === JOB_STATUSES.DRAFT || job.status === JOB_STATUSES.REJECTED) {
       actions.push(
-        <button
-          key="edit"
-          type="button"
-          className={linkClass}
-          onClick={() => navigate(`/jobs/${job._id}/edit`)}
-          disabled={disabled}
-        >
-          Edit
-        </button>,
         <button
           key="submit"
           type="button"
@@ -201,7 +207,7 @@ export default function ManageJobsPage() {
           key="reopen"
           type="button"
           className={linkClass}
-          onClick={() => handleReopen(job._id)}
+          onClick={() => handleReopen(job)}
           disabled={disabled}
         >
           Reopen
@@ -216,6 +222,10 @@ export default function ManageJobsPage() {
           Delete
         </button>
       );
+    }
+
+    if (actions.length === 0) {
+      return <span className="text-sm text-[#94A3B8]">—</span>;
     }
 
     return <div className="flex flex-wrap gap-3">{actions}</div>;
@@ -324,7 +334,7 @@ export default function ManageJobsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-[#475569]">{formatDate(job.deadline)}</td>
-                    <td className="px-4 py-3 text-[#475569]">0</td>
+                    <td className="px-4 py-3 text-[#475569]">—</td>
                     <td className="px-4 py-3">{renderActions(job)}</td>
                   </tr>
                 );
