@@ -230,8 +230,9 @@ export const EMPLOYER_NAV_ITEMS = [
   {
     label: 'Jobs',
     icon: BriefcaseIcon,
-    path: '/jobs',
-    disabled: true,
+    path: '/jobs/manage',
+    altPaths: ['/jobs'],
+    disabled: false,
   },
   {
     label: 'Applicants',
@@ -348,9 +349,7 @@ function Sidebar({ navItems = EMPLOYER_NAV_ITEMS, onLogout, isOpen = false, onCl
     if (!path) return false;
     if (path === '/') return location.pathname === '/';
     const allPaths = [path, ...(altPaths || [])];
-    return allPaths.some(
-      (p) => location.pathname === p || location.pathname.startsWith(`${p}/`)
-    );
+    return allPaths.some((p) => location.pathname === p || location.pathname.startsWith(`${p}/`));
   }
 
   return (
