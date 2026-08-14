@@ -82,6 +82,7 @@ export default function EducationPage() {
 
   const [loadError, setLoadError] = useState('');
   const [actionError, setActionError] = useState('');
+  const [deleteError, setDeleteError] = useState('');
 
   const [successMessage, setSuccessMessage] = useState('');
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState('');
@@ -135,6 +136,7 @@ export default function EducationPage() {
 
   function clearNotifications() {
     setActionError('');
+    setDeleteError('');
     setSuccessMessage('');
     setDeleteSuccessMessage('');
   }
@@ -168,6 +170,15 @@ export default function EducationPage() {
     setEditingEntry(null);
     setActionError('');
     reset(EMPTY_FORM);
+  }
+
+  function closeDeleteDialog() {
+    if (isDeleting) {
+      return;
+    }
+
+    setDeleteEntry(null);
+    setDeleteError('');
   }
 
   async function submitEducation(values) {
@@ -217,6 +228,7 @@ export default function EducationPage() {
 
     try {
       setIsDeleting(true);
+      setDeleteError('');
       setActionError('');
       setSuccessMessage('');
       setDeleteSuccessMessage('');
@@ -226,11 +238,13 @@ export default function EducationPage() {
       setEducation((current) => current.filter((entry) => entry._id !== deleteEntry._id));
 
       setDeleteEntry(null);
+      setDeleteError('');
 
       setDeleteSuccessMessage('Education entry deleted successfully.');
     } catch (requestError) {
-      setActionError(
-        requestError?.response?.data?.message || 'Unable to delete the education entry.'
+      setDeleteError(
+        requestError?.response?.data?.message ||
+          'Unable to delete the education entry. Please try again.'
       );
     } finally {
       setIsDeleting(false);
@@ -421,6 +435,7 @@ export default function EducationPage() {
                             type="button"
                             onClick={() => {
                               clearNotifications();
+                              setDeleteError('');
                               setDeleteEntry(entry);
                             }}
                             aria-label="Delete education"
@@ -483,7 +498,6 @@ export default function EducationPage() {
             aria-modal="true"
             aria-labelledby="education-form-title"
           >
-            {/* Form heading */}
             <div className="border-b border-slate-100 px-6 py-5 sm:px-8">
               <h2 id="education-form-title" className="text-lg font-bold text-slate-900">
                 {editingEntry?._id ? 'Edit education' : 'Add education'}
@@ -575,7 +589,6 @@ export default function EducationPage() {
 
                 {/* Start Date + End Date */}
                 <div className="grid gap-5 sm:grid-cols-2">
-                  {/* Start date */}
                   <div>
                     <label
                       htmlFor="startDate"
@@ -601,7 +614,6 @@ export default function EducationPage() {
                     )}
                   </div>
 
-                  {/* End date */}
                   <div>
                     <label
                       htmlFor="endDate"
@@ -718,11 +730,7 @@ export default function EducationPage() {
             {/* Close button */}
             <button
               type="button"
-              onClick={() => {
-                if (!isDeleting) {
-                  setDeleteEntry(null);
-                }
-              }}
+              onClick={closeDeleteDialog}
               disabled={isDeleting}
               aria-label="Close delete confirmation"
               className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
@@ -759,12 +767,22 @@ export default function EducationPage() {
               action cannot be undone.
             </p>
 
+            {/* Delete request failure */}
+            {deleteError && (
+              <div
+                className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                role="alert"
+              >
+                {deleteError}
+              </div>
+            )}
+
             {/* Delete actions */}
             <div className="mt-7 flex items-center justify-between gap-4">
               <button
                 type="button"
                 disabled={isDeleting}
-                onClick={() => setDeleteEntry(null)}
+                onClick={closeDeleteDialog}
                 className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancel
