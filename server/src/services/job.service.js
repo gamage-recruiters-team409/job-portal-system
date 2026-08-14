@@ -256,6 +256,30 @@ async function getOwnedCompany(employerId) {
   return company;
 }
 
+/**
+ * Auto-closes ANY published job (across all employers) whose deadline has passed.
+ * Intended to run on a periodic scheduler (see jobs/expiredJobsScheduler.js),
+ * not per-request — this keeps the database itself accurate for every reader,
+ * including the public job listing.
+ */
+export async function autoCloseAllExpiredJobs() {
+  const result = await Job.updateMany(
+    { status: JOB_STATUSES.PUBLISHED, isDeleted: false, deadline: { $lt: new Date() } },
+    {
+      $set: { status: JOB_STATUSES.CLOSED },
+      $push: {
+        statusHistory: {
+          status: JOB_STATUSES.CLOSED,
+          changedAt: new Date(),
+          note: 'Automatically closed — deadline passed',
+        },
+      },
+    }
+  );
+
+  return result.modifiedCount;
+}
+
 export async function createJob({ employerId, payload }) {
   const company = await getOwnedCompany(employerId);
 
