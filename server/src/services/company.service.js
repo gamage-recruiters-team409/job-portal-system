@@ -322,7 +322,7 @@ export async function deleteCompany(userId) {
   if (jobCount > 0) {
     throw new ApiError(
       409,
-      'Cannot delete: this company still has job posts linked to it, including closed or archived ones. Remove them first.'
+      'Cannot delete this company because it has associated job records (including closed or archived positions). Companies with retained job history cannot currently be permanently deleted.'
     );
   }
 

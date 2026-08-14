@@ -30,8 +30,23 @@ export default function ChangeLogoModal({ isOpen, onClose, onSuccess, currentLog
       return;
     }
 
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    // Enforce minimum 200x200px dimensions (same rule as CompanyProfileForm)
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      if (img.naturalWidth < 200 || img.naturalHeight < 200) {
+        setError('Image must be at least 200x200px.');
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      setSelectedFile(file);
+      setPreviewUrl(objectUrl);
+    };
+    img.onerror = () => {
+      setError('Could not read this image file. Please try another.');
+      URL.revokeObjectURL(objectUrl);
+    };
+    img.src = objectUrl;
   };
 
   const handleSubmit = async (e) => {
@@ -109,7 +124,7 @@ export default function ChangeLogoModal({ isOpen, onClose, onSuccess, currentLog
                 className="hidden"
               />
             </label>
-            <p className="mt-2 text-xs text-slate-500">PNG or JPG up to 2MB</p>
+            <p className="mt-2 text-xs text-slate-500">PNG or JPG, max 2MB, min 200x200px</p>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-2">
