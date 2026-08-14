@@ -182,12 +182,72 @@ export default function ViewCompanyProfile() {
     return parts.join(' · ');
   };
 
-  // Loading State
+  // Loading State with Skeleton
   if (isLoading) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center p-8 text-slate-500">
-        <Loader2 className="h-8 w-8 animate-spin text-[#2563EB]" />
-        <p className="mt-3 text-sm font-medium">Loading company profile...</p>
+      <div className="p-6 md:p-8 space-y-6 font-[Inter,ui-sans-serif,system-ui,sans-serif] animate-pulse">
+        {/* Header Banner & Card Skeleton */}
+        <div className="overflow-hidden rounded-xl border border-[#E2E8F0] bg-white shadow-xs">
+          <div className="h-32 w-full bg-slate-200" />
+          <div className="px-6 pb-6 pt-0">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between -mt-10">
+              <div className="flex items-end gap-4">
+                <div className="h-24 w-24 rounded-xl border-4 border-white bg-slate-300 shadow-sm shrink-0" />
+                <div className="space-y-2 mb-2">
+                  <div className="h-6 w-48 rounded bg-slate-200" />
+                  <div className="h-4 w-36 rounded bg-slate-200" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-28 rounded-lg bg-slate-200" />
+                <div className="h-10 w-28 rounded-lg bg-slate-200" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Left Column (2fr) */}
+          <div className="space-y-6 lg:col-span-2">
+            <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs space-y-3">
+              <div className="h-5 w-24 rounded bg-slate-200" />
+              <div className="h-4 w-full rounded bg-slate-200" />
+              <div className="h-4 w-5/6 rounded bg-slate-200" />
+              <div className="h-4 w-4/6 rounded bg-slate-200" />
+            </div>
+
+            <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="h-5 w-32 rounded bg-slate-200" />
+                <div className="h-5 w-20 rounded-full bg-slate-200" />
+              </div>
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div key={i} className="rounded-lg border border-slate-100 p-4 space-y-2">
+                    <div className="h-4 w-44 rounded bg-slate-200" />
+                    <div className="h-3 w-32 rounded bg-slate-200" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column (1fr) */}
+          <div className="space-y-6 lg:col-span-1">
+            <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs space-y-4">
+              <div className="h-5 w-36 rounded bg-slate-200" />
+              <div className="space-y-3 pt-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex justify-between">
+                    <div className="h-4 w-20 rounded bg-slate-200" />
+                    <div className="h-4 w-28 rounded bg-slate-200" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
