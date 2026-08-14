@@ -5,6 +5,21 @@ export const getMyCompany = async () => {
   return data;
 };
 
+export const createCompany = async (payload) => {
+  const { data } = await apiClient.post('/companies', payload);
+  return data;
+};
+
+export const updateCompany = async (payload) => {
+  const { data } = await apiClient.put('/companies/me', payload);
+  return data;
+};
+
+export const deleteCompany = async () => {
+  const { data } = await apiClient.delete('/companies/me');
+  return data;
+};
+
 export const uploadCompanyLogo = async (file) => {
   const formData = new FormData();
   formData.append('companyLogo', file);

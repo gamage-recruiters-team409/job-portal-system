@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Building2,
   CheckCircle2,
@@ -12,8 +13,8 @@ import {
   RefreshCw,
   Loader2,
   Briefcase,
+  ImageUp,
 } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { getMyCompany } from '../../../services/companyService.js';
 import ChangeLogoModal from '../components/ChangeLogoModal.jsx';
 
@@ -49,6 +50,7 @@ function VerificationBadge({ status }) {
 }
 
 export default function ViewCompanyProfile() {
+  const navigate = useNavigate();
   const [company, setCompany] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -119,11 +121,11 @@ export default function ViewCompanyProfile() {
   }, []);
 
   const handleEditProfile = () => {
-    toast('Edit company profile feature coming soon!', { icon: 'ℹ️' });
+    navigate('/employer/company/edit');
   };
 
   const handleCreateCompany = () => {
-    toast('Create company profile feature coming soon!', { icon: 'ℹ️' });
+    navigate('/employer/company/create');
   };
 
   const handleLogoUpdated = (updatedCompany) => {
@@ -190,8 +192,8 @@ export default function ViewCompanyProfile() {
           </div>
           <h2 className="mt-4 text-xl font-bold text-[#0F172A]">No Company Profile Found</h2>
           <p className="mt-2 text-sm text-[#475569]">
-            You haven't created a company profile yet. Create a profile to showcase your organization,
-            post job openings, and manage job applications.
+            You haven't created a company profile yet. Create a profile to showcase your
+            organization, post job openings, and manage job applications.
           </p>
           <button
             type="button"
@@ -287,7 +289,15 @@ export default function ViewCompanyProfile() {
           </div>
 
           {/* Top-Right Action Buttons */}
-          <div className="flex flex-col items-start gap-1.5 sm:items-end flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsLogoModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-sm font-semibold text-[#2563EB] border border-blue-100 hover:bg-blue-100 transition"
+            >
+              <ImageUp className="h-4 w-4" />
+              <span>Change logo</span>
+            </button>
             <button
               type="button"
               onClick={handleEditProfile}
@@ -295,13 +305,6 @@ export default function ViewCompanyProfile() {
             >
               <Pencil className="h-4 w-4" />
               <span>Edit profile</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsLogoModalOpen(true)}
-              className="text-xs font-medium text-[#2563EB] hover:text-blue-700 hover:underline transition self-end sm:self-auto"
-            >
-              Change logo
             </button>
           </div>
         </div>
@@ -343,7 +346,8 @@ export default function ViewCompanyProfile() {
                 Job management integration coming soon
               </p>
               <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
-                Your posted job openings and applicant counts will be displayed here once the Employer Job Management module is integrated.
+                Your posted job openings and applicant counts will be displayed here once the
+                Employer Job Management module is integrated.
               </p>
             </div>
           </div>
@@ -357,29 +361,21 @@ export default function ViewCompanyProfile() {
             <div className="mt-4 divide-y divide-slate-100 text-sm">
               <div className="flex items-center justify-between py-2.5">
                 <span className="text-[#64748B]">Industry</span>
-                <span className="font-medium text-[#0F172A]">
-                  {company.industry || '—'}
-                </span>
+                <span className="font-medium text-[#0F172A]">{company.industry || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2.5">
                 <span className="text-[#64748B]">Company size</span>
                 <span className="font-medium text-[#0F172A]">
-                  {company.companySize ? (
-                    company.companySize.toLowerCase().includes('employee') ? (
-                      company.companySize
-                    ) : (
-                      `${company.companySize} employees`
-                    )
-                  ) : (
-                    '—'
-                  )}
+                  {company.companySize
+                    ? company.companySize.toLowerCase().includes('employee')
+                      ? company.companySize
+                      : `${company.companySize} employees`
+                    : '—'}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2.5">
                 <span className="text-[#64748B]">Founded</span>
-                <span className="font-medium text-[#0F172A]">
-                  {company.foundedYear || '—'}
-                </span>
+                <span className="font-medium text-[#0F172A]">{company.foundedYear || '—'}</span>
               </div>
               <div className="flex items-center justify-between py-2.5">
                 <span className="text-[#64748B]">Website</span>
@@ -441,7 +437,10 @@ export default function ViewCompanyProfile() {
 
             {/* Show date/admin only if dedicated verification metadata is provided */}
             {company.verificationStatus === 'verified' &&
-              (company.verifiedAt || company.verifiedOn || company.verifiedBy || company.verifiedByName) && (
+              (company.verifiedAt ||
+                company.verifiedOn ||
+                company.verifiedBy ||
+                company.verifiedByName) && (
                 <div className="mt-4 space-y-3 border-t border-slate-100 pt-3 text-sm">
                   {(company.verifiedAt || company.verifiedOn) && (
                     <div>
