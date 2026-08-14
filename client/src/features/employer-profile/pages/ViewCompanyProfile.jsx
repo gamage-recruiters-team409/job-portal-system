@@ -120,20 +120,23 @@ export default function ViewCompanyProfile() {
         }
       });
 
-    // Fetch employer jobs for the Open Positions section
+    // Fetch employer jobs for the Open Positions section (restricted to PUBLISHED jobs only)
     getEmployerJobs()
       .then((res) => {
         if (!isMounted) return;
         const jobsList = Array.isArray(res?.data?.jobs)
           ? res.data.jobs
           : Array.isArray(res?.jobs)
-          ? res.jobs
-          : Array.isArray(res?.data)
-          ? res.data
-          : Array.isArray(res)
-          ? res
-          : [];
-        setJobs(jobsList);
+            ? res.jobs
+            : Array.isArray(res?.data)
+              ? res.data
+              : Array.isArray(res)
+                ? res
+                : [];
+        const publishedJobs = jobsList.filter(
+          (job) => (job.status || '').toLowerCase() === 'published'
+        );
+        setJobs(publishedJobs);
       })
       .catch((err) => {
         if (!isMounted) return;

@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { getMyCompany } from '../../../services/companyService.js';
 import { getEmployerStatistics } from '../../../services/statisticsService.js';
-import { getApplicants, getEmployerJobs } from '../../../services/applicantService.js';
+import { getApplicants } from '../../../services/applicantService.js';
 import ChangeLogoModal from '../components/ChangeLogoModal.jsx';
 
 // Verification Status Badge
@@ -62,27 +62,47 @@ function VerificationBadge({ status }) {
 function ApplicationStatusBadge({ status }) {
   const normalized = (status || '').toLowerCase();
 
-  if (['shortlisted', 'selected'].includes(normalized)) {
-    return (
-      <span className="inline-flex items-center rounded-full bg-[#DCFCE7] px-2.5 py-0.5 text-xs font-medium text-[#16A34A]">
-        Shortlisted
-      </span>
-    );
+  switch (normalized) {
+    case 'shortlisted':
+      return (
+        <span className="inline-flex items-center rounded-full bg-[#DCFCE7] px-2.5 py-0.5 text-xs font-medium text-[#16A34A]">
+          Shortlisted
+        </span>
+      );
+    case 'selected':
+      return (
+        <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+          Selected
+        </span>
+      );
+    case 'under_review':
+    case 'reviewing':
+    case 'in_review':
+      return (
+        <span className="inline-flex items-center rounded-full bg-[#EFF6FF] px-2.5 py-0.5 text-xs font-medium text-[#2563EB]">
+          Under Review
+        </span>
+      );
+    case 'rejected':
+      return (
+        <span className="inline-flex items-center rounded-full bg-[#FEE2E2] px-2.5 py-0.5 text-xs font-medium text-[#DC2626]">
+          Rejected
+        </span>
+      );
+    case 'withdrawn':
+      return (
+        <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
+          Withdrawn
+        </span>
+      );
+    case 'applied':
+    default:
+      return (
+        <span className="inline-flex items-center rounded-full bg-[#F1F5F9] px-2.5 py-0.5 text-xs font-medium text-[#64748B]">
+          Applied
+        </span>
+      );
   }
-
-  if (['reviewing', 'under_review', 'in_review'].includes(normalized)) {
-    return (
-      <span className="inline-flex items-center rounded-full bg-[#EFF6FF] px-2.5 py-0.5 text-xs font-medium text-[#2563EB]">
-        Reviewing
-      </span>
-    );
-  }
-
-  return (
-    <span className="inline-flex items-center rounded-full bg-[#F1F5F9] px-2.5 py-0.5 text-xs font-medium text-[#64748B]">
-      Applied
-    </span>
-  );
 }
 
 // Calculate Company Profile Completeness (11 fields)
@@ -180,53 +200,21 @@ export default function EmployerDashboard() {
     }
   }, []);
 
-  // 3. Fetch Recent Applications
+  // 3. Fetch Recent Applications (Employer-wide recent applications)
   const fetchApplications = useCallback(async () => {
     setAppsLoading(true);
     setAppsError(null);
     try {
-      // 1. Fetch employer's jobs list first
-      const jobsRes = await getEmployerJobs();
-      const jobs = Array.isArray(jobsRes?.data?.jobs)
-        ? jobsRes.data.jobs
-        : Array.isArray(jobsRes?.jobs)
-        ? jobsRes.jobs
-        : Array.isArray(jobsRes?.data)
-        ? jobsRes.data
-        : Array.isArray(jobsRes)
-        ? jobsRes
-        : [];
-
-      if (!jobs || jobs.length === 0) {
-        setRecentApplications([]);
-        setAppsLoading(false);
-        return;
-      }
-
-      // 2. Fetch applicants for available jobs using required jobId parameter
-      const jobPromises = jobs.slice(0, 3).map((job) =>
-        getApplicants({ jobId: job._id, limit: 5 }).catch(() => null)
-      );
-      const results = await Promise.all(jobPromises);
-
-      const allApps = [];
-      for (let i = 0; i < results.length; i++) {
-        const res = results[i];
-        if (!res) continue;
-        const fallbackJobTitle = jobs[i]?.title;
-        const appsList =
-          res?.data?.applications || res?.applications || res?.data || (Array.isArray(res) ? res : []);
-        for (const app of appsList) {
-          allApps.push({
-            ...app,
-            jobTitle: app.job?.title || fallbackJobTitle,
-          });
-        }
-      }
-
-      // Sort by creation date descending and pick top 5
-      allApps.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-      setRecentApplications(allApps.slice(0, 5));
+      // Call employer-wide applicant list endpoint directly (omitting jobId queries all employer jobs).
+      // The backend doesn't guarantee sort order, so we pull a larger batch and
+      // sort/limit newest-first on the client to keep this fix local to the dashboard.
+      const res = await getApplicants({ limit: 50 });
+      const appsList =
+        res?.data?.applications || res?.applications || res?.data || (Array.isArray(res) ? res : []);
+      const newestFirst = [...appsList]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
+      setRecentApplications(newestFirst);
     } catch (err) {
       console.error('Error fetching recent applications:', err);
       setAppsError(err.response?.data?.message || 'Failed to load recent applications.');
@@ -256,7 +244,8 @@ export default function EmployerDashboard() {
     return stats[key];
   };
 
-  // Stat Cards configuration (8 cards total)
+  // Stat Cards configuration aligned directly with backend API fields:
+  // (totalJobPosts, activeJobs, closedJobs, totalApplicationsReceived)
   const statCardsConfig = [
     {
       label: 'Active jobs',
@@ -267,46 +256,48 @@ export default function EmployerDashboard() {
     {
       label: 'Total applications',
       key: 'totalApplicationsReceived',
-      fallbackKey: 'totalApplications',
       icon: Users,
       color: 'text-emerald-600 bg-emerald-50',
+    },
+    {
+      label: 'Total job posts',
+      key: 'totalJobPosts',
+      icon: FileText,
+      color: 'text-[#2563EB] bg-blue-50',
+    },
+    {
+      label: 'Closed jobs',
+      key: 'closedJobs',
+      icon: CheckCircle2,
+      color: 'text-amber-600 bg-amber-50',
     },
     {
       label: 'Interviews this week',
       key: 'interviewsThisWeek',
       icon: Calendar,
-      color: 'text-amber-600 bg-amber-50',
+      color: 'text-slate-500 bg-slate-100',
+      isComingSoon: true,
     },
     {
       label: 'Profile views',
       key: 'profileViews',
       icon: Eye,
-      color: 'text-indigo-600 bg-indigo-50',
-    },
-    {
-      label: 'Open positions',
-      key: 'openPositions',
-      fallbackKey: 'totalJobPosts',
-      icon: FolderOpen,
-      color: 'text-purple-600 bg-purple-50',
+      color: 'text-slate-500 bg-slate-100',
+      isComingSoon: true,
     },
     {
       label: 'Shortlisted candidates',
       key: 'shortlistedCandidates',
       icon: UserCheck,
-      color: 'text-teal-600 bg-teal-50',
-    },
-    {
-      label: 'Recently posted jobs',
-      key: 'recentlyPostedJobs',
-      icon: PlusSquare,
-      color: 'text-sky-600 bg-sky-50',
+      color: 'text-slate-500 bg-slate-100',
+      isComingSoon: true,
     },
     {
       label: 'Interviews scheduled',
       key: 'interviewsScheduled',
       icon: Video,
-      color: 'text-rose-600 bg-rose-50',
+      color: 'text-slate-500 bg-slate-100',
+      isComingSoon: true,
     },
   ];
 
@@ -526,9 +517,8 @@ export default function EmployerDashboard() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCardsConfig.map((card) => {
           const IconComp = card.icon;
-          const val = getStatValue(card.key) !== '—' 
-            ? getStatValue(card.key) 
-            : (card.fallbackKey ? getStatValue(card.fallbackKey) : '—');
+          const isComingSoon = card.isComingSoon;
+          const val = isComingSoon ? '—' : getStatValue(card.key);
 
           return (
             <div
@@ -537,9 +527,15 @@ export default function EmployerDashboard() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#64748B]">{card.label}</span>
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${card.color} shadow-xs`}>
-                  <IconComp className="h-5 w-5" />
-                </div>
+                {isComingSoon ? (
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+                    Coming soon
+                  </span>
+                ) : (
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${card.color} shadow-xs`}>
+                    <IconComp className="h-5 w-5" />
+                  </div>
+                )}
               </div>
               <div className="mt-3 text-2xl font-bold tracking-tight text-[#0F172A]">{val}</div>
             </div>
@@ -607,10 +603,10 @@ export default function EmployerDashboard() {
                     const roleTitle = app.job?.title || app.appliedRole || app.jobTitle || 'Job Role';
                     const appliedDate = app.createdAt
                       ? new Date(app.createdAt).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })
                       : '—';
 
                     return (
@@ -646,33 +642,51 @@ export default function EmployerDashboard() {
           <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
             <h2 className="text-lg font-bold text-[#0F172A]">Quick actions</h2>
             <div className="mt-4 space-y-3">
-              <button
-                type="button"
-                onClick={() => navigate('/jobs/create')}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Post a job</span>
-              </button>
+              {noCompany || !company ? (
+                <button
+                  type="button"
+                  onClick={() => navigate('/employer/company/create')}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Create company profile</span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/jobs/create')}
+                    disabled={company.verificationStatus !== 'verified'}
+                    title={
+                      company.verificationStatus !== 'verified'
+                        ? 'Company verification is required to post jobs'
+                        : ''
+                    }
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Post a job</span>
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => navigate('/employer/company/edit')}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 py-2.5 text-sm font-semibold text-[#0F172A] shadow-xs hover:bg-slate-50 transition"
-              >
-                <Pencil className="h-4 w-4 text-slate-500" />
-                <span>Edit company profile</span>
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/employer/company/edit')}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 py-2.5 text-sm font-semibold text-[#0F172A] shadow-xs hover:bg-slate-50 transition"
+                  >
+                    <Pencil className="h-4 w-4 text-slate-500" />
+                    <span>Edit company profile</span>
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => setIsLogoModalOpen(true)}
-                disabled={!company}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 py-2.5 text-sm font-semibold text-[#0F172A] shadow-xs hover:bg-slate-50 disabled:opacity-50 transition"
-              >
-                <Upload className="h-4 w-4 text-slate-500" />
-                <span>Upload logo</span>
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsLogoModalOpen(true)}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 py-2.5 text-sm font-semibold text-[#0F172A] shadow-xs hover:bg-slate-50 transition"
+                  >
+                    <Upload className="h-4 w-4 text-slate-500" />
+                    <span>Upload logo</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -682,25 +696,27 @@ export default function EmployerDashboard() {
             <div className="mt-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-[#64748B]">Status</span>
-                <VerificationBadge status={company?.verificationStatus} />
+                <VerificationBadge status={company?.verificationStatus || (noCompany ? 'Unverified' : 'pending')} />
               </div>
 
-              {company?.verificationStatus === 'verified' && (
+              {company?.verificationStatus === 'verified' && (company.verifiedAt || company.verifiedBy) && (
                 <div className="space-y-2 border-t border-slate-100 pt-3 text-xs text-[#64748B]">
-                  <div className="flex items-center justify-between">
-                    <span>Verified on</span>
-                    <span className="font-medium text-[#0F172A]">
-                      {company.verifiedAt
-                        ? new Date(company.verifiedAt).toLocaleDateString()
-                        : '—'}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Verified by</span>
-                    <span className="font-medium text-[#0F172A]">
-                      {company.verifiedBy || 'Admin Review Team'}
-                    </span>
-                  </div>
+                  {company.verifiedAt && (
+                    <div className="flex items-center justify-between">
+                      <span>Verified on</span>
+                      <span className="font-medium text-[#0F172A]">
+                        {new Date(company.verifiedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                  {company.verifiedBy && (
+                    <div className="flex items-center justify-between">
+                      <span>Verified by</span>
+                      <span className="font-medium text-[#0F172A]">
+                        {company.verifiedBy}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -713,6 +729,12 @@ export default function EmployerDashboard() {
               {company?.verificationStatus === 'rejected' && (
                 <p className="border-t border-slate-100 pt-3 text-xs text-red-600">
                   Verification was rejected. Update profile details and submit for re-verification.
+                </p>
+              )}
+
+              {noCompany && (
+                <p className="border-t border-slate-100 pt-3 text-xs text-[#64748B]">
+                  Create a company profile to submit your organization for verification.
                 </p>
               )}
             </div>
