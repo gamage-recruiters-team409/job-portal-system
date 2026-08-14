@@ -42,7 +42,7 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Sign in to your Job Portal account.">
+    <AuthLayout title="Welcome back" subtitle="Sign in to your Gamage Recruiters account.">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
         {serverError && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -87,7 +87,7 @@ export default function LoginPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-600">
-        New to Job Portal?{' '}
+        New to Gamage Recruiters?{' '}
         <Link to="/register" className="font-medium text-blue-600 hover:text-blue-700">
           Create an account
         </Link>

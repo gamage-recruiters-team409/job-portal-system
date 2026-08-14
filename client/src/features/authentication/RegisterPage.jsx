@@ -146,7 +146,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <AuthLayout title="Create an account" subtitle="Join Job Portal to find or post jobs.">
+    <AuthLayout title="Create an account" subtitle="Join Gamage Recruiters to find or post jobs.">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
         {serverError && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
