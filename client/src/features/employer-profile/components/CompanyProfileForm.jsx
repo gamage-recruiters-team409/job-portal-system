@@ -248,8 +248,26 @@ export default function CompanyProfileForm({
       return;
     }
 
-    setLogoFile(file);
-    setLogoPreview(URL.createObjectURL(file));
+    // Neither this form nor the backend upload route enforces a minimum
+    // logo size elsewhere, so the "min 200x200px" helper text below is only
+    // true if it's checked here — load the file as an image to read its
+    // natural dimensions before accepting it.
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      if (img.naturalWidth < 200 || img.naturalHeight < 200) {
+        setLogoError('Image must be at least 200x200px.');
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      setLogoFile(file);
+      setLogoPreview(objectUrl);
+    };
+    img.onerror = () => {
+      setLogoError('Could not read this image file. Please try another.');
+      URL.revokeObjectURL(objectUrl);
+    };
+    img.src = objectUrl;
   };
 
   const handleRemoveLogo = () => {

@@ -130,8 +130,9 @@ export default function EditCompanyProfile() {
     setDeleteError('');
 
     try {
-      // Guarded server-side (409) if the company still has active job posts
-      // — Company is a shared model referenced by Jobs, so deletion is never
+      // Guarded server-side (409) if the company still has ANY job posts
+      // linked to it — active, closed, or soft-deleted/archived — since
+      // Company is a shared model referenced by Jobs and deletion is never
       // allowed to orphan job data. See the NOTE in company.service.js.
       await deleteCompany();
       toast.success('Company profile deleted.');
@@ -185,8 +186,8 @@ export default function EditCompanyProfile() {
         <div>
           <p className="text-sm font-semibold text-[#0F172A]">Delete company profile</p>
           <p className="mt-1 text-sm text-[#64748B]">
-            Permanently remove this company profile. This cannot be undone, and is blocked while you
-            still have active job posts.
+            Permanently remove this company profile. This cannot be undone, and is blocked while
+            any job posts — including closed or archived ones — are still linked to it.
           </p>
         </div>
         <button

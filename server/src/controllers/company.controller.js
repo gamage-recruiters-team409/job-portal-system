@@ -112,8 +112,9 @@ export async function uploadLogo(req, res, next) {
 /**
  * DELETE /companies/me — Delete the authenticated employer's company profile.
  * Company is a shared model referenced by Jobs (see the NOTE in
- * company.service.js) — deleteCompanyService refuses with 409 if the company
- * still has active job posts, so this can never orphan job data.
+ * company.service.js) — deleteCompanyService refuses with 409 if ANY job post
+ * is still linked to the company (active, closed, or soft-deleted/archived),
+ * so this can never orphan job data.
  */
 export async function deleteCompany(req, res, next) {
   try {

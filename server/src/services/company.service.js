@@ -320,7 +320,10 @@ export async function deleteCompany(userId) {
 
   const jobCount = await Job.countDocuments({ companyId: company._id });
   if (jobCount > 0) {
-    throw new ApiError(409, 'Cannot delete: this company has active job posts. Remove them first.');
+    throw new ApiError(
+      409,
+      'Cannot delete: this company still has job posts linked to it, including closed or archived ones. Remove them first.'
+    );
   }
 
   // Delete the database record BEFORE touching Cloudinary — same ordering

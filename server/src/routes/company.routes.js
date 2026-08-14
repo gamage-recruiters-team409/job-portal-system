@@ -35,8 +35,9 @@ companyRouter.put(
 );
 
 // Deletion is blocked by a 409 guard (see the NOTE in company.service.js) if
-// the company still has active job posts — Company is shared with Jobs and
-// must never be deleted out from under them.
+// ANY job post is still linked to the company — active, closed, or
+// soft-deleted/archived — since Company is shared with Jobs and must never
+// be deleted out from under them.
 companyRouter.delete('/me', protect, requireRole(USER_ROLES.EMPLOYER), deleteCompany);
 
 // Logo upload route (POST & PUT supported)
