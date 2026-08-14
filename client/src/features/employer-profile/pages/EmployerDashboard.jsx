@@ -533,15 +533,15 @@ export default function EmployerDashboard() {
           return (
             <div
               key={card.label}
-              className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-xs transition hover:border-slate-300"
+              className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-200"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#64748B]">{card.label}</span>
-                <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${card.color}`}>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${card.color} shadow-xs`}>
                   <IconComp className="h-5 w-5" />
                 </div>
               </div>
-              <div className="mt-3 text-2xl font-bold text-[#0F172A]">{val}</div>
+              <div className="mt-3 text-2xl font-bold tracking-tight text-[#0F172A]">{val}</div>
             </div>
           );
         })}
