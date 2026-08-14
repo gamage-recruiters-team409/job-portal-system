@@ -16,6 +16,7 @@ import {
   ImageUp,
 } from 'lucide-react';
 import { getMyCompany } from '../../../services/companyService.js';
+import { getEmployerJobs } from '../../../services/applicantService.js';
 import ChangeLogoModal from '../components/ChangeLogoModal.jsx';
 
 // Verification status badge sub-component
@@ -56,6 +57,10 @@ export default function ViewCompanyProfile() {
   const [error, setError] = useState(null);
   const [is404, setIs404] = useState(false);
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
+
+  const [jobs, setJobs] = useState([]);
+  const [jobsLoading, setJobsLoading] = useState(true);
+  const [jobsError, setJobsError] = useState(null);
 
   const fetchCompanyProfile = async (resetStates = false) => {
     if (resetStates) {
@@ -112,6 +117,32 @@ export default function ViewCompanyProfile() {
       .finally(() => {
         if (isMounted) {
           setIsLoading(false);
+        }
+      });
+
+    // Fetch employer jobs for the Open Positions section
+    getEmployerJobs()
+      .then((res) => {
+        if (!isMounted) return;
+        const jobsList = Array.isArray(res?.data?.jobs)
+          ? res.data.jobs
+          : Array.isArray(res?.jobs)
+          ? res.jobs
+          : Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res)
+          ? res
+          : [];
+        setJobs(jobsList);
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        setJobsError(err.response?.data?.message || 'Failed to load open positions.');
+        setJobs([]);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setJobsLoading(false);
         }
       });
 
@@ -332,23 +363,86 @@ export default function ViewCompanyProfile() {
 
           {/* Open positions Card */}
           <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h2 className="text-lg font-bold text-[#0F172A]">Open positions</h2>
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-                Coming soon
-              </span>
+              {jobs.length > 0 && (
+                <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-[#2563EB]">
+                  {jobs.length} {jobs.length === 1 ? 'position' : 'positions'}
+                </span>
+              )}
             </div>
 
-            {/* Coming Soon state for Job Management module */}
-            <div className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center">
-              <Briefcase className="mx-auto h-8 w-8 text-slate-400" />
-              <p className="mt-2 text-sm font-medium text-slate-700">
-                Job management integration coming soon
-              </p>
-              <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
-                Your posted job openings and applicant counts will be displayed here once the
-                Employer Job Management module is integrated.
-              </p>
+            <div className="mt-4">
+              {jobsLoading ? (
+                <div className="space-y-3">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="animate-pulse rounded-lg border border-slate-100 p-4 space-y-2">
+                      <div className="h-4 w-40 rounded bg-slate-200" />
+                      <div className="h-3 w-28 rounded bg-slate-200" />
+                    </div>
+                  ))}
+                </div>
+              ) : jobsError ? (
+                <div className="flex flex-col items-center justify-center py-6 text-center text-red-600">
+                  <AlertCircle className="h-6 w-6 text-red-500 mb-1" />
+                  <p className="text-xs font-medium">{jobsError}</p>
+                </div>
+              ) : jobs.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center">
+                  <Briefcase className="mx-auto h-8 w-8 text-slate-400" />
+                  <p className="mt-2 text-sm font-semibold text-[#0F172A]">No open positions</p>
+                  <p className="mt-1 text-xs text-[#64748B] max-w-sm mx-auto">
+                    You haven't posted any job openings yet. Click below to create your first job posting.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/jobs/create')}
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Post a job</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {jobs.map((job) => {
+                    const statusStr = (job.status || 'published').toLowerCase();
+                    const statusBadge =
+                      statusStr === 'published' ? (
+                        <span className="rounded-full bg-[#DCFCE7] px-2.5 py-0.5 text-xs font-semibold text-[#16A34A]">
+                          Published
+                        </span>
+                      ) : statusStr === 'draft' ? (
+                        <span className="rounded-full bg-[#FEF3C7] px-2.5 py-0.5 text-xs font-semibold text-[#D97706]">
+                          Draft
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+                          Closed
+                        </span>
+                      );
+
+                    return (
+                      <div key={job._id} className="flex flex-col gap-2 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-bold text-[#0F172A]">{job.title}</h3>
+                            {statusBadge}
+                          </div>
+                          <p className="mt-1 text-xs text-[#64748B]">
+                            {[job.jobType, job.workMode, job.location].filter(Boolean).join(' · ')}
+                          </p>
+                        </div>
+                        {job.createdAt && (
+                          <span className="text-xs text-slate-400 shrink-0">
+                            Posted {new Date(job.createdAt).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
