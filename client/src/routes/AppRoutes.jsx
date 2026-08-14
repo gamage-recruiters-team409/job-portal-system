@@ -26,6 +26,7 @@ import CreateCompanyProfile from '../features/employer-profile/pages/CreateCompa
 import EditCompanyProfile from '../features/employer-profile/pages/EditCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
+import SavedJobsPage from '../features/saved-jobs/pages/SavedJobsPage.jsx';
 import DashboardStatisticsPage from '../features/notifications/pages/DashboardStatisticsPage.jsx';
 import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.jsx';
 import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
@@ -101,12 +102,25 @@ function AppRoutes() {
         }
       />
 
+      {/* Create Job - Employer only */}
       <Route
         path="/jobs/create"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
               <CreateJobPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Saved Jobs - Job Seeker only */}
+      <Route
+        path="/saved-jobs"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <SavedJobsPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
