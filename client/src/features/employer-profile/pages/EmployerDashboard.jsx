@@ -50,6 +50,15 @@ function VerificationBadge({ status }) {
     );
   }
 
+  if (normalizedStatus === 'unverified') {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+        <AlertCircle className="h-3.5 w-3.5" />
+        Not submitted
+      </span>
+    );
+  }
+
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEF3C7] px-2.5 py-1 text-xs font-semibold text-[#D97706]">
       <Clock className="h-3.5 w-3.5" />
@@ -206,15 +215,11 @@ export default function EmployerDashboard() {
     setAppsError(null);
     try {
       // Call employer-wide applicant list endpoint directly (omitting jobId queries all employer jobs).
-      // The backend doesn't guarantee sort order, so we pull a larger batch and
-      // sort/limit newest-first on the client to keep this fix local to the dashboard.
-      const res = await getApplicants({ limit: 50 });
+      // Backend sorts newest-first before pagination, so the first page is already the latest 5.
+      const res = await getApplicants({ limit: 5 });
       const appsList =
         res?.data?.applications || res?.applications || res?.data || (Array.isArray(res) ? res : []);
-      const newestFirst = [...appsList]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5);
-      setRecentApplications(newestFirst);
+      setRecentApplications(appsList);
     } catch (err) {
       console.error('Error fetching recent applications:', err);
       setAppsError(err.response?.data?.message || 'Failed to load recent applications.');
