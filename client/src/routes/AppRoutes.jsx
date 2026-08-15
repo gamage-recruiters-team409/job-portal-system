@@ -23,6 +23,7 @@ import JobDetailPage from '../features/public-jobs/pages/JobDetailPage.jsx';
 import AuthenticatedLayout from '../layouts/authenticated/AuthenticatedLayout.jsx';
 import ViewCompanyProfile from '../features/employer-profile/pages/ViewCompanyProfile.jsx';
 import CreateCompanyProfile from '../features/employer-profile/pages/CreateCompanyProfile.jsx';
+import NotificationCenterPage from '../features/notifications/pages/NotificationCenterPage.jsx';
 import EditCompanyProfile from '../features/employer-profile/pages/EditCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
@@ -233,6 +234,18 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <EducationPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Notification Center - Shared across all authenticated roles */}
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER, USER_ROLES.ADMIN]}>
+            <AuthenticatedLayout>
+              <NotificationCenterPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
