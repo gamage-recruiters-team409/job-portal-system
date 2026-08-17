@@ -37,10 +37,10 @@ export async function listApplicantsController(req, res, next) {
 export async function getApplicantByIdController(req, res, next) {
   try {
     const { id } = req.validatedParams ?? req.params;
-    const { application } = await getApplicantById(id, req.user);
+    const { application, jobSeekerProfile } = await getApplicantById(id, req.user);
     return sendSuccess(res, {
       message: 'Applicant retrieved successfully.',
-      data: { application },
+      data: { application, jobSeekerProfile },
     });
   } catch (error) {
     return next(error);
