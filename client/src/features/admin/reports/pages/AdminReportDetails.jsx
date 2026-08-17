@@ -682,7 +682,7 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
                   status: 'resolved',
                   jobAction: 'keep',
                   successTitle: 'Report Resolved',
-                  successMessage: 'The job post has been kept active.',
+                  successMessage: 'No additional moderation action was applied to this job.',
                 })
               )}
               className={
@@ -744,11 +744,11 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
             ? 'Are you sure you want to suspend this job post? Suspending will hide' +
               'the job from the platform and it will no longer be visible to job' +
               'seekers. This action will also resolve the report.'
-            : 'Are you sure you want to dismiss this report? The job post will remain' +
-              'active on the platform. This action cannot be undone.'
+            : 'Are you sure you want to dismiss this report? No additional moderation ' +
+              'action will be applied to this job. This action cannot be undone.'
         }
         confirmText={modalConfig.actionType === 'suspend' ? 'Suspend Job' : 'Dismiss Report'}
-        cancelText={modalConfig.actionType === 'suspend' ? 'Keep Job Active' : 'Cancel'}
+        cancelText="Cancel"
         requireCheckbox={modalConfig.actionType === 'suspend'}
         checkboxLabel="I understand the administrative implications of suspending this job post."
         isLoading={isSubmitting}
