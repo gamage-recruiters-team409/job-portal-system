@@ -84,7 +84,10 @@ export default function RejectConfirmationModal({
             position?
           </p>
 
-          <p className="mt-1 text-xs text-gray-500">This action cannot be undone.</p>
+          <p className="mt-1 text-xs text-gray-500">
+            The candidate&apos;s status will be updated to Rejected. You can change their status
+            again later from the Update Status option if needed.
+          </p>
         </div>
 
         {/* Error Alert */}

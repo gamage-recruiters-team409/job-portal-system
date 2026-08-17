@@ -197,7 +197,7 @@ export default function ApplicantDetails() {
 
   // Most recent education calculation
   const latestEducation = jobSeekerProfile?.education?.length
-    ? jobSeekerProfile.education[0]
+    ? jobSeekerProfile.education[jobSeekerProfile.education.length - 1]
     : null;
 
   return (
@@ -272,9 +272,7 @@ export default function ApplicantDetails() {
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-xl font-bold text-gray-900">{name}</h1>
-                  <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                    Active Applicant
-                  </span>
+                  <StatusBadge status={status} />
                 </div>
                 {jobSeekerProfile?.currentPosition && (
                   <p className="mt-0.5 text-sm font-medium text-gray-600">

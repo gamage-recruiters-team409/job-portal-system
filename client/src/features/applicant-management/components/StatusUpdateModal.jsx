@@ -64,7 +64,7 @@ export default function StatusUpdateModal({
   // Available options: exclude current status (Rule 4)
   const availableOptions = EMPLOYER_SETTABLE_STATUSES.filter((opt) => opt.key !== currentStatus);
 
-  const [selectedStatus, setSelectedStatus] = useState(() => availableOptions[0]?.key || '');
+  const [selectedStatus, setSelectedStatus] = useState('');
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -239,6 +239,9 @@ export default function StatusUpdateModal({
                   disabled={isSubmitting || availableOptions.length === 0}
                   className="h-[50px] w-full appearance-none rounded-xl border border-gray-300 bg-white px-4 pr-10 text-sm font-medium text-gray-900 shadow-xs focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-100 disabled:opacity-60"
                 >
+                  <option value="" disabled>
+                    Select new status
+                  </option>
                   {availableOptions.map((opt) => (
                     <option key={opt.key} value={opt.key}>
                       {opt.label}
@@ -398,7 +401,7 @@ export default function StatusUpdateModal({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || availableOptions.length === 0}
+              disabled={isSubmitting || availableOptions.length === 0 || !selectedStatus}
               className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-50"
             >
               {isSubmitting ? (
