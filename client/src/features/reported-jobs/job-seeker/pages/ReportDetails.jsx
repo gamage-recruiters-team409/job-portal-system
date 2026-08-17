@@ -8,12 +8,7 @@ const STATUS_STYLES = {
   resolved: { label: 'Resolved', badge: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
   dismissed: { label: 'Dismissed', badge: 'bg-red-100 text-red-700', dot: 'bg-red-500' },
 };
-const TIMELINE_STEPS = [
-  { key: 'submitted', label: 'Report submitted' },
-  { key: 'under_review', label: 'Under Review' },
-  { key: 'resolved', label: 'Resolved' },
-  { key: 'dismissed', label: 'Dismissed' },
-];
+
 function Section({ title, children }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6">
@@ -48,8 +43,6 @@ function StatusBadge({ status }) {
 function StatusTimeline({ status }) {
   const statusConfig = {
     pending: {
-      label: 'Report Submitted',
-      description: 'Your report was submitted',
       color: {
         active: 'border-amber-500 bg-amber-50',
         circle: 'bg-amber-500',
@@ -59,8 +52,6 @@ function StatusTimeline({ status }) {
     },
 
     under_review: {
-      label: 'Under Review',
-      description: 'Admin is reviewing your report',
       color: {
         active: 'border-blue-500 bg-blue-50',
         circle: 'bg-blue-500',
@@ -70,8 +61,6 @@ function StatusTimeline({ status }) {
     },
 
     resolved: {
-      label: 'Resolved',
-      description: 'Report was resolved successfully',
       color: {
         active: 'border-green-500 bg-green-50',
         circle: 'bg-green-500',
@@ -81,8 +70,6 @@ function StatusTimeline({ status }) {
     },
 
     dismissed: {
-      label: 'Dismissed',
-      description: 'Report was dismissed',
       color: {
         active: 'border-red-500 bg-red-50',
         circle: 'bg-red-500',
@@ -119,8 +106,7 @@ function StatusTimeline({ status }) {
   };
 
   const currentIndex = statusOrder[status] ?? 0;
-
-  const currentColor = statusConfig[status]?.color;
+  const currentColor = statusConfig[status]?.color || statusConfig.pending.color;
 
   return (
     <div className="w-full px-4 py-6">
@@ -132,7 +118,6 @@ function StatusTimeline({ status }) {
           return (
             <React.Fragment key={step.key}>
               <div className="flex flex-col items-center">
-                {/* Circle */}
                 <div
                   className={`
                     flex h-12 w-12 items-center justify-center
@@ -141,9 +126,9 @@ function StatusTimeline({ status }) {
 
                     ${
                       completed
-                        ? `${currentColor?.circle} border-transparent`
+                        ? `${currentColor.circle} border-transparent`
                         : active
-                          ? `${currentColor?.active} animate-pulse`
+                          ? `${currentColor.active} animate-pulse`
                           : 'border-gray-300 bg-gray-100'
                     }
                   `}
@@ -154,37 +139,34 @@ function StatusTimeline({ status }) {
                     <div
                       className={`
                         h-4 w-4 rounded-full
-                        ${currentColor?.circle}
+                        ${currentColor.circle}
                       `}
                     />
                   ) : null}
                 </div>
 
-                {/* Title */}
                 <p
                   className={`
                     mt-3 text-center text-sm font-semibold
 
-                    ${active ? currentColor?.text : completed ? 'text-gray-900' : 'text-gray-400'}
+                    ${active ? currentColor.text : completed ? 'text-gray-900' : 'text-gray-400'}
                   `}
                 >
                   {step.label}
                 </p>
 
-                {/* Description */}
                 <p className="mt-1 max-w-[130px] text-center text-xs text-gray-500">
                   {step.description}
                 </p>
               </div>
 
-              {/* Line */}
               {index !== steps.length - 1 && (
                 <div
                   className={`
                     mx-4 mt-6 h-1 flex-1 rounded-full
                     transition-all duration-700
 
-                    ${index < currentIndex ? currentColor?.line : 'bg-gray-200'}
+                    ${index < currentIndex ? currentColor.line : 'bg-gray-200'}
                   `}
                 />
               )}
