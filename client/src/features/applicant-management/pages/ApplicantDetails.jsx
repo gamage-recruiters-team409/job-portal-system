@@ -200,13 +200,16 @@ export default function ApplicantDetails() {
     ? jobSeekerProfile.education[jobSeekerProfile.education.length - 1]
     : null;
 
-  const isWithdrawn = status === APPLICATION_STATUSES.WITHDRAWN;
+  // ✅ ULTIMATE BULLETPROOF CHECK: ignores leading/trailing spaces, any casing
+  const isWithdrawn = status?.trim().toLowerCase().includes('withdrawn') || false;
+
   const isAlreadyShortlisted = status === APPLICATION_STATUSES.SHORTLISTED;
   const isAlreadyRejected = status === APPLICATION_STATUSES.REJECTED;
 
   const canUpdateStatus = !isWithdrawn;
   const canShortlist = !isWithdrawn && !isAlreadyShortlisted;
   const canReject = !isWithdrawn && !isAlreadyRejected;
+  const canViewCv = !isWithdrawn;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -425,6 +428,7 @@ export default function ApplicantDetails() {
                 This application was withdrawn by the candidate. No further actions are available.
               </div>
             )}
+            {/* Buttons are always visible, but disabled logic handles the styling */}
             <div className="mt-4 space-y-3">
               <button
                 type="button"
@@ -472,12 +476,16 @@ export default function ApplicantDetails() {
                 Reject Candidate
               </button>
 
-              {/* TODO: Wire View and Download CV logic in separate branch */}
               <button
                 type="button"
-                disabled
-                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2.5 text-center text-sm font-medium text-gray-500 opacity-60 cursor-not-allowed"
-                title="CV Download will be wired in dedicated CV flow branch"
+                onClick={() => navigate(`/applicants/${id}/cv`)}
+                disabled={!canViewCv}
+                title={
+                  !canViewCv
+                    ? 'This application has been withdrawn by the candidate and can no longer be updated.'
+                    : undefined
+                }
+                className="w-full rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 text-center text-sm font-medium text-green-700 shadow-xs transition hover:bg-green-100 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 View and Download CV
               </button>

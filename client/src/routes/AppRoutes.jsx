@@ -13,6 +13,7 @@ import MyReportedJobs from '../features/reported-jobs/job-seeker/pages/MyReporte
 import ReportDetails from '../features/reported-jobs/job-seeker/pages/ReportDetails.jsx';
 import ApplicantList from '../features/applicant-management/pages/ApplicantList.jsx';
 import ApplicantDetails from '../features/applicant-management/pages/ApplicantDetails.jsx';
+import ApplicantCvView from '../features/applicant-management/pages/ApplicantCvView.jsx';
 import AboutPage from '../features/help-support/pages/AboutPage.jsx';
 import ContactPage from '../features/help-support/pages/ContactPage.jsx';
 import FAQPage from '../features/help-support/pages/FAQPage.jsx';
@@ -101,6 +102,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
               <ApplicantDetails />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/applicants/:id/cv"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <ApplicantCvView />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }

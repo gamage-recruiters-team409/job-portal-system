@@ -101,3 +101,15 @@ export const rejectApplicant = async (applicationId, { note } = {}) => {
 
   return data;
 };
+
+/**
+ * Fetch a short-lived signed CV download URL for an applicant.
+ *
+ * @param {string} applicationId - The application document ID.
+ * @returns {Promise<object>} The raw `data` envelope containing { downloadUrl, expiresAt, fileName }.
+ */
+export const getApplicantCv = async (applicationId) => {
+  const { data } = await apiClient.get(`/applicants/${applicationId}/cv`);
+
+  return data;
+};
