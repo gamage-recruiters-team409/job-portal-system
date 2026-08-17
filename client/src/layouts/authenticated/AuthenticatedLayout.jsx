@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import TopNavbar from '../../components/common/TopNavbar.jsx';
 import Sidebar, {
@@ -6,15 +6,52 @@ import Sidebar, {
   JOB_SEEKER_NAV_ITEMS,
 } from '../../components/layout/Sidebar.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
+import notificationService from '../../services/notificationService.js';
+import NotificationDropdown from '../../features/notifications/components/NotificationDropdown.jsx';
 
 export default function AuthenticatedLayout({ children, navItems }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // --- NEW: Notification State ---
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsError, setNotificationsError] = useState(null);
+
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  // --- NEW: Fetch Notifications safely on mount using IIFE pattern ---
+  useEffect(() => {
+    const fetchInitialNotifications = async () => {
+      try {
+        const data = await notificationService.getNotifications(1, 5);
+        const fetchedNotifications = data.notifications || [];
+        
+        setNotifications(fetchedNotifications);
+        
+        // Calculate exact unread count from the real API data
+        const unread = fetchedNotifications.filter(n => n.status === 'Unread').length;
+        setUnreadCount(unread);
+      } catch (error) {
+        console.error('Failed to load notifications:', error);
+        setNotificationsError('Unable to load notifications.');
+      }
+    };
+
+    if (user) {
+      fetchInitialNotifications();
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  // --- NEW: Toggle Dropdown ---
+  const handleNotificationsClick = () => {
+    setIsDropdownOpen(prev => !prev);
   };
 
   const isEmployer = user?.role === 'employer';
@@ -40,6 +77,17 @@ export default function AuthenticatedLayout({ children, navItems }) {
         onLogout={handleLogout}
         profilePath={profilePath}
         profileDisabled={isProfileDisabled}
+        // --- NEW: Props passed to TopNavbar ---
+        notificationCount={unreadCount}
+        onNotificationsClick={handleNotificationsClick}
+      />
+
+      {/* --- NEW: Render the dropdown below the navbar --- */}
+      <NotificationDropdown 
+        isOpen={isDropdownOpen}
+        notifications={notifications}
+        error={notificationsError}
+        onClose={() => setIsDropdownOpen(false)}
       />
 
       {/* Main Body */}
