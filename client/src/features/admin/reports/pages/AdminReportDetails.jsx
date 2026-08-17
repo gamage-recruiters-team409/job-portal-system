@@ -304,17 +304,30 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
                     </p>
                   </div>
                 </div>
-                <Link
-                  to={`/jobs/${report.jobId?._id || report.jobId}`}
-                  target="_blank"
-                  className={
-                    'text-blue-600 bg-blue-50 sm:bg-transparent sm:hover:bg-blue-50 px-4 py-2 rounded-xl transition-colors ' +
-                    'flex items-center justify-center gap-2 text-sm font-medium w-full sm:w-auto shrink-0 '
-                  }
-                >
-                  <span className="whitespace-nowrap">View Job Post</span>
-                  <ExternalLink size={18} />
-                </Link>
+                {isJobSuspendable ? (
+                  <Link
+                    to={`/jobs/${report.jobId?._id || report.jobId}`}
+                    target="_blank"
+                    className={
+                      'text-blue-600 bg-blue-50 sm:bg-transparent sm:hover:bg-blue-50 px-4 py-2 rounded-xl transition-colors ' +
+                      'flex items-center justify-center gap-2 text-sm font-medium w-full sm:w-auto shrink-0 '
+                    }
+                  >
+                    <span className="whitespace-nowrap">View Job Post</span>
+                    <ExternalLink size={18} />
+                  </Link>
+                ) : (
+                  <div
+                    className={
+                      'text-slate-400 bg-slate-50 px-4 py-2 rounded-xl ' +
+                      'flex items-center justify-center gap-2 text-sm font-medium w-full sm:w-auto shrink-0 cursor-not-allowed '
+                    }
+                    title="Job is no longer published"
+                  >
+                    <span className="whitespace-nowrap">Job Unavailable</span>
+                    <Ban size={18} />
+                  </div>
+                )}
               </div>
 
               <div className="p-6 flex flex-col gap-6">

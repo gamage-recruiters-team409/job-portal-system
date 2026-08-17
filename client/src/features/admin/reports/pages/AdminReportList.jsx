@@ -48,9 +48,13 @@ const AdminReportList = () => {
         if (searchQuery) params.search = searchQuery;
         const data = await getAdminReports(params);
         if (isMounted) {
-          setReports(data.data.reports);
-          setTotalPages(data.data.totalPages);
-          setTotalReports(data.data.total);
+          if (data.data.reports.length === 0 && page > 1) {
+            setPage((p) => p - 1);
+          } else {
+            setReports(data.data.reports);
+            setTotalPages(data.data.totalPages);
+            setTotalReports(data.data.total);
+          }
         }
       } catch (err) {
         if (isMounted) {
