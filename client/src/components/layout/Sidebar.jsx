@@ -229,8 +229,10 @@ export const EMPLOYER_NAV_ITEMS = [
   {
     label: 'Jobs',
     icon: BriefcaseIcon,
-    path: '/jobs',
-    disabled: true,
+    // PR #52 (Manage Jobs) has shipped /jobs/manage into develop.
+    path: '/jobs/manage',
+    altPaths: ['/jobs'],
+    disabled: false,
   },
   {
     label: 'Applicants',
@@ -267,7 +269,6 @@ export const JOB_SEEKER_NAV_ITEMS = [
     label: 'Find Jobs',
     icon: BriefcaseIcon,
     path: '/jobs',
-    disabled: true,
   },
   {
     label: 'Messages',

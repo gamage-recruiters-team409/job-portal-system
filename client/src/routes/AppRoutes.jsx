@@ -26,13 +26,16 @@ import CreateCompanyProfile from '../features/employer-profile/pages/CreateCompa
 import EditCompanyProfile from '../features/employer-profile/pages/EditCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
+import ManageJobsPage from '../features/job-management/pages/ManageJobsPage.jsx';
 import SavedJobsPage from '../features/saved-jobs/pages/SavedJobsPage.jsx';
 import DashboardStatisticsPage from '../features/notifications/pages/DashboardStatisticsPage.jsx';
+import EmployerDashboard from '../features/employer-profile/pages/EmployerDashboard.jsx';
 import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.jsx';
 import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
 import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileCompletionPage.jsx';
 import SkillsPage from '../features/job-seeker-profile/pages/SkillsPage.jsx';
 import EducationPage from '../features/job-seeker-profile/pages/EducationPage.jsx';
+import ExperiencePage from '../features/job-seeker-profile/pages/ExperiencePage.jsx';
 
 function AppRoutes() {
   return (
@@ -115,6 +118,17 @@ function AppRoutes() {
         }
       />
 
+      <Route
+        path="/jobs/manage"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <ManageJobsPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
       {/* Saved Jobs - Job Seeker only */}
       <Route
         path="/saved-jobs"
@@ -127,13 +141,13 @@ function AppRoutes() {
         }
       />
 
-      {/* Dashboard Statistics - Employer */}
+      {/* Dashboard - Employer */}
       <Route
         path="/employer/dashboard"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
-              <DashboardStatisticsPage />
+              <EmployerDashboard />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
@@ -233,6 +247,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <EducationPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/experience"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <ExperiencePage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
