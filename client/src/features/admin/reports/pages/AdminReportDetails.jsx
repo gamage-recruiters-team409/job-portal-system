@@ -528,11 +528,11 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
                           'text-blue-700 font-bold '
                         }
                       >
-                        {report.reportedBy?.firstName?.[0] || 'U'}
+                        {report.reportedBy?.name?.[0] || 'U'}
                       </div>
                       <div>
                         <p className="font-semibold text-slate-900">
-                          {report.reportedBy?.firstName} {report.reportedBy?.lastName}
+                          {report.reportedBy?.name}
                         </p>
                         <p className="text-sm text-slate-500">{report.reportedBy?.email}</p>
                       </div>
