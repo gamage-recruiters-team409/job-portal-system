@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getApplicationHistory } from '../../../services/applicationService.js';
 import LoadingState from '../../../components/jobs/LoadingState.jsx';
 import EmptyState from '../../../components/jobs/EmptyState.jsx';
+import takingNotesIllustration from '../../../assets/illustrations/taking-notes-rafiki.png';
 
 // Backend status values -> friendly display labels + badge colors.
 // "selected" is intentionally displayed as "Selected" (not "Approved") —
@@ -35,6 +36,62 @@ function formatDate(dateString) {
   });
 }
 
+// Inline illustration for a genuinely empty history — kept local to this
+// page so it doesn't affect the shared EmptyState component used elsewhere
+// (e.g. Bimsara's Public Jobs page).
+function NoApplicationsIllustration() {
+  return (
+    <svg width="120" height="120" viewBox="0 0 200 200" fill="none">
+      <circle cx="100" cy="100" r="90" fill="#EFF6FF" />
+      <rect
+        x="55"
+        y="60"
+        width="90"
+        height="110"
+        rx="8"
+        fill="white"
+        stroke="#93C5FD"
+        strokeWidth="3"
+      />
+      <line
+        x1="70"
+        y1="85"
+        x2="130"
+        y2="85"
+        stroke="#BFDBFE"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+      <line
+        x1="70"
+        y1="100"
+        x2="130"
+        y2="100"
+        stroke="#BFDBFE"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+      <line
+        x1="70"
+        y1="115"
+        x2="110"
+        y2="115"
+        stroke="#BFDBFE"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+      <circle cx="140" cy="140" r="28" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="3" />
+      <path
+        d="M132 140l6 6 12-12"
+        stroke="#2563EB"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+  );
+}
 export default function ApplicationHistoryPage() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -124,10 +181,28 @@ export default function ApplicationHistoryPage() {
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">
           {error}
         </div>
+      ) : applications.length === 0 ? (
+        <div className="flex flex-col items-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+          <img src={takingNotesIllustration} alt="No applications yet" className="h-48 w-48" />
+          <h3 className="mt-4 text-lg font-semibold text-slate-900">No applications yet</h3>
+          <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+            Jobs you apply to will show up here so you can track their status.
+          </p>
+          <Link
+            to="/jobs"
+            className="mt-6 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+          >
+            Browse Jobs
+          </Link>
+        </div>
       ) : filtered.length === 0 ? (
         <EmptyState
-          title="No applications yet"
-          message="Jobs you apply to will show up here so you can track their status."
+          title="No matching applications"
+          message={
+            normalizedSearch
+              ? `No applications match "${search.trim()}"${statusFilter !== 'all' ? ' with the selected status filter' : ''}. Try a different search term or clear the filter.`
+              : 'No applications match the selected status filter. Try a different status or select "All".'
+          }
         />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-slate-200">
