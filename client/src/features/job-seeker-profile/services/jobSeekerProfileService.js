@@ -2,21 +2,25 @@ import apiClient from '../../../services/apiClient.js';
 
 export async function getMyProfile() {
   const { data } = await apiClient.get('/job-seeker-profile/me');
+
   return data.data.profile;
 }
 
 export async function updateMyProfile(payload) {
   const { data } = await apiClient.patch('/job-seeker-profile/me', payload);
+
   return data.data.profile;
 }
 
 export async function getMyProfileCompletion() {
   const { data } = await apiClient.get('/job-seeker-profile/me/completion');
+
   return data.data.completion;
 }
 
 export async function getActiveSkills() {
   const { data } = await apiClient.get('/skills');
+
   return data.data.skills;
 }
 
@@ -44,4 +48,22 @@ export async function deleteMyEducation(entryId) {
   const { data } = await apiClient.delete(`/job-seeker-profile/me/education/${entryId}`);
 
   return data.data.education;
+}
+
+export async function addMyExperience(payload) {
+  const { data } = await apiClient.post('/job-seeker-profile/me/experience', payload);
+
+  return data.data.experience;
+}
+
+export async function updateMyExperience(entryId, payload) {
+  const { data } = await apiClient.patch(`/job-seeker-profile/me/experience/${entryId}`, payload);
+
+  return data.data.experience;
+}
+
+export async function deleteMyExperience(entryId) {
+  const { data } = await apiClient.delete(`/job-seeker-profile/me/experience/${entryId}`);
+
+  return data.data.experience;
 }

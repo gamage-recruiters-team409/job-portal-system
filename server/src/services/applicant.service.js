@@ -196,7 +196,10 @@ export async function listApplicants(query, reqUser) {
     },
   });
 
-  // Stages 5+: count total then paginate (facet keeps it to one round-trip)
+  // Stage 5: sort newest first so pagination is stable and predictable
+  pipeline.push({ $sort: { createdAt: -1 } });
+
+  // Stages 6+: count total then paginate (facet keeps it to one round-trip)
   pipeline.push({
     $facet: {
       data: [{ $skip: (page - 1) * limit }, { $limit: limit }],
