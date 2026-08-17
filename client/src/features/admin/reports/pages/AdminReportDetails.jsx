@@ -562,7 +562,7 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
                     </span>
                     <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
                       <p className="text-sm text-slate-800 italic">
-                        "{report.details || 'No additional details provided by the reporter.'}"
+                        "{report.description || 'No additional details provided by the reporter.'}"
                       </p>
                     </div>
                   </div>
