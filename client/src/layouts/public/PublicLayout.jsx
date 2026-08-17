@@ -95,29 +95,36 @@ export default function PublicLayout() {
             </Link>
           </nav>
 
-          {/* Right: Auth Action Buttons or Profile Avatar */}
+          {/* Right: Auth Action Buttons or Profile Avatar
+               Three distinct states:
+               1. Authenticated + profilePath  → profile link (Job Seeker / Employer)
+               2. Authenticated + no profilePath → nothing (Admin, no approved route yet)
+               3. Not authenticated             → guest Sign In / Register controls
+          */}
           <div className="flex items-center gap-3">
-            {isAuthenticated && profilePath ? (
-              <Link
-                to={profilePath}
-                className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 transition-colors hover:border-blue-300 hover:bg-blue-50"
-              >
-                {user?.avatar || user?.companyLogo ? (
-                  <img
-                    src={user.avatar || user.companyLogo}
-                    alt={displayName}
-                    className="h-8 w-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-                    {initials}
-                  </span>
-                )}
-                <div className="hidden text-left text-xs sm:block">
-                  <p className="font-bold text-slate-900">{displayName}</p>
-                  <p className="text-slate-500 capitalize">{user?.role?.replace('_', ' ')}</p>
-                </div>
-              </Link>
+            {isAuthenticated ? (
+              profilePath ? (
+                <Link
+                  to={profilePath}
+                  className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 transition-colors hover:border-blue-300 hover:bg-blue-50"
+                >
+                  {user?.avatar || user?.companyLogo ? (
+                    <img
+                      src={user.avatar || user.companyLogo}
+                      alt={displayName}
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                      {initials}
+                    </span>
+                  )}
+                  <div className="hidden text-left text-xs sm:block">
+                    <p className="font-bold text-slate-900">{displayName}</p>
+                    <p className="text-slate-500 capitalize">{user?.role?.replace('_', ' ')}</p>
+                  </div>
+                </Link>
+              ) : null
             ) : (
               <div className="flex items-center gap-2 sm:gap-3">
                 <Link
@@ -180,15 +187,18 @@ export default function PublicLayout() {
                 <span>Support</span>
               </Link>
 
-              {isAuthenticated && profilePath ? (
-                <Link
-                  to={profilePath}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="mt-2 flex items-center gap-2.5 rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-900"
-                >
-                  <User size={18} className="text-blue-600" />
-                  <span>Go to My Profile / Dashboard</span>
-                </Link>
+              {/* Mobile auth section — same three-state logic as desktop */}
+              {isAuthenticated ? (
+                profilePath ? (
+                  <Link
+                    to={profilePath}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="mt-2 flex items-center gap-2.5 rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-900"
+                  >
+                    <User size={18} className="text-blue-600" />
+                    <span>Go to My Profile / Dashboard</span>
+                  </Link>
+                ) : null
               ) : (
                 <div className="mt-2 flex flex-col gap-2 border-t border-slate-100 pt-3">
                   <Link
