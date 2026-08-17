@@ -161,7 +161,7 @@ export default function CreateJobPage() {
 
   return (
     <div ref={topRef} className="mx-0 max-w-7xl p-10">
-      <Breadcrumb items={[{ label: 'Jobs', path: '/jobs' }, { label: 'Post a new job' }]} />
+      <Breadcrumb items={[{ label: 'Jobs', path: '/jobs/manage' }, { label: 'Post a new job' }]} />
       <h1 className="mt-4 text-3xl md:text-4xl font-bold text-[#000000]">Post a new job</h1>
       <p className="mt-2 text-base font-normal text-[#000000]">
         Fill in the details below to publish a new opening
@@ -340,7 +340,7 @@ export default function CreateJobPage() {
         <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-[#E2E8F0] pt-6">
           <button
             type="button"
-            onClick={() => navigate('/jobs')}
+            onClick={() => navigate('/jobs/manage')}
             className="rounded-lg border border-[#94A3B8] px-4 py-2 text-base font-semibold text-[#000000] hover:bg-[#94A3B8]"
           >
             Cancel
