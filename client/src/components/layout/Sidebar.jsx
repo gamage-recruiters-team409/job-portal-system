@@ -229,10 +229,10 @@ export const EMPLOYER_NAV_ITEMS = [
   {
     label: 'Jobs',
     icon: BriefcaseIcon,
-    // Employer Job Management belongs to the separate Manage Jobs module.
-    // Keep disabled until that feature ships its /jobs/manage route.
+    // PR #52 (Manage Jobs) has shipped /jobs/manage into develop.
     path: '/jobs/manage',
-    disabled: true,
+    altPaths: ['/jobs'],
+    disabled: false,
   },
   {
     label: 'Applicants',
@@ -280,7 +280,7 @@ export const JOB_SEEKER_NAV_ITEMS = [
     label: 'Saved Jobs',
     icon: BookmarkIcon,
     path: '/saved-jobs',
-    disabled: true,
+    
   },
   {
     label: 'My Applications',

@@ -299,16 +299,6 @@ export default function ApplicantList() {
       abortRef.current.abort();
     }
 
-    if (!appliedFilters.jobId) {
-      abortRef.current = null;
-      setApplicants([]);
-      setTotalItems(0);
-      setTotalPages(1);
-      setIsLoading(false);
-      setError('');
-      return;
-    }
-
     const controller = new AbortController();
     abortRef.current = controller;
 
@@ -318,7 +308,7 @@ export default function ApplicantList() {
     try {
       const response = await getApplicants({
         search: appliedFilters.search || undefined,
-        jobId: appliedFilters.jobId,
+        jobId: appliedFilters.jobId || undefined,
         status: appliedFilters.status || undefined,
         experience: appliedFilters.experience || undefined,
         page: currentPage,
@@ -553,8 +543,7 @@ export default function ApplicantList() {
               id="btn-apply-filters"
               type="button"
               onClick={handleApplyFilters}
-              disabled={!draftJobId}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
             >
               <svg
                 width="14"
@@ -666,8 +655,7 @@ export default function ApplicantList() {
                     const name = applicant.jobSeeker?.name ?? 'Unknown';
                     const email = applicant.jobSeeker?.email ?? '';
 
-                    const selectedJob = jobOptions.find((j) => j._id === appliedFilters.jobId);
-                    const jobTitle = selectedJob?.title ?? '—';
+                    const jobTitle = applicant.job?.title ?? '—';
 
                     const experience = '—';
 
@@ -737,25 +725,17 @@ export default function ApplicantList() {
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                   <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
-                <p className="text-sm font-medium text-gray-500">
-                  {!appliedFilters.jobId
-                    ? 'Select a job to view applicants'
-                    : 'No applicants found'}
-                </p>
+                <p className="text-sm font-medium text-gray-500">No applicants found</p>
                 <p className="text-xs text-gray-400">
-                  {!appliedFilters.jobId
-                    ? 'Please select a job from the dropdown above and apply filters.'
-                    : 'Try adjusting your filters or reset to view all applicants for this job.'}
+                  Try adjusting your filters or reset to view all applicants.
                 </p>
-                {!!appliedFilters.jobId && (
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="mt-1 rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50"
-                  >
-                    Reset Filters
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="mt-1 rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50"
+                >
+                  Reset Filters
+                </button>
               </div>
             )}
           </div>

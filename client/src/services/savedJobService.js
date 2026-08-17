@@ -1,30 +1,25 @@
 import apiClient from './apiClient.js';
 
 /**
- * Save a job posting for the authenticated Job Seeker.
- * Returns the saved-job object directly (data.data) to match the shared
- * Saved Jobs service contract from PR #49.
- * @param {string} jobId
+ * Saved Jobs API calls (Job Seeker).
+ * Backend wraps every response as { success, message, data }.
+ * apiClient automatically attaches the auth token via its interceptor.
  */
-export const saveJob = async (jobId) => {
+
+/** POST /saved-jobs — save a job. */
+export async function saveJob(jobId) {
   const { data } = await apiClient.post('/saved-jobs', { jobId });
   return data.data;
-};
+}
 
-/**
- * Remove a saved job posting for the authenticated Job Seeker.
- * @param {string} jobId
- */
-export const removeSavedJob = async (jobId) => {
+/** DELETE /saved-jobs/:jobId — remove a saved job. */
+export async function removeSavedJob(jobId) {
   const { data } = await apiClient.delete(`/saved-jobs/${jobId}`);
   return data;
-};
+}
 
-/**
- * Get all saved jobs for the authenticated Job Seeker.
- * Returns array of saved jobs directly (matching shared Saved Jobs service contract).
- */
-export const getSavedJobs = async () => {
+/** GET /saved-jobs — list the current job seeker's saved jobs. */
+export async function getSavedJobs() {
   const { data } = await apiClient.get('/saved-jobs');
   return data.data;
-};
+}
