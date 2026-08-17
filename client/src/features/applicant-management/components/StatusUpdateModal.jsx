@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { APPLICATION_STATUSES } from '../../../constants/statuses.js';
 import { updateApplicantStatus } from '../../../services/applicantService.js';
 
@@ -61,27 +61,13 @@ export default function StatusUpdateModal({
   onClose,
   onSuccess,
 }) {
-  const [selectedStatus, setSelectedStatus] = useState('');
+  // Available options: exclude current status (Rule 4)
+  const availableOptions = EMPLOYER_SETTABLE_STATUSES.filter((opt) => opt.key !== currentStatus);
+
+  const [selectedStatus, setSelectedStatus] = useState(() => availableOptions[0]?.key || '');
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-
-  // Available options: exclude current status (Rule 4)
-  const availableOptions = EMPLOYER_SETTABLE_STATUSES.filter(
-    (opt) => opt.key !== currentStatus
-  );
-
-  useEffect(() => {
-    if (isOpen) {
-      setError(null);
-      setNote('');
-      setIsSubmitting(false);
-      // Default to first available option
-      if (availableOptions.length > 0) {
-        setSelectedStatus(availableOptions[0].key);
-      }
-    }
-  }, [isOpen, currentStatus]);
 
   if (!isOpen) return null;
 
@@ -181,12 +167,18 @@ export default function StatusUpdateModal({
         <div className="mt-6 flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50/70 p-4 text-sm text-blue-900">
           <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-600 text-white">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2.5"
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
           <span>
-            <strong className="font-semibold text-gray-900">{applicantName || 'Applicant'}</strong> applied for{' '}
-            <strong className="font-semibold text-blue-600">{jobTitle || 'Job'}</strong> position
+            <strong className="font-semibold text-gray-900">{applicantName || 'Applicant'}</strong>{' '}
+            applied for <strong className="font-semibold text-blue-600">{jobTitle || 'Job'}</strong>{' '}
+            position
             {formattedDate ? ` on ${formattedDate}` : ''}
           </span>
         </div>
@@ -195,8 +187,18 @@ export default function StatusUpdateModal({
         {error && (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             <div className="flex items-start gap-2">
-              <svg className="mt-0.5 h-5 w-5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <span>{error}</span>
             </div>
@@ -212,7 +214,9 @@ export default function StatusUpdateModal({
                 Current Status
               </label>
               <div className="mt-2 flex h-[50px] items-center rounded-xl border border-amber-200/70 bg-amber-50/50 px-4">
-                <span className={`inline-flex items-center gap-2 text-sm font-semibold ${currentCfg.badge.split(' ')[1]}`}>
+                <span
+                  className={`inline-flex items-center gap-2 text-sm font-semibold ${currentCfg.badge.split(' ')[1]}`}
+                >
                   <span className={`h-2.5 w-2.5 rounded-full ${currentCfg.dot}`} />
                   {currentCfg.label}
                 </span>
@@ -221,7 +225,10 @@ export default function StatusUpdateModal({
 
             {/* New Status Select Dropdown */}
             <div>
-              <label htmlFor="newStatusSelect" className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+              <label
+                htmlFor="newStatusSelect"
+                className="block text-xs font-semibold uppercase tracking-wider text-gray-700"
+              >
                 New Status <span className="text-red-500">*</span>
               </label>
               <div className="relative mt-2">
@@ -240,7 +247,12 @@ export default function StatusUpdateModal({
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </div>
@@ -255,14 +267,20 @@ export default function StatusUpdateModal({
               </label>
               <div className="flex flex-wrap items-center gap-2">
                 {isOutsideStepper && (
-                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${currentCfg.badge}`}>
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${currentCfg.badge}`}
+                  >
                     <span className={`h-1.5 w-1.5 rounded-full ${currentCfg.dot}`} />
                     Current: {currentCfg.label}
                   </span>
                 )}
                 {isTargetRejected && (
-                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STATUS_CONFIG[APPLICATION_STATUSES.REJECTED].badge}`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${STATUS_CONFIG[APPLICATION_STATUSES.REJECTED].dot}`} />
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STATUS_CONFIG[APPLICATION_STATUSES.REJECTED].badge}`}
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${STATUS_CONFIG[APPLICATION_STATUSES.REJECTED].dot}`}
+                    />
                     Will be marked: Rejected
                   </span>
                 )}
@@ -293,13 +311,23 @@ export default function StatusUpdateModal({
                             isCompleted
                               ? 'bg-blue-600 text-white'
                               : isTarget
-                              ? 'bg-emerald-500 text-white ring-4 ring-emerald-100'
-                              : 'border-2 border-gray-300 bg-white text-gray-400'
+                                ? 'bg-emerald-500 text-white ring-4 ring-emerald-100'
+                                : 'border-2 border-gray-300 bg-white text-gray-400'
                           }`}
                         >
                           {isCompleted || isTarget ? (
-                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                            <svg
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2.5"
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                           ) : (
                             <span className="h-2.5 w-2.5 rounded-full bg-gray-300" />
@@ -310,8 +338,8 @@ export default function StatusUpdateModal({
                             isCompleted
                               ? 'text-blue-700 font-semibold'
                               : isTarget
-                              ? 'text-emerald-700 font-bold'
-                              : 'text-gray-500'
+                                ? 'text-emerald-700 font-bold'
+                                : 'text-gray-500'
                           }`}
                         >
                           {step.label}
@@ -338,12 +366,13 @@ export default function StatusUpdateModal({
           {/* Comments Textarea */}
           <div>
             <div className="flex items-center justify-between">
-              <label htmlFor="commentsNote" className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+              <label
+                htmlFor="commentsNote"
+                className="block text-xs font-semibold uppercase tracking-wider text-gray-700"
+              >
                 Comments (Optional)
               </label>
-              <span className="text-xs text-gray-400">
-                {note.length}/1000
-              </span>
+              <span className="text-xs text-gray-400">{note.length}/1000</span>
             </div>
             <textarea
               id="commentsNote"
@@ -375,15 +404,31 @@ export default function StatusUpdateModal({
               {isSubmitting ? (
                 <>
                   <svg className="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
                   </svg>
                   Updating...
                 </>
               ) : (
                 <>
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                    />
                   </svg>
                   Update Status
                 </>

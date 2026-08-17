@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { rejectApplicant } from '../../../services/applicantService.js';
 
 export default function RejectConfirmationModal({
@@ -12,14 +12,6 @@ export default function RejectConfirmationModal({
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      setNote('');
-      setError(null);
-      setIsSubmitting(false);
-    }
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -55,7 +47,12 @@ export default function RejectConfirmationModal({
           className="absolute right-4 top-4 rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
@@ -65,7 +62,12 @@ export default function RejectConfirmationModal({
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 text-red-500">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
               <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2.5"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </div>
           </div>
@@ -74,8 +76,12 @@ export default function RejectConfirmationModal({
 
           <p className="mt-2 text-sm text-gray-600">
             Are you sure you want to reject{' '}
-            <strong className="font-semibold text-red-600">{applicantName || 'this candidate'}</strong> for the{' '}
-            <strong className="font-semibold text-gray-900">{jobTitle || 'selected'}</strong> position?
+            <strong className="font-semibold text-red-600">
+              {applicantName || 'this candidate'}
+            </strong>{' '}
+            for the{' '}
+            <strong className="font-semibold text-gray-900">{jobTitle || 'selected'}</strong>{' '}
+            position?
           </p>
 
           <p className="mt-1 text-xs text-gray-500">This action cannot be undone.</p>
@@ -85,8 +91,18 @@ export default function RejectConfirmationModal({
         {error && (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-left text-sm text-red-700">
             <div className="flex items-start gap-2">
-              <svg className="mt-0.5 h-5 w-5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <span>{error}</span>
             </div>
@@ -97,12 +113,13 @@ export default function RejectConfirmationModal({
         <form onSubmit={handleConfirm} className="mt-5 space-y-5">
           <div>
             <div className="flex items-center justify-between">
-              <label htmlFor="rejectionReason" className="block text-xs font-semibold uppercase tracking-wider text-gray-700">
+              <label
+                htmlFor="rejectionReason"
+                className="block text-xs font-semibold uppercase tracking-wider text-gray-700"
+              >
                 Reason for rejection (Optional)
               </label>
-              <span className="text-xs text-gray-400">
-                {note.length}/1000
-              </span>
+              <span className="text-xs text-gray-400">{note.length}/1000</span>
             </div>
             <textarea
               id="rejectionReason"
@@ -134,15 +151,31 @@ export default function RejectConfirmationModal({
               {isSubmitting ? (
                 <>
                   <svg className="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
                   </svg>
                   Rejecting...
                 </>
               ) : (
                 <>
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                    />
                   </svg>
                   Reject
                 </>

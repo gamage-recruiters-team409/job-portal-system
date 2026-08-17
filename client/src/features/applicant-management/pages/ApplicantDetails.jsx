@@ -112,33 +112,35 @@ export default function ApplicantDetails() {
   const [isShortlistModalOpen, setIsShortlistModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
-  const fetchApplicantDetails = useCallback(async ({ silent = false } = {}) => {
-    if (!id) return;
-    if (!silent) setLoading(true);
-    try {
-      const response = await getApplicantById(id);
-      setApplicationData(response.data);
-      setError(null);
-      setRefreshError(null);
-    } catch (err) {
-      const message =
-        err.response?.data?.message || err.message || 'Failed to load applicant details.';
-      if (silent) {
-        setRefreshError(message);
-      } else {
-        setError(message);
+  const fetchApplicantDetails = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!id) return;
+      if (!silent) setLoading(true);
+      try {
+        const response = await getApplicantById(id);
+        setApplicationData(response.data);
+        setError(null);
+        setRefreshError(null);
+      } catch (err) {
+        const message =
+          err.response?.data?.message || err.message || 'Failed to load applicant details.';
+        if (silent) {
+          setRefreshError(message);
+        } else {
+          setError(message);
+        }
+      } finally {
+        if (!silent) setLoading(false);
       }
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  }, [id]);
+    },
+    [id]
+  );
 
   useEffect(() => {
     queueMicrotask(() => {
       fetchApplicantDetails();
     });
   }, [fetchApplicantDetails]);
-
 
   if (loading) {
     return (
@@ -208,7 +210,12 @@ export default function ApplicantDetails() {
           className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 transition hover:text-gray-900"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <polyline points="15 18 9 12 15 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <polyline
+              points="15 18 9 12 15 6"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
           Back to Applicants
         </button>
@@ -218,8 +225,18 @@ export default function ApplicantDetails() {
       {refreshError && (
         <div className="mb-6 flex items-center justify-between rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-xs">
           <div className="flex items-center gap-2">
-            <svg className="h-5 w-5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="h-5 w-5 shrink-0 text-red-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <span>Notice: Could not refresh latest applicant status. ({refreshError})</span>
           </div>
@@ -229,12 +246,16 @@ export default function ApplicantDetails() {
             className="rounded-md p-1 text-red-500 transition hover:bg-red-100 hover:text-red-700"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
       )}
-
 
       {/* Main Two-Column Layout */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -271,17 +292,27 @@ export default function ApplicantDetails() {
 
             <div className="mt-6 grid grid-cols-1 gap-4 border-t border-gray-100 pt-6 sm:grid-cols-2">
               <div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email</span>
-                <p className="mt-1 text-sm font-medium text-gray-900">{jobSeeker?.email || 'Not provided'}</p>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </span>
+                <p className="mt-1 text-sm font-medium text-gray-900">
+                  {jobSeeker?.email || 'Not provided'}
+                </p>
               </div>
 
               <div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Location</span>
-                <p className="mt-1 text-sm font-medium text-gray-900">{jobSeekerProfile?.location || 'Not provided'}</p>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Location
+                </span>
+                <p className="mt-1 text-sm font-medium text-gray-900">
+                  {jobSeekerProfile?.location || 'Not provided'}
+                </p>
               </div>
 
               <div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Experience</span>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total Experience
+                </span>
                 <p className="mt-1 text-sm font-medium text-gray-900">
                   {jobSeekerProfile != null
                     ? `${jobSeekerProfile.totalExperienceYears} ${jobSeekerProfile.totalExperienceYears === 1 ? 'year' : 'years'}`
@@ -290,7 +321,9 @@ export default function ApplicantDetails() {
               </div>
 
               <div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Education</span>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Education
+                </span>
                 <p className="mt-1 text-sm font-medium text-gray-900">
                   {latestEducation
                     ? `${latestEducation.qualification}${latestEducation.fieldOfStudy ? ` in ${latestEducation.fieldOfStudy}` : ''} (${latestEducation.institutionName})`
@@ -324,13 +357,23 @@ export default function ApplicantDetails() {
             <h2 className="text-base font-semibold text-gray-900">Application Info</h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Applied Date</span>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Applied Date
+                </span>
                 <p className="mt-1 text-sm font-medium text-gray-900">
-                  {createdAt ? new Date(createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown'}
+                  {createdAt
+                    ? new Date(createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : 'Unknown'}
                 </p>
               </div>
               <div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Current Status</span>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Current Status
+                </span>
                 <div className="mt-1">
                   <StatusBadge status={status} />
                 </div>
@@ -356,7 +399,8 @@ export default function ApplicantDetails() {
                     <p className="text-sm font-semibold text-gray-900">{exp.rolePosition}</p>
                     <p className="text-xs text-gray-600">{exp.organization}</p>
                     <p className="mt-1 text-xs text-gray-400">
-                      {formatDate(exp.startDate)} - {exp.isCurrentRole ? 'Present' : formatDate(exp.endDate)}
+                      {formatDate(exp.startDate)} -{' '}
+                      {exp.isCurrentRole ? 'Present' : formatDate(exp.endDate)}
                     </p>
                   </div>
                 ))}
@@ -412,12 +456,16 @@ export default function ApplicantDetails() {
             <h2 className="text-base font-semibold text-gray-900">Job Information</h2>
             <div className="mt-4 space-y-3 text-sm">
               <div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title</span>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Job Title
+                </span>
                 <p className="mt-0.5 font-medium text-gray-900">{job?.title || 'Unknown Job'}</p>
               </div>
 
               <div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Job Type</span>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Job Type
+                </span>
                 <p className="mt-0.5 font-medium capitalize text-gray-900">
                   {job?.jobType ? job.jobType.replace('_', ' ') : 'N/A'}
                   {job?.workMode ? ` (${job.workMode.replace('_', ' ')})` : ''}
@@ -425,14 +473,18 @@ export default function ApplicantDetails() {
               </div>
 
               <div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Experience Required</span>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Experience Required
+                </span>
                 <p className="mt-0.5 font-medium text-gray-900">
                   {job?.experienceYears != null ? `${job.experienceYears} years` : 'N/A'}
                 </p>
               </div>
 
               <div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Job Location</span>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Job Location
+                </span>
                 <p className="mt-0.5 font-medium text-gray-900">{job?.location || 'N/A'}</p>
               </div>
             </div>
@@ -442,6 +494,7 @@ export default function ApplicantDetails() {
 
       {/* Action Modals */}
       <StatusUpdateModal
+        key={isStatusModalOpen ? `status-${id}` : 'status-closed'}
         applicationId={id}
         applicantName={name}
         jobTitle={job?.title}
@@ -453,6 +506,7 @@ export default function ApplicantDetails() {
       />
 
       <ShortlistConfirmationModal
+        key={isShortlistModalOpen ? `shortlist-${id}` : 'shortlist-closed'}
         applicationId={id}
         applicantName={name}
         jobTitle={job?.title}
@@ -462,6 +516,7 @@ export default function ApplicantDetails() {
       />
 
       <RejectConfirmationModal
+        key={isRejectModalOpen ? `reject-${id}` : 'reject-closed'}
         applicationId={id}
         applicantName={name}
         jobTitle={job?.title}
@@ -469,8 +524,6 @@ export default function ApplicantDetails() {
         onClose={() => setIsRejectModalOpen(false)}
         onSuccess={() => fetchApplicantDetails({ silent: true })}
       />
-
     </div>
   );
 }
-
