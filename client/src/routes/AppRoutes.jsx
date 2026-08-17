@@ -21,7 +21,6 @@ import SupportFormPage from '../features/help-support/pages/SupportFormPage.jsx'
 import JobsPage from '../features/public-jobs/pages/JobsPage.jsx';
 import JobDetailPage from '../features/public-jobs/pages/JobDetailPage.jsx';
 import AuthenticatedLayout from '../layouts/authenticated/AuthenticatedLayout.jsx';
-import AdminLayout from '../layouts/admin/AdminLayout.jsx';
 import ViewCompanyProfile from '../features/employer-profile/pages/ViewCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
@@ -30,7 +29,6 @@ import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.js
 import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
 import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileCompletionPage.jsx';
 import SkillsPage from '../features/job-seeker-profile/pages/SkillsPage.jsx';
-import AdminReportList from '../features/admin/reports/pages/AdminReportList.jsx';
 
 function AppRoutes() {
   return (
@@ -191,11 +189,6 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-      {/* TEMPORARY TEST ROUTE FOR SAHAN TO VIEW UI */}
-      <Route element={<AdminLayout />}>
-        <Route path="/test-admin-reports" element={<AdminReportList />} />
-      </Route>
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

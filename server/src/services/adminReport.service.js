@@ -11,13 +11,10 @@ const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 export async function getReports({ search, status, page = 1, limit = 10 }) {
   const filter = {};
 
-  // Search by job title or company name (case-insensitive, regex-safe)
+  // Search by job title (case-insensitive, regex-safe)
   if (search) {
     const escaped = escapeRegex(search);
-    filter.$or = [
-      { jobTitle: { $regex: escaped, $options: 'i' } },
-      { companyName: { $regex: escaped, $options: 'i' } }
-    ];
+    filter.jobTitle = { $regex: escaped, $options: 'i' };
   }
 
   // Filter by report status
@@ -52,12 +49,7 @@ export async function getReports({ search, status, page = 1, limit = 10 }) {
  */
 export async function getReportById(reportId) {
   const report = await Report.findById(reportId)
-    .populate(
-      'jobId',
-      'title status isDeleted description responsibilities requirements ' +
-        'benefits location jobType workMode salaryMin salaryMax ' +
-        'salaryCurrency experienceYears deadline'
-    )
+    .populate('jobId', 'title status isDeleted description requirements')
     .populate('companyId', 'companyName companyLogo verificationStatus')
     .populate('reportedBy', 'name email')
     .populate('reviewedBy', 'name email');
