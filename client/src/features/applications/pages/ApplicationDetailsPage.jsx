@@ -234,7 +234,7 @@ export default function ApplicationDetailsPage() {
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       <Link
         to="/my-applications"
-        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-black hover:underline"
       >
         <svg
           width="16"

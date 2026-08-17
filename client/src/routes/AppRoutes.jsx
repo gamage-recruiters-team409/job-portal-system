@@ -35,7 +35,6 @@ import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePag
 import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileCompletionPage.jsx';
 import SkillsPage from '../features/job-seeker-profile/pages/SkillsPage.jsx';
 import EducationPage from '../features/job-seeker-profile/pages/EducationPage.jsx';
-import EducationPage from '../features/job-seeker-profile/pages/EducationPage.jsx';
 import ExperiencePage from '../features/job-seeker-profile/pages/ExperiencePage.jsx';
 import ApplicationHistoryPage from '../features/applications/pages/ApplicationHistoryPage.jsx';
 import ApplicationDetailsPage from '../features/applications/pages/ApplicationDetailsPage.jsx';
