@@ -8,12 +8,7 @@ const STATUS_STYLES = {
   resolved: { label: 'Resolved', badge: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
   dismissed: { label: 'Dismissed', badge: 'bg-red-100 text-red-700', dot: 'bg-red-500' },
 };
-const TIMELINE_STEPS = [
-  { key: 'submitted', label: 'Report submitted' },
-  { key: 'under_review', label: 'Under Review' },
-  { key: 'resolved', label: 'Resolved' },
-  { key: 'dismissed', label: 'Dismissed' },
-];
+
 function Section({ title, children }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6">
@@ -46,63 +41,177 @@ function StatusBadge({ status }) {
   );
 }
 function StatusTimeline({ status }) {
-  const statusToIndex = {
-    pending: 0,
-    under_review: 1,
-    resolved: 2,
-    dismissed: 3,
+  const statusConfig = {
+    pending: {
+      color: {
+        active: 'border-amber-500 bg-amber-50',
+        circle: 'bg-amber-500',
+        line: 'bg-amber-400',
+        text: 'text-amber-700',
+      },
+    },
+
+    under_review: {
+      color: {
+        active: 'border-blue-500 bg-blue-50',
+        circle: 'bg-blue-500',
+        line: 'bg-blue-400',
+        text: 'text-blue-700',
+      },
+    },
+
+    resolved: {
+      color: {
+        active: 'border-green-500 bg-green-50',
+        circle: 'bg-green-500',
+        line: 'bg-green-400',
+        text: 'text-green-700',
+      },
+    },
+
+    dismissed: {
+      color: {
+        active: 'border-red-500 bg-red-50',
+        circle: 'bg-red-500',
+        line: 'bg-red-400',
+        text: 'text-red-700',
+      },
+    },
   };
 
-  const currentIndex = statusToIndex[status] ?? 0;
+  const steps =
+    status === 'resolved'
+      ? [
+          {
+            key: 'pending',
+            label: 'Report Submitted',
+            description: 'Your report was submitted',
+          },
+          {
+            key: 'resolved',
+            label: 'Resolved',
+            description: 'Report was resolved successfully',
+          },
+        ]
+      : status === 'dismissed'
+        ? [
+            {
+              key: 'pending',
+              label: 'Report Submitted',
+              description: 'Your report was submitted',
+            },
+            {
+              key: 'dismissed',
+              label: 'Dismissed',
+              description: 'Report was dismissed',
+            },
+          ]
+        : [
+            {
+              key: 'pending',
+              label: 'Report Submitted',
+              description: 'Your report was submitted',
+            },
+            {
+              key: 'under_review',
+              label: 'Under Review',
+              description: 'Admin is reviewing your report',
+            },
+            {
+              key: 'decision',
+              label: 'Final Decision',
+              description: 'Waiting for final decision',
+            },
+          ];
+
+  const statusOrder = {
+    pending: 0,
+    under_review: 1,
+    resolved: 1,
+    dismissed: 1,
+  };
+  const currentIndex = statusOrder[status] ?? 0;
+  const currentColor = statusConfig[status]?.color || statusConfig.pending.color;
 
   return (
-    <div className="flex items-start px-4 pt-2">
-      {TIMELINE_STEPS.map((step, index) => {
-        const isFinalOutcome = step.key === 'resolved' || step.key === 'dismissed';
+    <div className="w-full px-4 py-6">
+      <div className="flex items-start justify-between">
+        {steps.map((step, index) => {
+          const isTerminal = status === 'resolved' || status === 'dismissed';
 
-        const isDone =
-          status === 'dismissed'
-            ? step.key === 'submitted' || step.key === 'under_review' || step.key === 'dismissed'
-            : status === 'resolved'
-              ? step.key === 'submitted' || step.key === 'under_review' || step.key === 'resolved'
-              : index <= currentIndex;
+          const completed = isTerminal ? index <= currentIndex : index < currentIndex;
 
-        const isLast = index === TIMELINE_STEPS.length - 1;
+          const active = !isTerminal && index === currentIndex;
 
-        return (
-          <React.Fragment key={step.key}>
-            <div className="flex flex-col items-center">
-              <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                  isDone ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                {isDone && <Check size={16} className="text-white" strokeWidth={3} />}
+          return (
+            <React.Fragment key={step.key}>
+              <div className="flex flex-col items-center">
+                <div
+                  className={`
+                    flex h-12 w-12 items-center justify-center
+                    rounded-full border-2
+                    transition-all duration-500
+
+                    ${
+                      completed
+                        ? `${currentColor.circle} border-transparent`
+                        : active
+                          ? `${currentColor.active} animate-pulse`
+                          : 'border-gray-300 bg-gray-100'
+                    }
+                  `}
+                >
+                  {completed ? (
+                    <Check size={22} className="text-white" strokeWidth={3} />
+                  ) : active ? (
+                    <div
+                      className={`
+       h-4 w-4 rounded-full
+      ${currentColor.circle}
+    `}
+                    />
+                  ) : step.key === 'decision' ? (
+                    <div className="h-3 w-3 rounded-full bg-gray-400" />
+                  ) : null}
+                </div>
+
+                <p
+                  className={`
+                    mt-3 text-center text-sm font-semibold
+
+                    ${
+                      active
+                        ? currentColor.text
+                        : completed
+                          ? 'text-gray-900'
+                          : step.key === 'decision'
+                            ? 'text-gray-500'
+                            : 'text-gray-400'
+                    }
+                  `}
+                >
+                  {step.label}
+                </p>
+
+                <p className="mt-1 max-w-[130px] text-center text-xs text-gray-500">
+                  {step.description}
+                </p>
               </div>
 
-              <span
-                className={`mt-2 max-w-[90px] text-center text-sm font-medium ${
-                  isDone ? 'text-gray-900' : 'text-gray-400'
-                }`}
-              >
-                {step.label}
-              </span>
-            </div>
+              {index !== steps.length - 1 && (
+                <div
+                  className={`
+                    mx-4 mt-6 h-1 flex-1 rounded-full
+                    transition-all duration-700
 
-            {!isLast && (
-              <div
-                className={`mt-4 h-0.5 flex-1 ${
-                  isFinalOutcome
-                    ? 'bg-gray-200'
-                    : index < currentIndex
-                      ? 'bg-blue-600'
-                      : 'bg-gray-200'
-                }`}
-              />
-            )}
-          </React.Fragment>
-        );
-      })}
+                    ${index < currentIndex ? currentColor.line : 'bg-gray-200'}
+                  `}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
     </div>
   );
 }
