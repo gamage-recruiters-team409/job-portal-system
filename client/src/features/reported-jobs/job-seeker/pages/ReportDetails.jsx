@@ -79,32 +79,57 @@ function StatusTimeline({ status }) {
     },
   };
 
-  const steps = [
-    {
-      key: 'pending',
-      label: 'Report Submitted',
-      description: 'Your report was submitted',
-    },
-    {
-      key: 'under_review',
-      label: 'Under Review',
-      description: 'Admin is reviewing your report',
-    },
-    {
-      key: status === 'dismissed' ? 'dismissed' : 'resolved',
-      label: status === 'dismissed' ? 'Dismissed' : 'Resolved',
-      description:
-        status === 'dismissed' ? 'Report was dismissed' : 'Report was resolved successfully',
-    },
-  ];
+  const steps =
+    status === 'resolved'
+      ? [
+          {
+            key: 'pending',
+            label: 'Report Submitted',
+            description: 'Your report was submitted',
+          },
+          {
+            key: 'resolved',
+            label: 'Resolved',
+            description: 'Report was resolved successfully',
+          },
+        ]
+      : status === 'dismissed'
+        ? [
+            {
+              key: 'pending',
+              label: 'Report Submitted',
+              description: 'Your report was submitted',
+            },
+            {
+              key: 'dismissed',
+              label: 'Dismissed',
+              description: 'Report was dismissed',
+            },
+          ]
+        : [
+            {
+              key: 'pending',
+              label: 'Report Submitted',
+              description: 'Your report was submitted',
+            },
+            {
+              key: 'under_review',
+              label: 'Under Review',
+              description: 'Admin is reviewing your report',
+            },
+            {
+              key: 'decision',
+              label: 'Final Decision',
+              description: 'Waiting for final decision',
+            },
+          ];
 
   const statusOrder = {
     pending: 0,
     under_review: 1,
-    resolved: 2,
-    dismissed: 2,
+    resolved: 1,
+    dismissed: 1,
   };
-
   const currentIndex = statusOrder[status] ?? 0;
   const currentColor = statusConfig[status]?.color || statusConfig.pending.color;
 
@@ -112,8 +137,11 @@ function StatusTimeline({ status }) {
     <div className="w-full px-4 py-6">
       <div className="flex items-start justify-between">
         {steps.map((step, index) => {
-          const completed = index < currentIndex;
-          const active = index === currentIndex;
+          const isTerminal = status === 'resolved' || status === 'dismissed';
+
+          const completed = isTerminal ? index <= currentIndex : index < currentIndex;
+
+          const active = !isTerminal && index === currentIndex;
 
           return (
             <React.Fragment key={step.key}>
@@ -138,10 +166,12 @@ function StatusTimeline({ status }) {
                   ) : active ? (
                     <div
                       className={`
-                        h-4 w-4 rounded-full
-                        ${currentColor.circle}
-                      `}
+       h-4 w-4 rounded-full
+      ${currentColor.circle}
+    `}
                     />
+                  ) : step.key === 'decision' ? (
+                    <div className="h-3 w-3 rounded-full bg-gray-400" />
                   ) : null}
                 </div>
 
@@ -149,7 +179,15 @@ function StatusTimeline({ status }) {
                   className={`
                     mt-3 text-center text-sm font-semibold
 
-                    ${active ? currentColor.text : completed ? 'text-gray-900' : 'text-gray-400'}
+                    ${
+                      active
+                        ? currentColor.text
+                        : completed
+                          ? 'text-gray-900'
+                          : step.key === 'decision'
+                            ? 'text-gray-500'
+                            : 'text-gray-400'
+                    }
                   `}
                 >
                   {step.label}
