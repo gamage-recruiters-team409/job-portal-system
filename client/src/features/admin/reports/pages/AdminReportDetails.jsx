@@ -231,6 +231,10 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
 
   const normalizedStatus = (report.status || '').trim().toLowerCase();
   const isReviewed = ['resolved', 'dismissed'].includes(normalizedStatus);
+  
+  const isJobSuspendable = 
+    report.jobId?.status?.toLowerCase() === 'published' && 
+    !report.jobId?.isDeleted;
 
   return (
     <div
@@ -679,18 +683,21 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
             </button>
 
             <button
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isJobSuspendable}
               onClick={handleSubmit((data) =>
                 setModalConfig({ isOpen: true, actionType: 'suspend', data })
               )}
-              className={
-                'h-11 px-6 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-700 ' +
-                'text-white shadow-sm transition-colors flex items-center justify-center gap-2 ' +
-                'disabled:opacity-50 w-full sm:w-auto '
-              }
+              className={`h-11 px-6 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto ${
+                !isJobSuspendable
+                  ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                  : 'bg-red-600 hover:bg-red-700 text-white shadow-sm disabled:opacity-50'
+              }`}
+              title={!isJobSuspendable ? 'Job is no longer published or has been deleted.' : ''}
             >
               <Ban size={20} />
-              <span className="whitespace-nowrap">Suspend Job</span>
+              <span className="whitespace-nowrap">
+                {!isJobSuspendable ? 'Job Unavailable' : 'Suspend Job'}
+              </span>
             </button>
           </div>
         </div>
