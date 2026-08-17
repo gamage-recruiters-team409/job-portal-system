@@ -94,7 +94,6 @@ function CrossIcon() {
 function StatusTimeline({ application }) {
   const { status, statusHistory, updatedAt } = application;
   const isRejected = status === 'rejected';
-  const currentStepIndex = TIMELINE_STEPS.indexOf(status);
   const historyByStatus = Object.fromEntries(
     (statusHistory ?? []).map((h) => [h.status, h.changedAt])
   );
@@ -118,7 +117,7 @@ function StatusTimeline({ application }) {
       <div className="flex items-start justify-between gap-2 px-2">
         {TIMELINE_STEPS.map((step, i) => {
           const isRejectedStep = isRejected && i === rejectedStepIndex;
-          const isCompleted = isRejected ? i < rejectedStepIndex : i <= currentStepIndex;
+          const isCompleted = !isRejectedStep && Boolean(historyByStatus[step]);
           const isLastStep = i === TIMELINE_STEPS.length - 1;
           const dateForStep = isRejectedStep ? updatedAt : historyByStatus[step];
 

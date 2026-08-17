@@ -35,63 +35,6 @@ function formatDate(dateString) {
     year: 'numeric',
   });
 }
-
-// Inline illustration for a genuinely empty history — kept local to this
-// page so it doesn't affect the shared EmptyState component used elsewhere
-// (e.g. Bimsara's Public Jobs page).
-function NoApplicationsIllustration() {
-  return (
-    <svg width="120" height="120" viewBox="0 0 200 200" fill="none">
-      <circle cx="100" cy="100" r="90" fill="#EFF6FF" />
-      <rect
-        x="55"
-        y="60"
-        width="90"
-        height="110"
-        rx="8"
-        fill="white"
-        stroke="#93C5FD"
-        strokeWidth="3"
-      />
-      <line
-        x1="70"
-        y1="85"
-        x2="130"
-        y2="85"
-        stroke="#BFDBFE"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-      <line
-        x1="70"
-        y1="100"
-        x2="130"
-        y2="100"
-        stroke="#BFDBFE"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-      <line
-        x1="70"
-        y1="115"
-        x2="110"
-        y2="115"
-        stroke="#BFDBFE"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-      <circle cx="140" cy="140" r="28" fill="#DBEAFE" stroke="#3B82F6" strokeWidth="3" />
-      <path
-        d="M132 140l6 6 12-12"
-        stroke="#2563EB"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  );
-}
 export default function ApplicationHistoryPage() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);

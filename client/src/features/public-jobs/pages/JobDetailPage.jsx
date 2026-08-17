@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getJob } from '../../../services/jobService.js';
 import { getCategories, getSkills } from '../../../services/referenceService.js';
 import { applyToJob } from '../../../services/applicationService.js';
@@ -8,6 +8,7 @@ import JobCard from '../../../components/jobs/JobCard.jsx';
 import LoadingState from '../../../components/jobs/LoadingState.jsx';
 import ApplyJobModal from '../../../components/jobs/ApplyJobModal.jsx';
 import ApplicationSubmittedModal from '../../../components/jobs/ApplicationSubmittedModal.jsx';
+import { useAuth } from '../../../context/AuthContext.jsx';
 
 /**
  * @file JobDetailPage.jsx
@@ -17,6 +18,8 @@ import ApplicationSubmittedModal from '../../../components/jobs/ApplicationSubmi
  */
 export default function JobDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [job, setJob] = useState(null);
   const [similar, setSimilar] = useState([]);
@@ -96,10 +99,16 @@ export default function JobDetailPage() {
   }, [id]);
 
   function handleOpenApplyModal() {
-    setApplyError('');
-    setShowApplyModal(true);
+  if (!user) {
+    navigate('/login', { state: { from: `/jobs/${id}` } });
+    return;
   }
-
+  if (user.role !== 'job_seeker') {
+    return;
+  }
+  setApplyError('');
+  setShowApplyModal(true);
+}
   function handleCloseApplyModal() {
     if (submitting) return;
 
