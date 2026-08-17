@@ -229,8 +229,9 @@ export const EMPLOYER_NAV_ITEMS = [
   {
     label: 'Jobs',
     icon: BriefcaseIcon,
-    path: '/jobs',
-    disabled: true,
+    path: '/jobs/manage',
+    altPaths: ['/jobs'],
+    disabled: false,
   },
   {
     label: 'Applicants',
