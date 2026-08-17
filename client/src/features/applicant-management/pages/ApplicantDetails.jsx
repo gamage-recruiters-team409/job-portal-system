@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { APPLICATION_STATUSES } from '../../../constants/statuses.js';
 import { getApplicantById } from '../../../services/applicantService.js';
+import StatusUpdateModal from '../components/StatusUpdateModal.jsx';
+import ShortlistConfirmationModal from '../components/ShortlistConfirmationModal.jsx';
+import RejectConfirmationModal from '../components/RejectConfirmationModal.jsx';
 
 // ─── Status Badge Config (Matches ApplicantList.jsx) ─────────────────────────
 
@@ -102,41 +105,40 @@ export default function ApplicantDetails() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshError, setRefreshError] = useState(null);
   const [applicationData, setApplicationData] = useState(null);
 
-  useEffect(() => {
-    let isMounted = true;
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isShortlistModalOpen, setIsShortlistModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
 
-    async function fetchApplicantDetails() {
-      setLoading(true);
+  const fetchApplicantDetails = useCallback(async ({ silent = false } = {}) => {
+    if (!id) return;
+    if (!silent) setLoading(true);
+    try {
+      const response = await getApplicantById(id);
+      setApplicationData(response.data);
       setError(null);
-
-      try {
-        const response = await getApplicantById(id);
-        if (isMounted) {
-          setApplicationData(response.data);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(
-            err.response?.data?.message || err.message || 'Failed to load applicant details.'
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+      setRefreshError(null);
+    } catch (err) {
+      const message =
+        err.response?.data?.message || err.message || 'Failed to load applicant details.';
+      if (silent) {
+        setRefreshError(message);
+      } else {
+        setError(message);
       }
+    } finally {
+      if (!silent) setLoading(false);
     }
-
-    if (id) {
-      fetchApplicantDetails();
-    }
-
-    return () => {
-      isMounted = false;
-    };
   }, [id]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      fetchApplicantDetails();
+    });
+  }, [fetchApplicantDetails]);
+
 
   if (loading) {
     return (
@@ -211,6 +213,28 @@ export default function ApplicantDetails() {
           Back to Applicants
         </button>
       </div>
+
+      {/* Non-blocking Refresh Error Banner */}
+      {refreshError && (
+        <div className="mb-6 flex items-center justify-between rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-xs">
+          <div className="flex items-center gap-2">
+            <svg className="h-5 w-5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Notice: Could not refresh latest applicant status. ({refreshError})</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setRefreshError(null)}
+            className="rounded-md p-1 text-red-500 transition hover:bg-red-100 hover:text-red-700"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
 
       {/* Main Two-Column Layout */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -347,32 +371,26 @@ export default function ApplicantDetails() {
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="text-base font-semibold text-gray-900">Actions</h2>
             <div className="mt-4 space-y-3">
-              {/* TODO: Wire actual status update logic in separate branch */}
               <button
                 type="button"
-                disabled
-                className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-medium text-white shadow-sm opacity-60 cursor-not-allowed"
-                title="Status update will be wired in the status management branch"
+                onClick={() => setIsStatusModalOpen(true)}
+                className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-medium text-white shadow-xs transition hover:bg-blue-700"
               >
                 Update Status
               </button>
 
-              {/* TODO: Wire shortlist candidate logic in separate branch */}
               <button
                 type="button"
-                disabled
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm opacity-60 cursor-not-allowed"
-                title="Shortlist action will be wired in the status management branch"
+                onClick={() => setIsShortlistModalOpen(true)}
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-center text-sm font-medium text-gray-700 shadow-xs transition hover:bg-gray-50"
               >
                 Shortlist Candidate
               </button>
 
-              {/* TODO: Wire reject candidate logic in separate branch */}
               <button
                 type="button"
-                disabled
-                className="w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-red-600 shadow-sm opacity-60 cursor-not-allowed"
-                title="Reject action will be wired in the status management branch"
+                onClick={() => setIsRejectModalOpen(true)}
+                className="w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-red-600 shadow-xs transition hover:bg-red-50 hover:border-red-300"
               >
                 Reject Candidate
               </button>
@@ -421,6 +439,38 @@ export default function ApplicantDetails() {
           </div>
         </div>
       </div>
+
+      {/* Action Modals */}
+      <StatusUpdateModal
+        applicationId={id}
+        applicantName={name}
+        jobTitle={job?.title}
+        currentStatus={status}
+        appliedDate={createdAt}
+        isOpen={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        onSuccess={() => fetchApplicantDetails({ silent: true })}
+      />
+
+      <ShortlistConfirmationModal
+        applicationId={id}
+        applicantName={name}
+        jobTitle={job?.title}
+        isOpen={isShortlistModalOpen}
+        onClose={() => setIsShortlistModalOpen(false)}
+        onSuccess={() => fetchApplicantDetails({ silent: true })}
+      />
+
+      <RejectConfirmationModal
+        applicationId={id}
+        applicantName={name}
+        jobTitle={job?.title}
+        isOpen={isRejectModalOpen}
+        onClose={() => setIsRejectModalOpen(false)}
+        onSuccess={() => fetchApplicantDetails({ silent: true })}
+      />
+
     </div>
   );
 }
+
