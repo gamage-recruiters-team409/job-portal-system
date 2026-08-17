@@ -35,6 +35,7 @@ import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileC
 import SkillsPage from '../features/job-seeker-profile/pages/SkillsPage.jsx';
 import EducationPage from '../features/job-seeker-profile/pages/EducationPage.jsx';
 import ApplicationHistoryPage from '../features/applications/pages/ApplicationHistoryPage.jsx';
+import ApplicationDetailsPage from '../features/applications/pages/ApplicationDetailsPage.jsx';
 
 function AppRoutes() {
   return (
@@ -88,6 +89,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <ApplicationHistoryPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-applications/:id"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <ApplicationDetailsPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }

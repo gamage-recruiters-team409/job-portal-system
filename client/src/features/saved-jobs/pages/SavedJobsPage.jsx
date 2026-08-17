@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getSavedJobs, removeSavedJob } from '../../../services/savedJobService.js';
+import {
+  getSavedJobs,
+  removeSavedJob,
+} from '../../../services/savedJobService.js';
 import SavedJobCard from '../../../components/jobs/SavedJobCard.jsx';
 import SavedJobListItem from '../../../components/jobs/SavedJobListItem.jsx';
 import LoadingState from '../../../components/jobs/LoadingState.jsx';
@@ -22,22 +25,22 @@ export default function SavedJobsPage() {
   }, []);
 
   async function fetchSavedJobs() {
-  setLoading(true);
-  setError(null);
-  try {
-    const data = await getSavedJobs();
-    setItems(data ?? []);
-  } catch (err) {
-    console.error('Error fetching saved jobs:', err);
-    setError(err?.response?.data?.message || 'Failed to load saved jobs. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-}
+    setLoading(true);
+    setError(null);
 
-useEffect(() => {
-  fetchSavedJobs();
-}, []);
+    try {
+      const data = await getSavedJobs();
+      setItems(data ?? []);
+    } catch (err) {
+      console.error('Error fetching saved jobs:', err);
+      setError(
+        err?.response?.data?.message ||
+          'Failed to load saved jobs. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleRemove(jobId) {
     if (!jobId) return;
@@ -45,10 +48,18 @@ useEffect(() => {
     try {
       await removeSavedJob(jobId);
 
-      setItems((prev) => prev.filter((item) => (item.jobId ?? item.job?._id) !== jobId));
+      setItems((prev) =>
+        prev.filter(
+          (item) =>
+            (item.jobId ?? item.job?._id) !== jobId
+        )
+      );
     } catch (err) {
       console.error('Error removing saved job:', err);
-      setError(err?.response?.data?.message || 'Failed to remove saved job.');
+      setError(
+        err?.response?.data?.message ||
+          'Failed to remove saved job.'
+      );
     }
   }
 
@@ -57,11 +68,16 @@ useEffect(() => {
   const filteredItems = items.filter((item) => {
     if (!normalizedSearch) return true;
 
-    const title = item.job?.title?.toLowerCase() ?? '';
+    const title =
+      item.job?.title?.toLowerCase() ?? '';
 
-    const company = item.job?.companyId?.companyName?.toLowerCase() ?? '';
+    const company =
+      item.job?.companyId?.companyName?.toLowerCase() ?? '';
 
-    return title.includes(normalizedSearch) || company.includes(normalizedSearch);
+    return (
+      title.includes(normalizedSearch) ||
+      company.includes(normalizedSearch)
+    );
   });
 
   return (
@@ -106,7 +122,9 @@ useEffect(() => {
             type="button"
             onClick={() => setView('card')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              view === 'card' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+              view === 'card'
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             Card
@@ -116,7 +134,9 @@ useEffect(() => {
             type="button"
             onClick={() => setView('list')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              view === 'list' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+              view === 'list'
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             List
@@ -132,7 +152,11 @@ useEffect(() => {
         </div>
       ) : filteredItems.length === 0 ? (
         <EmptyState
-          title={normalizedSearch ? 'No saved jobs found' : 'No Saved jobs yet'}
+          title={
+            normalizedSearch
+              ? 'No saved jobs found'
+              : 'No Saved jobs yet'
+          }
           message={
             normalizedSearch
               ? `No saved jobs match "${search.trim()}".`
@@ -142,13 +166,21 @@ useEffect(() => {
       ) : view === 'card' ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
           {filteredItems.map((item) => (
-            <SavedJobCard key={item._id} item={item} onRemove={handleRemove} />
+            <SavedJobCard
+              key={item._id}
+              item={item}
+              onRemove={handleRemove}
+            />
           ))}
         </div>
       ) : (
         <div className="flex flex-col gap-3">
           {filteredItems.map((item) => (
-            <SavedJobListItem key={item._id} item={item} onRemove={handleRemove} />
+            <SavedJobListItem
+              key={item._id}
+              item={item}
+              onRemove={handleRemove}
+            />
           ))}
         </div>
       )}
