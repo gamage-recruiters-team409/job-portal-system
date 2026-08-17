@@ -7,12 +7,8 @@ import {
   AlertCircle,
   Briefcase,
   Users,
-  Calendar,
-  Eye,
   FolderOpen,
-  UserCheck,
   PlusSquare,
-  Video,
   Pencil,
   Upload,
   Plus,
@@ -276,34 +272,6 @@ export default function EmployerDashboard() {
       icon: CheckCircle2,
       color: 'text-amber-600 bg-amber-50',
     },
-    {
-      label: 'Interviews this week',
-      key: 'interviewsThisWeek',
-      icon: Calendar,
-      color: 'text-slate-500 bg-slate-100',
-      isComingSoon: true,
-    },
-    {
-      label: 'Profile views',
-      key: 'profileViews',
-      icon: Eye,
-      color: 'text-slate-500 bg-slate-100',
-      isComingSoon: true,
-    },
-    {
-      label: 'Shortlisted candidates',
-      key: 'shortlistedCandidates',
-      icon: UserCheck,
-      color: 'text-slate-500 bg-slate-100',
-      isComingSoon: true,
-    },
-    {
-      label: 'Interviews scheduled',
-      key: 'interviewsScheduled',
-      icon: Video,
-      color: 'text-slate-500 bg-slate-100',
-      isComingSoon: true,
-    },
   ];
 
   if (companyLoading && statsLoading && appsLoading) {
@@ -329,9 +297,9 @@ export default function EmployerDashboard() {
           </div>
         </div>
 
-        {/* 8 Stat Cards Grid Skeleton */}
+        {/* Stat Cards Grid Skeleton */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="h-4 w-28 rounded bg-slate-200" />
@@ -518,12 +486,11 @@ export default function EmployerDashboard() {
         )}
       </div>
 
-      {/* ── STAT CARDS GRID (8 total, 4 cols lg, 2 cols sm, 1 col mobile) ── */}
+      {/* ── STAT CARDS GRID (4 total, 4 cols lg, 2 cols sm, 1 col mobile) ── */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCardsConfig.map((card) => {
           const IconComp = card.icon;
-          const isComingSoon = card.isComingSoon;
-          const val = isComingSoon ? '—' : getStatValue(card.key);
+          const val = getStatValue(card.key);
 
           return (
             <div
@@ -532,15 +499,9 @@ export default function EmployerDashboard() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#64748B]">{card.label}</span>
-                {isComingSoon ? (
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
-                    Coming soon
-                  </span>
-                ) : (
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${card.color} shadow-xs`}>
-                    <IconComp className="h-5 w-5" />
-                  </div>
-                )}
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${card.color} shadow-xs`}>
+                  <IconComp className="h-5 w-5" />
+                </div>
               </div>
               <div className="mt-3 text-2xl font-bold tracking-tight text-[#0F172A]">{val}</div>
             </div>
