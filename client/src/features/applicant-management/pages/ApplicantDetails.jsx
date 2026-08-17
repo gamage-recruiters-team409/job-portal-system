@@ -200,6 +200,14 @@ export default function ApplicantDetails() {
     ? jobSeekerProfile.education[jobSeekerProfile.education.length - 1]
     : null;
 
+  const isWithdrawn = status === APPLICATION_STATUSES.WITHDRAWN;
+  const isAlreadyShortlisted = status === APPLICATION_STATUSES.SHORTLISTED;
+  const isAlreadyRejected = status === APPLICATION_STATUSES.REJECTED;
+
+  const canUpdateStatus = !isWithdrawn;
+  const canShortlist = !isWithdrawn && !isAlreadyShortlisted;
+  const canReject = !isWithdrawn && !isAlreadyRejected;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Top Header / Back Button */}
@@ -412,11 +420,22 @@ export default function ApplicantDetails() {
           {/* Card 1: Actions */}
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="text-base font-semibold text-gray-900">Actions</h2>
+            {isWithdrawn && (
+              <div className="mt-2 rounded-lg bg-gray-50 p-3 text-xs text-gray-600">
+                This application was withdrawn by the candidate. No further actions are available.
+              </div>
+            )}
             <div className="mt-4 space-y-3">
               <button
                 type="button"
                 onClick={() => setIsStatusModalOpen(true)}
-                className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-medium text-white shadow-xs transition hover:bg-blue-700"
+                disabled={!canUpdateStatus}
+                title={
+                  !canUpdateStatus
+                    ? 'This application has been withdrawn by the candidate and can no longer be updated.'
+                    : undefined
+                }
+                className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-medium text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 Update Status
               </button>
@@ -424,7 +443,15 @@ export default function ApplicantDetails() {
               <button
                 type="button"
                 onClick={() => setIsShortlistModalOpen(true)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-center text-sm font-medium text-gray-700 shadow-xs transition hover:bg-gray-50"
+                disabled={!canShortlist}
+                title={
+                  isWithdrawn
+                    ? 'This application has been withdrawn by the candidate and can no longer be updated.'
+                    : isAlreadyShortlisted
+                      ? 'This applicant is already shortlisted.'
+                      : undefined
+                }
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-center text-sm font-medium text-gray-700 shadow-xs transition hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 Shortlist Candidate
               </button>
@@ -432,7 +459,15 @@ export default function ApplicantDetails() {
               <button
                 type="button"
                 onClick={() => setIsRejectModalOpen(true)}
-                className="w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-red-600 shadow-xs transition hover:bg-red-50 hover:border-red-300"
+                disabled={!canReject}
+                title={
+                  isWithdrawn
+                    ? 'This application has been withdrawn by the candidate and can no longer be updated.'
+                    : isAlreadyRejected
+                      ? 'This applicant has already been rejected.'
+                      : undefined
+                }
+                className="w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-red-600 shadow-xs transition hover:bg-red-50 hover:border-red-300 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 Reject Candidate
               </button>
