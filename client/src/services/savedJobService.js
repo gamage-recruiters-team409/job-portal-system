@@ -2,11 +2,13 @@ import apiClient from './apiClient.js';
 
 /**
  * Save a job posting for the authenticated Job Seeker.
+ * Returns the saved-job object directly (data.data) to match the shared
+ * Saved Jobs service contract from PR #49.
  * @param {string} jobId
  */
 export const saveJob = async (jobId) => {
   const { data } = await apiClient.post('/saved-jobs', { jobId });
-  return data;
+  return data.data;
 };
 
 /**

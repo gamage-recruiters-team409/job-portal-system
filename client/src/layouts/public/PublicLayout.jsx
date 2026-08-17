@@ -19,16 +19,15 @@ export default function PublicLayout() {
 
   const isEmployer = user?.role === USER_ROLES.EMPLOYER;
   const isJobSeeker = user?.role === USER_ROLES.JOB_SEEKER;
-  const isAdmin = user?.role === USER_ROLES.ADMIN;
+  // isAdmin: no approved Admin dashboard route exists yet; Admin profile link
+  // is intentionally omitted until that route is available.
 
-  const profilePath = isJobSeeker
-    ? '/profile'
-    : isEmployer
-      ? '/employer/company'
-      : isAdmin
-        ? '/jobs'
-        : '/jobs';
-  const displayName = user?.fullName || user?.name || (user?.email ? user.email.split('@')[0] : 'User');
+  // Resolved profile/dashboard destinations per role.
+  // Admin is intentionally excluded: no approved Admin dashboard route exists yet.
+  // Do NOT fall back to /jobs (a public page) for Admin — omit the link instead.
+  const profilePath = isJobSeeker ? '/profile' : isEmployer ? '/employer/company' : null;
+  const displayName =
+    user?.fullName || user?.name || (user?.email ? user.email.split('@')[0] : 'User');
 
   const initials = displayName
     .split(' ')
@@ -55,7 +54,10 @@ export default function PublicLayout() {
               {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
 
-            <Link to="/jobs" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
+            <Link
+              to="/jobs"
+              className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
+            >
               <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
                 <Briefcase size={20} />
               </span>
@@ -95,7 +97,7 @@ export default function PublicLayout() {
 
           {/* Right: Auth Action Buttons or Profile Avatar */}
           <div className="flex items-center gap-3">
-            {isAuthenticated ? (
+            {isAuthenticated && profilePath ? (
               <Link
                 to={profilePath}
                 className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 transition-colors hover:border-blue-300 hover:bg-blue-50"
@@ -145,7 +147,9 @@ export default function PublicLayout() {
                 to="/jobs"
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold ${
-                  isPathActive('/jobs') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-100'
+                  isPathActive('/jobs')
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
                 <Briefcase size={18} />
@@ -156,7 +160,9 @@ export default function PublicLayout() {
                 to="/about"
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold ${
-                  isPathActive('/about') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-100'
+                  isPathActive('/about')
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
                 <span>About Us</span>
@@ -166,13 +172,15 @@ export default function PublicLayout() {
                 to="/support"
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-semibold ${
-                  isPathActive('/support') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-100'
+                  isPathActive('/support')
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
                 <span>Support</span>
               </Link>
 
-              {isAuthenticated ? (
+              {isAuthenticated && profilePath ? (
                 <Link
                   to={profilePath}
                   onClick={() => setMobileMenuOpen(false)}
