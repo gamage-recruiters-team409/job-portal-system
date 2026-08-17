@@ -350,9 +350,20 @@ export default function MyProfilePage() {
           <SectionCard
             title="Education"
             action={
-              <span className="text-xs font-medium text-slate-400">
-                {profile?.education?.length || 0} entries
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-medium text-slate-400">
+                  {profile?.education?.length || 0}{' '}
+                  {profile?.education?.length === 1 ? 'entry' : 'entries'}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile/education')}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                >
+                  Show all
+                </button>
+              </div>
             }
           >
             {firstEducation ? (
@@ -430,9 +441,20 @@ export default function MyProfilePage() {
           <SectionCard
             title="Experience"
             action={
-              <span className="text-xs font-medium text-slate-400">
-                {profile?.experience?.length || 0} entries
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-medium text-slate-400">
+                  {profile?.experience?.length || 0}{' '}
+                  {profile?.experience?.length === 1 ? 'entry' : 'entries'}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile/experience')}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                >
+                  Show all
+                </button>
+              </div>
             }
           >
             {firstExperience ? (

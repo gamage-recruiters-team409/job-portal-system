@@ -81,7 +81,7 @@ export default function TopNavbar({
             </svg>
           </button>
 
-          <div className="flex items-center gap-2">
+          <Link to="/jobs" className="flex items-center gap-2 transition-opacity hover:opacity-90">
             <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 text-white">
               <svg
                 width="18"
@@ -100,7 +100,7 @@ export default function TopNavbar({
             <span className="text-lg font-semibold text-gray-900 hidden sm:inline">
               Job <span className="text-blue-600">Portal</span>
             </span>
-          </div>
+          </Link>
         </div>
 
         {/* Center: search bar */}

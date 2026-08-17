@@ -55,3 +55,49 @@ export const getEmployerJobs = async () => {
 
   return data;
 };
+
+/**
+ * Generic status update for an application.
+ *
+ * @param {string} applicationId - The application document ID.
+ * @param {object} payload - { status, note }
+ * @returns {Promise<object>}
+ */
+export const updateApplicantStatus = async (applicationId, { status, note } = {}) => {
+  const { data } = await apiClient.patch(`/applicants/${applicationId}/status`, {
+    status,
+    ...(note !== undefined && note !== '' && { note }),
+  });
+
+  return data;
+};
+
+/**
+ * Shortlist an applicant convenience function.
+ *
+ * @param {string} applicationId - The application document ID.
+ * @param {object} payload - { note }
+ * @returns {Promise<object>}
+ */
+export const shortlistApplicant = async (applicationId, { note } = {}) => {
+  const { data } = await apiClient.patch(`/applicants/${applicationId}/shortlist`, {
+    ...(note !== undefined && note !== '' && { note }),
+  });
+
+  return data;
+};
+
+/**
+ * Reject an applicant convenience function.
+ *
+ * @param {string} applicationId - The application document ID.
+ * @param {object} payload - { note }
+ * @returns {Promise<object>}
+ */
+export const rejectApplicant = async (applicationId, { note } = {}) => {
+  const { data } = await apiClient.patch(`/applicants/${applicationId}/reject`, {
+    ...(note !== undefined && note !== '' && { note }),
+  });
+
+  return data;
+};
