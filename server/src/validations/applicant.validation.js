@@ -25,7 +25,7 @@ const EMPLOYER_SETTABLE_STATUSES = [
 /**
  * Validates the query string for the "list applicants" endpoint.
  *
- * - jobId   : required; must be a 24-char hex string (MongoDB ObjectId format).
+ * - jobId   : optional; must be a 24-char hex string (MongoDB ObjectId format).
  * - status  : optional; must be one of the full APPLICATION_STATUSES values
  *             (an employer may filter by any status, including applied/withdrawn).
  * - search  : optional; free-text match against applicant name or email.
@@ -37,9 +37,10 @@ const EMPLOYER_SETTABLE_STATUSES = [
  */
 export const listApplicantsQuerySchema = z.object({
   jobId: z
-    .string({ error: 'jobId is required' })
+    .string()
     .trim()
-    .regex(/^[a-f\d]{24}$/i, 'jobId must be a valid MongoDB ObjectId'),
+    .regex(/^[a-f\d]{24}$/i, 'jobId must be a valid MongoDB ObjectId')
+    .optional(),
 
   status: z
     .enum(Object.values(APPLICATION_STATUSES), {

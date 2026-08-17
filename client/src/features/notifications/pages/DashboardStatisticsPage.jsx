@@ -31,7 +31,7 @@ export default function DashboardStatisticsPage() {
       console.error('Failed to fetch employer statistics:', err);
       setStats(null);
       setError(
-        err.response?.data?.message || 'Failed to load dashboard statistics. Please try again.'
+        "We couldn't load your dashboard statistics right now. Please try again in a moment."
       );
     } finally {
       setLoading(false);
