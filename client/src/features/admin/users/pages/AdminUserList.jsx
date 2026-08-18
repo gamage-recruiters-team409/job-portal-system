@@ -286,6 +286,41 @@ const AdminUserList = () => {
         </button>
       </div>
 
+      {/* Top Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Total registered */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between min-h-[135px]">
+          <span className="text-sm font-medium text-slate-500">Total registered</span>
+          <span className="text-3xl font-bold text-slate-900 mt-2">—</span>
+        </div>
+
+        {/* Active right now */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between min-h-[135px]">
+          <span className="text-sm font-medium text-slate-500">Active right now</span>
+          <span className="text-3xl font-bold text-slate-900 mt-2">—</span>
+          <div className="flex items-center gap-3 mt-3">
+            <div className="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-slate-200 h-full rounded-full w-0" />
+            </div>
+            <span className="text-xs font-semibold text-slate-400">—</span>
+          </div>
+        </div>
+
+        {/* Reports pending */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between min-h-[135px]">
+          <span className="text-sm font-medium text-slate-500">Reports pending</span>
+          <span className="text-3xl font-bold text-slate-400 mt-2">—</span>
+          <div className="mt-3">
+            <Link
+              to="/admin/reports"
+              className="text-sm font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+            >
+              Review tickets <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content Box */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
         {/* Filters & Actions */}
@@ -449,44 +484,6 @@ const AdminUserList = () => {
         
         {/* Pagination */}
         {!loading && !error && users.length > 0 && renderPagination()}
-      </div>
-
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
-          <h3 className="text-sm font-semibold text-slate-500">Total registered</h3>
-          <div className="flex flex-col gap-1 mt-1">
-            <span className="text-3xl font-bold text-slate-900">{stats.totalRegistered.toLocaleString()}</span>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
-          <h3 className="text-sm font-semibold text-slate-500">Active right now</h3>
-          <div className="flex flex-col gap-2 mt-1">
-            <span className="text-3xl font-bold text-slate-900">{stats.activeNow.toLocaleString()}</span>
-            <div className="flex items-center gap-2">
-               <div className="h-1.5 flex-1 bg-slate-100 rounded-full overflow-hidden">
-                 <div 
-                   className="h-full bg-green-500 rounded-full" 
-                   style={{ width: `${stats.totalRegistered ? Math.round((stats.activeNow / stats.totalRegistered) * 100) : 0}%` }}
-                 />
-               </div>
-               <span className="text-xs font-medium text-slate-500">
-                 {stats.totalRegistered ? Math.round((stats.activeNow / stats.totalRegistered) * 100) : 0}%
-               </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
-          <h3 className="text-sm font-semibold text-slate-500">Reports pending</h3>
-          <div className="flex flex-col gap-1 mt-1">
-            <span className="text-3xl font-bold text-red-500">{stats.reportsPending.toLocaleString()}</span>
-            <Link to="/admin/reported-jobs" className="text-sm font-medium text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 mt-2">
-              Review tickets <ArrowRight size={16} />
-            </Link>
-          </div>
-        </div>
       </div>
 
       {/* Modals */}

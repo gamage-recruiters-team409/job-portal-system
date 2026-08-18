@@ -251,6 +251,57 @@ const AdminEmployerList = () => {
         </div>
       </div>
 
+      {/* Top 4 Statistics Cards (Powered by Danaja's getAdminStatistics API) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-600">Total Employers</h3>
+            <div className="w-10 h-10 rounded-full bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center shadow-2xs">
+              <Building2 size={18} />
+            </div>
+          </div>
+          <span className="text-3xl font-bold text-slate-900 mt-1">
+            {stats.totalEmployers ?? totalEmployers}
+          </span>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-600">Verified Partners</h3>
+            <div className="w-10 h-10 rounded-full bg-[#DCFCE7] text-[#16A34A] flex items-center justify-center shadow-2xs">
+              <CheckCircle size={18} />
+            </div>
+          </div>
+          <span className="text-3xl font-bold text-slate-900 mt-1">
+            {stats.verifiedEmployers ?? 0}
+          </span>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-600">Pending Review</h3>
+            <div className="w-10 h-10 rounded-full bg-[#FEF3C7] text-[#D97706] flex items-center justify-center shadow-2xs">
+              <Clock size={18} />
+            </div>
+          </div>
+          <span className="text-3xl font-bold text-slate-900 mt-1">
+            {Math.max(0, (stats.totalEmployers || totalEmployers) - (stats.verifiedEmployers || 0))}
+          </span>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-600">Total Active Jobs</h3>
+            <div className="w-10 h-10 rounded-full bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center shadow-2xs">
+              <Briefcase size={18} />
+            </div>
+          </div>
+          <span className="text-3xl font-bold text-slate-900 mt-1">
+            {stats.publishedJobs ?? 0}
+          </span>
+        </div>
+      </div>
+
       {/* Main Content Box */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
         {/* Filters & Actions */}
@@ -419,57 +470,6 @@ const AdminEmployerList = () => {
         
         {/* Pagination */}
         {!loading && !error && employers.length > 0 && renderPagination()}
-      </div>
-
-      {/* Stats Section */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-600">Total Employers</h3>
-            <div className="w-10 h-10 rounded-full bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center shadow-2xs">
-              <Building2 size={18} />
-            </div>
-          </div>
-          <span className="text-3xl font-bold text-slate-900 mt-1">
-            {stats.totalEmployers ?? totalEmployers}
-          </span>
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-600">Verified Partners</h3>
-            <div className="w-10 h-10 rounded-full bg-[#DCFCE7] text-[#16A34A] flex items-center justify-center shadow-2xs">
-              <CheckCircle size={18} />
-            </div>
-          </div>
-          <span className="text-3xl font-bold text-slate-900 mt-1">
-            {stats.verifiedEmployers ?? 0}
-          </span>
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-600">Pending Review</h3>
-            <div className="w-10 h-10 rounded-full bg-[#FEF3C7] text-[#D97706] flex items-center justify-center shadow-2xs">
-              <Clock size={18} />
-            </div>
-          </div>
-          <span className="text-3xl font-bold text-slate-900 mt-1">
-            {Math.max(0, (stats.totalEmployers || totalEmployers) - (stats.verifiedEmployers || 0))}
-          </span>
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-600">Total Active Jobs</h3>
-            <div className="w-10 h-10 rounded-full bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center shadow-2xs">
-              <Briefcase size={18} />
-            </div>
-          </div>
-          <span className="text-3xl font-bold text-slate-900 mt-1">
-            {stats.publishedJobs ?? 0}
-          </span>
-        </div>
       </div>
     </div>
   );
