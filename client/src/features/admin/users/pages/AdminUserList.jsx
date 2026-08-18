@@ -18,7 +18,8 @@ import {
   TrendingUp,
   Clock,
   AlertOctagon,
-  ArrowRight
+  ArrowRight,
+  UserCheck,
 } from 'lucide-react';
 import { getAdminUsers, getAdminUserStats } from '../../../../services/adminUser.service';
 import AddUserModal from '../components/AddUserModal';
@@ -289,28 +290,53 @@ const AdminUserList = () => {
       {/* Top Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Total registered */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between min-h-[135px]">
-          <span className="text-sm font-medium text-slate-500">Total registered</span>
-          <span className="text-3xl font-bold text-slate-900 mt-2">—</span>
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between min-h-[145px]">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-slate-600">Total registered</span>
+            <div className="w-10 h-10 rounded-full bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center shadow-2xs">
+              <Users size={18} />
+            </div>
+          </div>
+          <span className="text-3xl font-bold text-slate-900 mt-1">{stats.totalRegistered.toLocaleString()}</span>
+          <div className="mt-2">
+            <span className="text-xs font-medium text-slate-400">All registered platform accounts</span>
+          </div>
         </div>
 
-        {/* Active right now */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between min-h-[135px]">
-          <span className="text-sm font-medium text-slate-500">Active right now</span>
-          <span className="text-3xl font-bold text-slate-900 mt-2">—</span>
-          <div className="flex items-center gap-3 mt-3">
-            <div className="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-              <div className="bg-slate-200 h-full rounded-full w-0" />
+        {/* Active accounts */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between min-h-[145px]">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-slate-600">Active accounts</span>
+            <div className="w-10 h-10 rounded-full bg-[#DCFCE7] text-[#16A34A] flex items-center justify-center shadow-2xs">
+              <UserCheck size={18} />
             </div>
-            <span className="text-xs font-semibold text-slate-400">—</span>
+          </div>
+          <span className="text-3xl font-bold text-slate-900 mt-1">{stats.activeNow.toLocaleString()}</span>
+          <div className="flex items-center gap-3 mt-2">
+            <div className="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+              <div 
+                className="bg-green-500 h-full rounded-full transition-all duration-500" 
+                style={{ width: `${stats.totalRegistered ? Math.min(100, Math.round((stats.activeNow / stats.totalRegistered) * 100)) : 0}%` }}
+              />
+            </div>
+            <span className="text-xs font-semibold text-slate-500">
+              {stats.totalRegistered ? Math.round((stats.activeNow / stats.totalRegistered) * 100) : 0}%
+            </span>
           </div>
         </div>
 
         {/* Reports pending */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between min-h-[135px]">
-          <span className="text-sm font-medium text-slate-500">Reports pending</span>
-          <span className="text-3xl font-bold text-slate-400 mt-2">—</span>
-          <div className="mt-3">
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col justify-between min-h-[145px]">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-slate-600">Reports pending</span>
+            <div className="w-10 h-10 rounded-full bg-[#FEE2E2] text-[#DC2626] flex items-center justify-center shadow-2xs">
+              <AlertOctagon size={18} />
+            </div>
+          </div>
+          <span className={`text-3xl font-bold mt-1 ${stats.reportsPending > 0 ? 'text-red-500' : 'text-slate-900'}`}>
+            {stats.reportsPending.toLocaleString()}
+          </span>
+          <div className="mt-2">
             <Link
               to="/admin/reports"
               className="text-sm font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
