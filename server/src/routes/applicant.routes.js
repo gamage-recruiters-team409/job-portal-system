@@ -5,6 +5,7 @@ import {
   updateApplicantStatusController,
   shortlistApplicantController,
   rejectApplicantController,
+  getApplicantCvController,
 } from '../controllers/applicant.controller.js';
 import {
   listApplicantsQuerySchema,
@@ -27,6 +28,13 @@ applicantRouter.get('/', validate(listApplicantsQuerySchema, 'query'), listAppli
 
 // GET /api/v1/applicants/:id
 applicantRouter.get('/:id', validate(applicantIdParamSchema, 'params'), getApplicantByIdController);
+
+// GET /api/v1/applicants/:id/cv
+applicantRouter.get(
+  '/:id/cv',
+  validate(applicantIdParamSchema, 'params'),
+  getApplicantCvController
+);
 
 // PATCH /api/v1/applicants/:id/status
 applicantRouter.patch(

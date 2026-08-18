@@ -352,7 +352,16 @@ export async function updateJob({ jobId, employerId, updates }) {
   }
 
   Object.assign(job, updates);
-  await job.save();
+
+  try {
+    await job.save();
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      const firstMessage = Object.values(error.errors)[0]?.message || 'Validation failed.';
+      throw new ApiError(400, firstMessage);
+    }
+    throw error;
+  }
 
   return job;
 }
