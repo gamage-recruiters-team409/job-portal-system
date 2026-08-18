@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   Download,
   Mail,
-  Phone,
   MapPin,
   Calendar,
   ChevronLeft,
@@ -374,11 +373,6 @@ export default function ApplicantCvView() {
               <div className="flex items-center gap-2.5">
                 <Mail className="h-4 w-4 shrink-0 text-gray-400" />
                 <span className="truncate">{jobSeeker?.email || 'Not provided'}</span>
-              </div>
-
-              <div className="flex items-center gap-2.5">
-                <Phone className="h-4 w-4 shrink-0 text-gray-400" />
-                <span>{jobSeekerProfile?.phone || 'Not provided'}</span>
               </div>
 
               <div className="flex items-center gap-2.5">
