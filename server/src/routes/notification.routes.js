@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { listNotifications, markAsRead } from '../controllers/notification.controller.js';
+import {
+  listNotifications,
+  markAsRead,
+  markAllAsRead,
+  unreadCount,
+} from '../controllers/notification.controller.js';
 import { protect } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import {
@@ -9,12 +14,17 @@ import {
 
 const notificationRouter = Router();
 
+notificationRouter.get('/unread-count', protect, unreadCount);
+
 notificationRouter.get(
   '/',
   protect,
   validate(listNotificationsQuerySchema, 'query'),
   listNotifications
 );
+
+notificationRouter.patch('/mark-all-read', protect, markAllAsRead);
+
 notificationRouter.patch(
   '/:id/read',
   protect,

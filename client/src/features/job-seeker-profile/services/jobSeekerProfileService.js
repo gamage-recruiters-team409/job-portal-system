@@ -67,3 +67,21 @@ export async function deleteMyExperience(entryId) {
 
   return data.data.experience;
 }
+
+export async function addMyPortfolioLink(payload) {
+  const { data } = await apiClient.post('/job-seeker-profile/me/portfolio', payload);
+
+  return data.data.portfolioLink;
+}
+
+export async function updateMyPortfolioLink(entryId, payload) {
+  const { data } = await apiClient.patch(`/job-seeker-profile/me/portfolio/${entryId}`, payload);
+
+  return data.data.portfolioLink;
+}
+
+export async function deleteMyPortfolioLink(entryId) {
+  const { data } = await apiClient.delete(`/job-seeker-profile/me/portfolio/${entryId}`);
+
+  return data.data.portfolioLink;
+}

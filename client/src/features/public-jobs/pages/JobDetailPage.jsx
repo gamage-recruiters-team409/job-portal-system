@@ -8,6 +8,9 @@ import { formatSalary, timeAgo, formatExperience, titleCase } from '../utils/for
 import JobCard from '../../../components/jobs/JobCard.jsx';
 import LoadingState from '../../../components/jobs/LoadingState.jsx';
 import ReportFakeJobModal from '../../reported-jobs/job-seeker/components/ReportFakeJobModal.jsx';
+import ApplyJobModal from '../../../components/jobs/ApplyJobModal.jsx';
+import ApplicationSubmittedModal from '../../../components/jobs/ApplicationSubmittedModal.jsx';
+import { applyToJob } from '../../../services/applicationService.js';
 import { useAuth } from '../../../context/AuthContext.jsx';
 import { USER_ROLES } from '../../../constants/statuses.js';
 
@@ -33,6 +36,10 @@ export default function JobDetailPage() {
   // Save Job & Report Job state
   const [isSaved, setIsSaved] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [applyError, setApplyError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [actionFeedback, setActionFeedback] = useState('');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
@@ -130,6 +137,42 @@ export default function JobDetailPage() {
     }
   };
 
+  function handleOpenApplyModal() {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: `/jobs/${id}` } });
+      return;
+    }
+    if (!isJobSeeker) {
+      setActionFeedback('Only Job Seeker accounts can apply for jobs.');
+      setTimeout(() => setActionFeedback(''), 4000);
+      return;
+    }
+    setApplyError('');
+    setShowApplyModal(true);
+  }
+
+  function handleCloseApplyModal() {
+    if (submitting) return;
+    setShowApplyModal(false);
+    setApplyError('');
+  }
+
+  async function handleSubmitApplication(coverLetter) {
+    setSubmitting(true);
+    setApplyError('');
+    try {
+      await applyToJob(job._id, coverLetter);
+      setShowApplyModal(false);
+      setShowSuccessModal(true);
+    } catch (err) {
+      setApplyError(
+        err?.response?.data?.message || 'Failed to submit application. Please try again.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   const handleOpenReport = () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: `/jobs/${id}` } });
@@ -222,13 +265,22 @@ export default function JobDetailPage() {
               {/* Action Buttons Cluster: Apply Now, Save Job, Report Job */}
               <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
                 <div className="flex w-full flex-wrap items-center gap-2.5 sm:w-auto">
-                  <Link
-                    to="/login"
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-center text-sm font-semibold text-white shadow transition-colors hover:bg-blue-700 sm:flex-initial"
+                  <button
+                    type="button"
+                    onClick={handleOpenApplyModal}
+                    title={
+                      isAuthenticated && !isJobSeeker
+                        ? 'Only Job Seeker accounts can apply for jobs.'
+                        : undefined
+                    }
+                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-6 py-3 text-center text-sm font-semibold shadow transition-colors sm:flex-initial ${
+                      isAuthenticated && !isJobSeeker
+                        ? 'cursor-not-allowed bg-slate-300 text-slate-500'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
                   >
-                    Apply Now
-                  </Link>
-
+                    {isAuthenticated && !isJobSeeker ? ' Apply Now' : 'Apply Now'}
+                  </button>
                   <button
                     type="button"
                     onClick={handleToggleSave}
@@ -409,6 +461,19 @@ export default function JobDetailPage() {
         onClose={() => setIsReportModalOpen(false)}
         jobId={id}
       />
+
+      {showApplyModal && (
+        <ApplyJobModal
+          job={job}
+          onClose={handleCloseApplyModal}
+          onSubmit={handleSubmitApplication}
+          submitting={submitting}
+          error={applyError}
+        />
+      )}
+      {showSuccessModal && (
+        <ApplicationSubmittedModal job={job} onClose={() => setShowSuccessModal(false)} />
+      )}
     </div>
   );
 }

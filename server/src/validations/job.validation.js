@@ -94,13 +94,16 @@ const objectId = z.string().regex(objectIdRegex, 'Invalid ID format.');
 const salaryRangeRefinement = (data) =>
   data.salaryMax == null || data.salaryMin == null || data.salaryMax >= data.salaryMin;
 
+const futureDeadline = z.coerce.date().refine((date) => date > new Date(), {
+  message: 'Deadline must be a future date.',
+});
+
 const jobBaseSchema = z.object({
   title: z.string().trim().min(1, 'Title is required.'),
   description: z.string().trim().min(1, 'Description is required.'),
   responsibilities: z.string().trim().min(1, 'Responsibilities are required.'),
   requirements: z.string().trim().min(1, 'Requirements are required.'),
   benefits: z.string().trim().optional(),
-
   category: objectId,
   skills: z
     .array(objectId)
@@ -117,22 +120,26 @@ const jobBaseSchema = z.object({
   jobType: z.enum(Object.values(JOB_TYPES)),
   workMode: z.enum(Object.values(WORK_MODES)),
   experienceYears: z.number().min(0),
-
   salaryCurrency: z.string().optional(),
-  salaryMin: z.number().min(0).optional(),
-  salaryMax: z.number().min(0).optional(),
-
-  deadline: z.coerce.date().refine((date) => date > new Date(), {
-    message: 'Deadline must be a future date.',
-  }),
+  salaryMin: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.union([z.number().min(0), z.null()]).optional()
+  ),
+  salaryMax: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.union([z.number().min(0), z.null()]).optional()
+  ),
 });
 
-export const createJobSchema = jobBaseSchema.refine(salaryRangeRefinement, {
-  message: 'salaryMax cannot be lower than salaryMin.',
-  path: ['salaryMax'],
-});
+export const createJobSchema = jobBaseSchema
+  .extend({ deadline: futureDeadline })
+  .refine(salaryRangeRefinement, {
+    message: 'salaryMax cannot be lower than salaryMin.',
+    path: ['salaryMax'],
+  });
 
 export const updateJobSchema = jobBaseSchema
+  .extend({ deadline: z.coerce.date().optional() })
   .partial()
   .refine(salaryRangeRefinement, {
     message: 'salaryMax cannot be lower than salaryMin.',
