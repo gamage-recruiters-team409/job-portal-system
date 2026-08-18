@@ -29,8 +29,14 @@ const ResetPasswordModal = ({
 
     try {
       setIsSending(true);
-      await forgotPassword(email);
-      toast.success(`Password reset link sent to ${email}`);
+      const response = await forgotPassword(email);
+      const expiryTime = response?.data?.expiresInHuman;
+      
+      toast.success(
+        expiryTime
+          ? `Reset link sent to ${email} (valid for ${expiryTime})`
+          : `Password reset link sent to ${email}`
+      );
       onClose();
     } catch (err) {
       toast.error(
@@ -96,8 +102,7 @@ const ResetPasswordModal = ({
               Security Protocol
             </span>
             <span>
-              For security reasons, this link will expire in exactly{' '}
-              <strong className="text-slate-900 font-semibold">24 hours</strong>. If the link
+              For security reasons, this link is temporary and will expire automatically. If the link
               expires, you will need to re-initiate the request from this dashboard.
             </span>
           </div>
