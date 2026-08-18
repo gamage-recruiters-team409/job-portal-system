@@ -11,13 +11,28 @@ import {
  * Returns a paginated page of notifications belonging to the given user,
  * newest first. Used by both the Notification Dropdown (small limit) and
  * the Notification Centre (larger limit).
+ *
+ * Optional filters (type, unreadOnly) are applied in the database query
+ * itself, BEFORE pagination — so pagination totals and "no results" states
+ * always reflect the filtered dataset, not the full unfiltered one.
  */
-export async function getUserNotifications(userId, { page = 1, limit = 20 } = {}) {
+export async function getUserNotifications(
+  userId,
+  { page = 1, limit = 20, type, unreadOnly = false } = {}
+) {
   const skip = (page - 1) * limit;
 
+  const query = { user: userId };
+  if (type) {
+    query.type = type;
+  }
+  if (unreadOnly) {
+    query.status = NOTIFICATION_STATUSES.UNREAD;
+  }
+
   const [notifications, total] = await Promise.all([
-    Notification.find({ user: userId }).sort('-createdAt').skip(skip).limit(limit),
-    Notification.countDocuments({ user: userId }),
+    Notification.find(query).sort('-createdAt').skip(skip).limit(limit),
+    Notification.countDocuments(query),
   ]);
 
   return {
@@ -46,6 +61,32 @@ export async function markNotificationAsRead(notificationId, userId) {
   await notification.save();
 
   return { notification };
+}
+
+/**
+ * Marks ALL of the given user's unread notifications as read, in one
+ * database operation — not limited to any single page. This is the
+ * global "Mark all as read" action, distinct from marking one notification.
+ */
+export async function markAllNotificationsAsRead(userId) {
+  const result = await Notification.updateMany(
+    { user: userId, status: NOTIFICATION_STATUSES.UNREAD },
+    { $set: { status: NOTIFICATION_STATUSES.READ } }
+  );
+
+  return { modifiedCount: result.modifiedCount };
+}
+
+/**
+ * Returns the total count of unread notifications for the given user,
+ * across ALL pages — used for the notification bell badge.
+ */
+export async function getUnreadNotificationCount(userId) {
+  const count = await Notification.countDocuments({
+    user: userId,
+    status: NOTIFICATION_STATUSES.UNREAD,
+  });
+  return { count };
 }
 
 /**
