@@ -151,7 +151,11 @@ export async function applyToJob(req, res, next) {
 export async function getApplicationHistory(req, res, next) {
   try {
     const applications = await Application.find({ jobSeeker: req.user._id })
-      .populate('job', JOB_SAFE_FIELDS)
+      .populate({
+  path: 'job',
+  select: JOB_SAFE_FIELDS,
+  populate: { path: 'companyId', select: 'companyName companyLogo companyLocation' },
+})
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -171,7 +175,11 @@ export async function getApplicationDetails(req, res, next) {
     const application = await Application.findOne({
       _id: id,
       jobSeeker: req.user._id,
-    }).populate('job', JOB_SAFE_FIELDS);
+    }).populate({
+  path: 'job',
+  select: JOB_SAFE_FIELDS,
+  populate: { path: 'companyId', select: 'companyName companyLogo companyLocation' },
+});
 
     if (!application) {
       throw new ApiError(404, 'Application not found.');
