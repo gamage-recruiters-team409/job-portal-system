@@ -94,99 +94,169 @@ function CrossIcon() {
   );
 }
 
+const STATUS_TIMELINE_STYLES = {
+  applied: { className: 'border-blue-500 text-blue-700', bg: '#DBEAFE' },
+  under_review: { className: 'border-amber-500 text-amber-700', bg: '#FEF3C7' },
+  shortlisted: { className: 'border-yellow-500 text-yellow-700', bg: '#FEF9C3' },
+  selected: { className: 'border-green-500 text-green-700', bg: '#CAEBC6' },
+  rejected: { className: 'border-red-500 text-red-600', bg: '#FEE2E2' },
+};
+
 function StatusTimeline({ application }) {
-  const { status, statusHistory, updatedAt } = application;
-  const isRejected = status === 'rejected';
-  const historyByStatus = Object.fromEntries(
-    (statusHistory ?? []).map((h) => [h.status, h.changedAt])
-  );
-  const rejectedStepIndex = TIMELINE_STEPS.length - 1;
+  const { status, statusHistory, createdAt } = application;
+
+  const history =
+    statusHistory && statusHistory.length > 0
+      ? statusHistory
+      : [{ status: 'applied', changedAt: createdAt }];
 
   return (
-    <div className="rounded-xl border border-slate-200 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-slate-900">Status Timeline</h2>
-        <span className="text-sm font-medium text-slate-500">
-          {isRejected
-            ? 'Not selected'
-            : status === 'selected'
-              ? 'Selected'
-              : status === 'shortlisted'
-                ? 'Shortlisted'
-                : 'In progress'}
-        </span>
-      </div>
-
-      <div className="flex items-start justify-between gap-2 px-2">
-        {TIMELINE_STEPS.map((step, i) => {
-          const isRejectedStep = isRejected && i === rejectedStepIndex;
-          const isCompleted = !isRejectedStep && Boolean(historyByStatus[step]);
-          const isLastStep = i === TIMELINE_STEPS.length - 1;
-          const dateForStep = isRejectedStep ? updatedAt : historyByStatus[step];
-
-          return (
-            <div key={step} className="flex flex-1 items-start">
-              {/* Circle + label/date stacked BELOW it */}
-              <div className="flex flex-col items-center text-center">
-                <div
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2
-  transition-all duration-500 ease-out
-  ${
-    isRejectedStep
-      ? 'border-red-500 bg-red-100 text-red-600'
-      : isCompleted
-        ? 'border-green-500 text-green-700 animate-[statusPop_.4s_ease-out]'
-        : 'border-slate-300 bg-white text-slate-300'
-  }`}
-                  style={
-                    isCompleted && !isRejectedStep
-                      ? {
-                          backgroundColor: '#CAEBC6',
-                          boxShadow: '0 0 0 4px rgba(34,197,94,.12)',
-                        }
-                      : undefined
-                  }
-                >
-                  {isRejectedStep ? <CrossIcon /> : isCompleted ? <CheckIcon /> : null}
-                </div>
-                <p className="mt-2 text-sm font-semibold text-slate-800">
-                  {isRejectedStep ? 'Rejected' : STATUS_LABELS[step]}
-                </p>
-                <p className="mt-1 text-xs text-slate-400">
-                  {dateForStep ? formatDate(dateForStep) : 'Pending'}
-                </p>
-              </div>
-
-              {/* Connector */}
-              {!isLastStep && (
-                <div className="relative mt-5 flex-1 px-2">
-                  {/* Gray Line */}
-                  <div className="h-[3px] w-full rounded-full bg-slate-200" />
-
-                  {/* Active Green Line */}
-                  <div
-                    className={`absolute left-2 top-0 h-[3px] rounded-full transition-all duration-500 ${
-                      isCompleted ? 'w-[calc(100%-16px)] bg-green-500' : 'w-0'
-                    }`}
-                  />
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
+    <>
       <style>{`
-        @keyframes statusPop {
-          0% { transform: scale(0.6); opacity: 0; }
-          70% { transform: scale(1.08); opacity: 1; }
-          100% { transform: scale(1); opacity: 1; }
+        @keyframes statusCirclePop {
+          0% {
+            opacity: 0;
+            transform: scale(0.3);
+          }
+
+          60% {
+            opacity: 1;
+            transform: scale(1.15);
+          }
+
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        @keyframes statusIconPop {
+          0% {
+            opacity: 0;
+            transform: scale(0);
+          }
+
+          60% {
+            opacity: 1;
+            transform: scale(1.2);
+          }
+
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        @keyframes statusLineGrow {
+          0% {
+            transform: scaleX(0);
+          }
+
+          100% {
+            transform: scaleX(1);
+          }
+        }
+
+        .status-timeline-circle {
+          opacity: 0;
+          animation: statusCirclePop 0.5s ease-out forwards;
+        }
+
+        .status-timeline-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          animation: statusIconPop 0.35s ease-out 0.2s forwards;
+        }
+
+        .status-timeline-line-fill {
+          transform: scaleX(0);
+          transform-origin: left center;
+          animation: statusLineGrow 0.55s ease-out forwards;
         }
       `}</style>
-    </div>
+
+      <div className="rounded-xl border border-slate-200 p-6">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900">
+            Status Timeline
+          </h2>
+
+          <span className="text-sm font-medium text-slate-500">
+            {STATUS_LABELS[status] ?? status}
+          </span>
+        </div>
+
+        <div className="flex items-start justify-between gap-2 overflow-x-auto px-2">
+          {history.map((entry, i) => {
+            const isCurrent = i === history.length - 1;
+
+            const style = STATUS_TIMELINE_STYLES[entry.status] ?? {
+              className: 'border-slate-400 text-slate-600',
+              bg: '#F1F5F9',
+            };
+
+            const isRejectedEntry = entry.status === 'rejected';
+            const isLastStep = i === history.length - 1;
+
+            return (
+              <div
+                key={`${entry.status}-${entry.changedAt}-${i}`}
+                className="flex flex-1 items-start"
+              >
+                {/* STATUS CIRCLE */}
+                <div className="flex min-w-[90px] flex-col items-center text-center">
+                  <div
+                    className={`status-timeline-circle flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 ${style.className}`}
+                    style={{
+                      backgroundColor: style.bg,
+                      boxShadow: isCurrent
+                        ? '0 0 0 4px rgba(34,197,94,.12)'
+                        : undefined,
+                      animationDelay: `${i * 0.25}s`,
+                    }}
+                  >
+                    <span className="status-timeline-icon">
+                      {isRejectedEntry ? <CrossIcon /> : <CheckIcon />}
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-sm font-semibold text-slate-800">
+                    {STATUS_LABELS[entry.status] ?? entry.status}
+                  </p>
+
+                  <p className="mt-1 text-xs text-slate-400">
+                    {formatDate(entry.changedAt)}
+                  </p>
+                </div>
+
+                {/* CONNECTING LINE */}
+                {!isLastStep && (
+                  <div
+                    className="relative mt-5 flex-1 px-2"
+                    style={{
+                      animationDelay: `${i * 0.25 + 0.3}s`,
+                    }}
+                  >
+                    <div className="h-[3px] w-full rounded-full bg-slate-200" />
+
+                    <div
+                      className="status-timeline-line-fill absolute left-2 top-0 h-[3px] w-[calc(100%-16px)] rounded-full bg-green-400"
+                      style={{
+                        animationDelay: `${i * 0.25 + 0.3}s`,
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </>
   );
 }
-
 export default function ApplicationDetailsPage() {
   const { id } = useParams();
   const [application, setApplication] = useState(null);
