@@ -216,10 +216,10 @@ const AdminEmployerDetails = () => {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         
         {/* Left Column: Company Profile Summary & Verification Actions */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 md:col-span-5 lg:col-span-4">
           
           {/* Company Profile Card */}
           <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col items-center text-center relative overflow-hidden">
@@ -245,16 +245,16 @@ const AdminEmployerDetails = () => {
             </div>
 
             <div className="w-full border-t border-slate-100 mt-6 pt-4 flex flex-col gap-3 text-left text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-medium flex items-center gap-1.5">
+              <div className="flex items-center justify-between whitespace-nowrap gap-2">
+                <span className="text-slate-500 font-medium flex items-center gap-1.5 shrink-0">
                   <Calendar size={14} className="text-slate-400" /> Joined Platform
                 </span>
-                <span className="text-slate-900 font-semibold">{formatDate(company.createdAt)}</span>
+                <span className="text-slate-900 font-semibold truncate">{formatDate(company.createdAt)}</span>
               </div>
 
               {company.website && (
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium flex items-center gap-1.5">
+                <div className="flex items-center justify-between whitespace-nowrap gap-2">
+                  <span className="text-slate-500 font-medium flex items-center gap-1.5 shrink-0">
                     <Globe size={14} className="text-slate-400" /> Website
                   </span>
                   <a
@@ -313,7 +313,7 @@ const AdminEmployerDetails = () => {
               <button
                 type="button"
                 onClick={() => setIsResetPasswordOpen(true)}
-                className="w-full flex items-center justify-center gap-2 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors mt-1"
+                className="w-full flex items-center justify-center gap-2 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors mt-1 whitespace-nowrap"
               >
                 <RotateCcw size={13} />
                 Send Password Reset Link
@@ -331,14 +331,14 @@ const AdminEmployerDetails = () => {
                   <>
                     <button
                       onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.VERIFIED)}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap"
                     >
                       <CheckCircle2 size={16} />
                       Verify Employer Partner
                     </button>
                     <button
                       onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.REJECTED)}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap"
                     >
                       <XCircle size={16} />
                       Reject Profile
@@ -347,7 +347,7 @@ const AdminEmployerDetails = () => {
                 ) : (
                   <button
                     onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.VERIFIED)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap"
                   >
                     <CheckCircle2 size={16} />
                     Approve & Verify Partner
@@ -360,7 +360,7 @@ const AdminEmployerDetails = () => {
         </div>
 
         {/* Right Column: Structured Organization & Contact Cards */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
+        <div className="md:col-span-7 lg:col-span-8 flex flex-col gap-6">
           
           {/* Organization Information Card */}
           <div className="bg-white rounded-2xl p-6 md:p-7 border border-slate-200/90 shadow-2xs">

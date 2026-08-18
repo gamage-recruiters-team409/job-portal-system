@@ -22,7 +22,7 @@ const AdminTopbar = ({ onMenuClick }) => {
         <button
           onClick={onMenuClick}
           className={[
-            'md:hidden p-2 -ml-2 text-slate-600',
+            'lg:hidden p-2 -ml-2 text-slate-600',
             'hover:bg-slate-100 rounded-lg transition-colors',
           ].join(' ')}
           aria-label="Open Menu"
@@ -42,7 +42,7 @@ const AdminTopbar = ({ onMenuClick }) => {
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <h2 className="text-xl font-bold text-slate-800 hidden md:block">Admin Console</h2>
+        <h2 className="text-xl font-bold text-slate-800 hidden lg:block">Admin Console</h2>
 
         {/* Search Bar */}
         <div className="flex-1 max-w-xl relative flex items-center">
