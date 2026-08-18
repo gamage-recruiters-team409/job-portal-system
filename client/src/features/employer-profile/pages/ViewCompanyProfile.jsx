@@ -25,7 +25,7 @@ function VerificationBadge({ status }) {
 
   if (normalizedStatus === 'verified') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-2.5 py-1 text-xs font-semibold text-[#16A34A]">
+      <span className="animate-fade-in inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-2.5 py-1 text-xs font-semibold text-[#16A34A] transition-colors duration-200">
         <CheckCircle2 className="h-3.5 w-3.5" />
         Verified
       </span>
@@ -34,7 +34,7 @@ function VerificationBadge({ status }) {
 
   if (normalizedStatus === 'rejected') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-2.5 py-1 text-xs font-semibold text-[#DC2626]">
+      <span className="animate-fade-in inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-2.5 py-1 text-xs font-semibold text-[#DC2626] transition-colors duration-200">
         <AlertCircle className="h-3.5 w-3.5" />
         Rejected
       </span>
@@ -43,7 +43,7 @@ function VerificationBadge({ status }) {
 
   // Default: pending
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEF3C7] px-2.5 py-1 text-xs font-semibold text-[#D97706]">
+    <span className="animate-fade-in inline-flex items-center gap-1.5 rounded-full bg-[#FEF3C7] px-2.5 py-1 text-xs font-semibold text-[#D97706] transition-colors duration-200">
       <Clock className="h-3.5 w-3.5" />
       Pending
     </span>
@@ -256,7 +256,7 @@ export default function ViewCompanyProfile() {
   // Error State
   if (error) {
     return (
-      <div className="p-6 md:p-8">
+      <div className="animate-fade-in p-6 md:p-8">
         <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center shadow-xs">
           <AlertCircle className="mx-auto h-10 w-10 text-red-500" />
           <h2 className="mt-2 text-lg font-bold text-slate-900">Unable to load profile</h2>
@@ -264,7 +264,7 @@ export default function ViewCompanyProfile() {
           <button
             type="button"
             onClick={() => fetchCompanyProfile(true)}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white transition-colors duration-150 hover:bg-blue-700"
           >
             <RefreshCw className="h-4 w-4" />
             Try again
@@ -277,7 +277,7 @@ export default function ViewCompanyProfile() {
   // Empty State (404 / No profile created yet)
   if (is404 || !company) {
     return (
-      <div className="p-6 md:p-8">
+      <div className="animate-fade-in p-6 md:p-8">
         <div className="mx-auto max-w-xl rounded-xl border border-[#E2E8F0] bg-white p-8 text-center shadow-xs">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-[#2563EB]">
             <Building2 className="h-8 w-8" />
@@ -290,7 +290,7 @@ export default function ViewCompanyProfile() {
           <button
             type="button"
             onClick={handleCreateCompany}
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700"
           >
             <Plus className="h-4 w-4" />
             <span>Create company profile</span>
@@ -306,9 +306,9 @@ export default function ViewCompanyProfile() {
     : [];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 font-[Inter,sans-serif]">
+    <div className="animate-fade-in min-h-screen bg-[#F8FAFC] p-4 md:p-8 font-[Inter,sans-serif]">
       {/* HERO CARD (top, full width) */}
-      <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+      <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           {/* Left section: Logo + Details */}
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
@@ -350,7 +350,7 @@ export default function ViewCompanyProfile() {
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-blue-600 transition"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-blue-600"
                   >
                     <Globe className="h-3.5 w-3.5 text-slate-500" />
                     <span>{company.website.replace(/^https?:\/\//, '')}</span>
@@ -360,7 +360,7 @@ export default function ViewCompanyProfile() {
                 {company.companyEmail && (
                   <a
                     href={`mailto:${company.companyEmail}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-blue-600 transition"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-blue-600"
                   >
                     <Mail className="h-3.5 w-3.5 text-slate-500" />
                     <span>{company.companyEmail}</span>
@@ -370,7 +370,7 @@ export default function ViewCompanyProfile() {
                 {company.companyTelephone && (
                   <a
                     href={`tel:${company.companyTelephone}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-blue-600 transition"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-blue-600"
                   >
                     <Phone className="h-3.5 w-3.5 text-slate-500" />
                     <span>{company.companyTelephone}</span>
@@ -385,7 +385,7 @@ export default function ViewCompanyProfile() {
             <button
               type="button"
               onClick={() => setIsLogoModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-sm font-semibold text-[#2563EB] border border-blue-100 hover:bg-blue-100 transition"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 text-sm font-semibold text-[#2563EB] border border-blue-100 transition-colors duration-150 hover:bg-blue-100"
             >
               <ImageUp className="h-4 w-4" />
               <span>Change logo</span>
@@ -393,7 +393,7 @@ export default function ViewCompanyProfile() {
             <button
               type="button"
               onClick={handleEditProfile}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700"
             >
               <Pencil className="h-4 w-4" />
               <span>Edit profile</span>
@@ -407,7 +407,7 @@ export default function ViewCompanyProfile() {
         {/* LEFT COLUMN (2fr) */}
         <div className="space-y-6 lg:col-span-2">
           {/* About Card */}
-          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <h2 className="text-lg font-bold text-[#0F172A]">About</h2>
             {descriptionParagraphs.length > 0 ? (
               <div className="mt-4 space-y-3 text-sm text-[#475569] leading-relaxed">
@@ -423,7 +423,7 @@ export default function ViewCompanyProfile() {
           </div>
 
           {/* Open positions Card */}
-          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h2 className="text-lg font-bold text-[#0F172A]">Open positions</h2>
               {jobs.length > 0 && (
@@ -458,7 +458,7 @@ export default function ViewCompanyProfile() {
                   <button
                     type="button"
                     onClick={() => navigate('/jobs/create')}
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700"
                   >
                     <Plus className="h-4 w-4" />
                     <span>Post a job</span>
@@ -511,7 +511,7 @@ export default function ViewCompanyProfile() {
         {/* RIGHT COLUMN (1fr) */}
         <div className="space-y-6 lg:col-span-1">
           {/* Company details Card */}
-          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <h2 className="text-lg font-bold text-[#0F172A]">Company details</h2>
             <div className="mt-4 divide-y divide-slate-100 text-sm">
               <div className="flex items-center justify-between py-2.5">
@@ -544,7 +544,7 @@ export default function ViewCompanyProfile() {
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:text-[#2563EB] hover:underline"
+                      className="transition-colors duration-150 hover:text-[#2563EB] hover:underline"
                     >
                       {company.website.replace(/^https?:\/\//, '')}
                     </a>
@@ -559,7 +559,7 @@ export default function ViewCompanyProfile() {
                   {company.companyEmail ? (
                     <a
                       href={`mailto:${company.companyEmail}`}
-                      className="hover:text-[#2563EB] hover:underline"
+                      className="transition-colors duration-150 hover:text-[#2563EB] hover:underline"
                     >
                       {company.companyEmail}
                     </a>
@@ -584,7 +584,7 @@ export default function ViewCompanyProfile() {
           </div>
 
           {/* Verification Card */}
-          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-[#0F172A]">Verification</h2>
               <VerificationBadge status={company.verificationStatus} />
