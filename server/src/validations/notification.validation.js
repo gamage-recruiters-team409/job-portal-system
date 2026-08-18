@@ -24,6 +24,10 @@ export const listNotificationsQuerySchema = z
     page: z.coerce.number().int().min(1).optional().default(1),
     limit: z.coerce.number().int().min(1).max(50).optional().default(20),
     type: z.enum(NOTIFICATION_TYPE_VALUES).optional(),
-    unreadOnly: z.coerce.boolean().optional().default(false),
+    unreadOnly: z
+      .enum(['true', 'false'])
+      .optional()
+      .default('false')
+      .transform((val) => val === 'true'),
   })
   .strict();
