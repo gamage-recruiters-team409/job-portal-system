@@ -1,11 +1,31 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { APPLICATION_STATUSES } from '../../../constants/statuses.js';
-import { getApplicants, getEmployerJobs } from '../../../services/applicantService.js';
+import {
+  getApplicants,
+  getEmployerJobs,
+  getApplicantFilterOptions,
+} from '../../../services/applicantService.js';
+import { getSkills } from '../../../services/referenceService.js';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const ITEMS_PER_PAGE = 10;
+
+function parseExperienceRange(expKey) {
+  switch (expKey) {
+    case '0-1':
+      return { minExperience: 0, maxExperience: 1 };
+    case '1-3':
+      return { minExperience: 1, maxExperience: 3 };
+    case '3-5':
+      return { minExperience: 3, maxExperience: 5 };
+    case '5+':
+      return { minExperience: 5, maxExperience: undefined };
+    default:
+      return { minExperience: undefined, maxExperience: undefined };
+  }
+}
 
 /**
  * Status badge configuration.
@@ -222,19 +242,18 @@ export default function ApplicantList() {
   const [draftJobId, setDraftJobId] = useState('');
   const [draftStatus, setDraftStatus] = useState('');
   const [draftExperience, setDraftExperience] = useState('');
-  // TODO (Skills filter): no confirmed endpoint exists yet for a skills
-  // taxonomy list. Wire this dropdown once the owning module ships its API.
-  // const [draftSkill, setDraftSkill] = useState('');
-  // TODO (Education filter): same as above — no confirmed education
-  // taxonomy endpoint. Wire once available.
-  // const [draftEducation, setDraftEducation] = useState('');
+  const [draftSkill, setDraftSkill] = useState('');
+  const [draftEducation, setDraftEducation] = useState('');
 
   // ── Applied (committed) filters — these drive the API call ──
   const [appliedFilters, setAppliedFilters] = useState({
     search: '',
     jobId: '',
     status: '',
-    experience: '',
+    skill: '',
+    education: '',
+    minExperience: undefined,
+    maxExperience: undefined,
   });
 
   // ── Pagination ──
@@ -247,9 +266,15 @@ export default function ApplicantList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // ── Job list for the Job dropdown ──
+  // ── Options lists ──
   const [jobOptions, setJobOptions] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
+
+  const [skillOptions, setSkillOptions] = useState([]);
+  const [skillsLoading, setSkillsLoading] = useState(true);
+
+  const [educationOptions, setEducationOptions] = useState([]);
+  const [educationLoading, setEducationLoading] = useState(true);
 
   // Abort controller ref so changing filters cancels in-flight requests
   const abortRef = useRef(null);
@@ -283,17 +308,40 @@ export default function ApplicantList() {
     loadJobs();
   }, []);
 
+  // ── Load Skills and Education filter options on mount ──
+  useEffect(() => {
+    const loadFilterOptions = async () => {
+      setSkillsLoading(true);
+      setEducationLoading(true);
+
+      try {
+        const skillsData = await getSkills();
+        const mappedSkills = (Array.isArray(skillsData) ? skillsData : []).map((s) => ({
+          _id: s._id,
+          name: s.skillName || s.name || '',
+        }));
+        setSkillOptions(mappedSkills);
+      } catch {
+        setSkillOptions([]);
+      } finally {
+        setSkillsLoading(false);
+      }
+
+      try {
+        const eduData = await getApplicantFilterOptions();
+        const options = eduData?.data?.educationOptions ?? eduData?.educationOptions ?? [];
+        setEducationOptions(options);
+      } catch {
+        setEducationOptions([]);
+      } finally {
+        setEducationLoading(false);
+      }
+    };
+
+    loadFilterOptions();
+  }, []);
+
   // ── Fetch applicants whenever filters or page change ──
-  //
-  // Request lifecycle rules (per TL review):
-  //  1. Abort any previous in-flight request FIRST, before any early return —
-  //     this is critical so a stale request (e.g. one still running when
-  //     Reset clears the Job) can never resolve later and overwrite the
-  //     current table with stale data.
-  //  2. Only the request that is still "current" (abortRef.current still
-  //     points at its own controller) is allowed to update state — this
-  //     stops an older, already-aborted request's `finally` block from
-  //     clearing the loading spinner while a newer request is in flight.
   const fetchApplicants = useCallback(async () => {
     if (abortRef.current) {
       abortRef.current.abort();
@@ -310,7 +358,10 @@ export default function ApplicantList() {
         search: appliedFilters.search || undefined,
         jobId: appliedFilters.jobId || undefined,
         status: appliedFilters.status || undefined,
-        experience: appliedFilters.experience || undefined,
+        skill: appliedFilters.skill || undefined,
+        education: appliedFilters.education || undefined,
+        minExperience: appliedFilters.minExperience,
+        maxExperience: appliedFilters.maxExperience,
         page: currentPage,
         limit: ITEMS_PER_PAGE,
         signal: controller.signal,
@@ -339,13 +390,6 @@ export default function ApplicantList() {
   }, [appliedFilters, currentPage]);
 
   useEffect(() => {
-    // Deferred by one microtask: fetchApplicants synchronously calls
-    // setState (e.g. setIsLoading(true)) before its first `await`. Calling
-    // it directly in the effect body trips the
-    // react-hooks/set-state-in-effect lint rule (setState called
-    // synchronously within an effect). Deferring keeps identical timing
-    // (still resolves before the next paint) while moving the synchronous
-    // state updates out of the effect's own synchronous execution phase.
     queueMicrotask(() => {
       fetchApplicants();
     });
@@ -358,11 +402,15 @@ export default function ApplicantList() {
   // ── Filter actions ──
   const handleApplyFilters = () => {
     setCurrentPage(1);
+    const { minExperience, maxExperience } = parseExperienceRange(draftExperience);
     setAppliedFilters({
       search: draftSearch.trim(),
       jobId: draftJobId,
       status: draftStatus,
-      experience: draftExperience,
+      skill: draftSkill,
+      education: draftEducation,
+      minExperience,
+      maxExperience,
     });
   };
 
@@ -371,8 +419,18 @@ export default function ApplicantList() {
     setDraftJobId('');
     setDraftStatus('');
     setDraftExperience('');
+    setDraftSkill('');
+    setDraftEducation('');
     setCurrentPage(1);
-    setAppliedFilters({ search: '', jobId: '', status: '', experience: '' });
+    setAppliedFilters({
+      search: '',
+      jobId: '',
+      status: '',
+      skill: '',
+      education: '',
+      minExperience: undefined,
+      maxExperience: undefined,
+    });
   };
 
   const handleView = (applicantId) => {
@@ -485,7 +543,7 @@ export default function ApplicantList() {
             </FilterSelect>
           </div>
 
-          {/* Experience dropdown — TODO: wire when backend supports experience filtering */}
+          {/* Experience dropdown */}
           <div>
             <label
               htmlFor="filter-experience"
@@ -493,31 +551,43 @@ export default function ApplicantList() {
             >
               Experience
             </label>
-            {/* TODO: Replace this disabled placeholder with the real FilterSelect once 
-                the backend listApplicantsQuerySchema accepts an 'experience' param. */}
-            <FilterSelect id="filter-experience" value="" onChange={() => {}} disabled>
+            <FilterSelect
+              id="filter-experience"
+              value={draftExperience}
+              onChange={(e) => setDraftExperience(e.target.value)}
+            >
               <option value="">All Experience</option>
+              <option value="0-1">0-1 years</option>
+              <option value="1-3">1-3 years</option>
+              <option value="3-5">3-5 years</option>
+              <option value="5+">5+ years</option>
             </FilterSelect>
           </div>
         </div>
 
         {/* Row 2: Skills · Education · Action buttons */}
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Skills — TODO: wire when skills taxonomy endpoint is confirmed */}
+          {/* Skills dropdown */}
           <div>
             <label htmlFor="filter-skills" className="mb-1 block text-xs font-medium text-gray-600">
               Skills
             </label>
-            {/* TODO: Replace this disabled placeholder with a real FilterSelect once
-                the skills taxonomy API endpoint is confirmed with the owning module
-                team. At that point, add getSkillsOptions() to applicantService.js
-                following the same pattern as getEmployerJobs(). */}
-            <FilterSelect id="filter-skills" value="" onChange={() => {}} disabled>
+            <FilterSelect
+              id="filter-skills"
+              value={draftSkill}
+              onChange={(e) => setDraftSkill(e.target.value)}
+              disabled={skillsLoading}
+            >
               <option value="">All Skills</option>
+              {skillOptions.map((skill) => (
+                <option key={skill._id} value={skill._id}>
+                  {skill.name}
+                </option>
+              ))}
             </FilterSelect>
           </div>
 
-          {/* Educations — TODO: wire when education taxonomy endpoint is confirmed */}
+          {/* Educations dropdown */}
           <div>
             <label
               htmlFor="filter-educations"
@@ -525,20 +595,23 @@ export default function ApplicantList() {
             >
               Educations
             </label>
-            {/* TODO: Replace this disabled placeholder with a real FilterSelect once
-                the education taxonomy API endpoint is confirmed with the owning module
-                team. At that point, add getEducationOptions() to applicantService.js
-                following the same pattern as getEmployerJobs(). */}
-            <FilterSelect id="filter-educations" value="" onChange={() => {}} disabled>
+            <FilterSelect
+              id="filter-educations"
+              value={draftEducation}
+              onChange={(e) => setDraftEducation(e.target.value)}
+              disabled={educationLoading}
+            >
               <option value="">All Educations</option>
+              {educationOptions.map((qual) => (
+                <option key={qual} value={qual}>
+                  {qual}
+                </option>
+              ))}
             </FilterSelect>
           </div>
 
-          {/* Spacer to push buttons to the right on large screens */}
-          <div className="hidden lg:block" />
-
           {/* Action buttons */}
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-2">
             <button
               id="btn-apply-filters"
               type="button"
@@ -657,7 +730,11 @@ export default function ApplicantList() {
 
                     const jobTitle = applicant.job?.title ?? '—';
 
-                    const experience = '—';
+                    const experience =
+                      applicant.totalExperienceYears !== undefined &&
+                      applicant.totalExperienceYears !== null
+                        ? `${applicant.totalExperienceYears} Years`
+                        : '—';
 
                     return (
                       <tr key={applicant._id} className="group transition-colors hover:bg-gray-50">
@@ -676,9 +753,7 @@ export default function ApplicantList() {
                         <td className="px-4 py-3.5 text-gray-700">{jobTitle}</td>
 
                         {/* Experience */}
-                        <td className="px-4 py-3.5 text-gray-700">
-                          {experience !== '—' ? `${experience} Years` : '—'}
-                        </td>
+                        <td className="px-4 py-3.5 text-gray-700">{experience}</td>
 
                         {/* Status badge */}
                         <td className="px-4 py-3.5">

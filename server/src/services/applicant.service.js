@@ -110,7 +110,7 @@ async function assertJobOwnership(jobId, reqUser) {
  * @returns {Promise<{ applications, pagination }>}
  */
 export async function listApplicants(query, reqUser) {
-  const { jobId, status, search, page, limit } = query;
+  const { jobId, status, search, skill, education, minExperience, maxExperience, page, limit } = query;
 
   // Build the aggregation pipeline
   const pipeline = [];
@@ -160,9 +160,109 @@ export async function listApplicants(query, reqUser) {
   });
   pipeline.push({ $unwind: '$jobData' });
 
+  // Join with JobSeekerProfiles for skills, education, and experience filters
+  pipeline.push({
+    $lookup: {
+      from: 'jobseekerprofiles',
+      localField: 'jobSeeker',
+      foreignField: 'user',
+      as: 'profileData',
+    },
+  });
+  pipeline.push({
+    $unwind: {
+      path: '$profileData',
+      preserveNullAndEmptyArrays: true,
+    },
+  });
+
+  // Filter by Skill ObjectId
+  if (skill) {
+    pipeline.push({
+      $match: { 'profileData.skills': new mongoose.Types.ObjectId(skill) },
+    });
+  }
+
+  // Filter by Education qualification (case-insensitive exact match)
+  if (education) {
+    pipeline.push({
+      $match: {
+        'profileData.education.qualification': {
+          $regex: `^${escapeRegExp(education)}$`,
+          $options: 'i',
+        },
+      },
+    });
+  }
+
+  // Compute totalExperienceYears using exact aggregation
+  pipeline.push({
+    $addFields: {
+      totalExperienceYears: {
+        $round: [
+          {
+            $divide: [
+              {
+                $reduce: {
+                  input: { $ifNull: ['$profileData.experience', []] },
+                  initialValue: 0,
+                  in: {
+                    $add: [
+                      '$$value',
+                      {
+                        $cond: [
+                          { $not: ['$$this.startDate'] },
+                          0,
+                          {
+                            $let: {
+                              vars: {
+                                endVal: {
+                                  $cond: [
+                                    {
+                                      $or: [
+                                        { $eq: ['$$this.isCurrentRole', true] },
+                                        { $not: ['$$this.endDate'] },
+                                      ],
+                                    },
+                                    '$$NOW',
+                                    '$$this.endDate',
+                                  ],
+                                },
+                              },
+                              in: {
+                                $let: {
+                                  vars: {
+                                    diffMs: { $subtract: ['$$endVal', '$$this.startDate'] },
+                                  },
+                                  in: { $cond: [{ $gt: ['$$diffMs', 0] }, '$$diffMs', 0] },
+                                },
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+              },
+              1000 * 60 * 60 * 24 * 365.25,
+            ],
+          },
+          1,
+        ],
+      },
+    },
+  });
+
+  // Filter totalExperienceYears by minExperience / maxExperience if provided
+  if (minExperience !== undefined || maxExperience !== undefined) {
+    const expMatch = {};
+    if (minExperience !== undefined) expMatch.$gte = minExperience;
+    if (maxExperience !== undefined) expMatch.$lte = maxExperience;
+    pipeline.push({ $match: { totalExperienceYears: expMatch } });
+  }
+
   // Stage 3: optional search — case-insensitive regex on name or email.
-  // Input is escaped so it is always treated as literal text, never as a
-  // regex pattern (prevents expensive/unintended regex from user input).
   if (search) {
     const escapedSearch = escapeRegExp(search);
     const regex = { $regex: escapedSearch, $options: 'i' };
@@ -171,10 +271,7 @@ export async function listApplicants(query, reqUser) {
     });
   }
 
-  // Stage 4: shape the output — expose only the fields the controller needs.
-  // resume.fileUrl is intentionally excluded — see sanitizeApplicationForResponse
-  // note above. No approved CV-access flow exists yet, so the stored CV URL
-  // must never appear in the general applicant list.
+  // Stage 4: shape the output — expose fields needed by controller.
   pipeline.push({
     $project: {
       _id: 1,
@@ -185,6 +282,7 @@ export async function listApplicants(query, reqUser) {
       'resume.fileName': 1,
       'resume.fileSize': 1,
       employerNote: 1,
+      totalExperienceYears: 1,
       jobSeeker: {
         _id: '$jobSeekerData._id',
         name: '$jobSeekerData.name',
@@ -427,4 +525,62 @@ export async function getApplicantCv(applicationId, reqUser) {
     expiresAt,
     fileName: application.resume.fileName,
   };
+}
+
+// ---------------------------------------------------------------------------
+// 7. Get applicant filter options
+// ---------------------------------------------------------------------------
+
+/**
+ * GET /api/v1/applicants/filter-options
+ *
+ * Scopes to the employer's own jobs (or all jobs if admin) and extracts distinct
+ * qualification values from applicants' profiles.
+ *
+ * @param {object} reqUser - req.user from protect middleware
+ * @returns {Promise<{ educationOptions: string[] }>}
+ */
+export async function getApplicantFilterOptions(reqUser) {
+  const matchStage = {};
+
+  if (reqUser.role !== USER_ROLES.ADMIN) {
+    const employerJobs = await Job.find({ createdBy: reqUser._id, isDeleted: false }).select('_id');
+    const jobIds = employerJobs.map((j) => j._id);
+    matchStage.job = { $in: jobIds };
+  }
+
+  const pipeline = [
+    { $match: matchStage },
+    {
+      $lookup: {
+        from: 'jobseekerprofiles',
+        localField: 'jobSeeker',
+        foreignField: 'user',
+        as: 'profileData',
+      },
+    },
+    { $unwind: '$profileData' },
+    { $unwind: '$profileData.education' },
+    {
+      $match: {
+        'profileData.education.qualification': {
+          $exists: true,
+          $type: 'string',
+          $ne: '',
+        },
+      },
+    },
+    {
+      $group: {
+        _id: '$profileData.education.qualification',
+      },
+    },
+    { $sort: { _id: 1 } },
+    { $limit: 50 },
+  ];
+
+  const results = await Application.aggregate(pipeline);
+  const educationOptions = results.map((r) => r._id).filter(Boolean);
+
+  return { educationOptions };
 }
