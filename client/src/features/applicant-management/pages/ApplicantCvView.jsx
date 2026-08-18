@@ -218,9 +218,9 @@ export default function ApplicantCvView() {
     setCvError('Preview expired or failed to render. Click refresh to generate a new signed URL.');
   };
 
-  // Zoom controls
-  const zoomIn = () => setScale((prev) => Math.min(2.0, Number((prev + 0.15).toFixed(2))));
-  const zoomOut = () => setScale((prev) => Math.max(0.5, Number((prev - 0.15).toFixed(2))));
+  // Zoom controls (0.25 step matching dropdown options)
+  const zoomIn = () => setScale((prev) => Math.min(2.0, Number((prev + 0.25).toFixed(2))));
+  const zoomOut = () => setScale((prev) => Math.max(0.5, Number((prev - 0.25).toFixed(2))));
   const handleScaleSelect = (e) => setScale(parseFloat(e.target.value));
 
   // Page navigation
@@ -424,163 +424,213 @@ export default function ApplicantCvView() {
               <h2 className="text-base font-bold text-gray-900">CV Preview</h2>
             </div>
 
-            {/* Viewer Controls Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-4 py-2.5 text-sm">
-              {/* Zoom controls */}
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={zoomOut}
-                  disabled={scale <= 0.5}
-                  className="rounded-md border border-gray-300 bg-white p-1.5 text-gray-700 shadow-xs transition hover:bg-gray-100 disabled:opacity-40"
-                  title="Zoom Out"
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
-
-                <select
-                  value={scale}
-                  onChange={handleScaleSelect}
-                  className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs font-semibold text-gray-700 shadow-xs focus:border-blue-500 focus:outline-none"
-                >
-                  <option value={0.5}>50%</option>
-                  <option value={0.75}>75%</option>
-                  <option value={1.0}>100%</option>
-                  <option value={1.25}>125%</option>
-                  <option value={1.5}>150%</option>
-                  <option value={2.0}>200%</option>
-                </select>
-
-                <button
-                  type="button"
-                  onClick={zoomIn}
-                  disabled={scale >= 2.0}
-                  className="rounded-md border border-gray-300 bg-white p-1.5 text-gray-700 shadow-xs transition hover:bg-gray-100 disabled:opacity-40"
-                  title="Zoom In"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* Page navigation */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={prevPage}
-                  disabled={pageNumber <= 1}
-                  className="rounded-md border border-gray-300 bg-white p-1.5 text-gray-700 shadow-xs transition hover:bg-gray-100 disabled:opacity-40"
-                  title="Previous Page"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-
-                <span className="text-xs font-medium text-gray-600">
-                  <span className="font-semibold text-gray-900">{pageNumber}</span> /{' '}
-                  {numPages || '--'}
-                </span>
-
-                <button
-                  type="button"
-                  onClick={nextPage}
-                  disabled={!numPages || pageNumber >= numPages}
-                  className="rounded-md border border-gray-300 bg-white p-1.5 text-gray-700 shadow-xs transition hover:bg-gray-100 disabled:opacity-40"
-                  title="Next Page"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* Fullscreen toggle & refresh */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={refreshCvUrl}
-                  disabled={cvLoading}
-                  className="rounded-md border border-gray-300 bg-white p-1.5 text-gray-700 shadow-xs transition hover:bg-gray-100 disabled:opacity-40"
-                  title="Refresh Link"
-                >
-                  <RotateCw className={`h-4 w-4 ${cvLoading ? 'animate-spin' : ''}`} />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={toggleFullscreen}
-                  className="rounded-md border border-gray-300 bg-white p-1.5 text-gray-700 shadow-xs transition hover:bg-gray-100"
-                  title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-                >
-                  {isFullscreen ? (
-                    <Minimize2 className="h-4 w-4" />
-                  ) : (
-                    <Maximize2 className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Main Preview Container */}
+            {/* Fullscreen Wrapper Container (Controls Bar + Preview Area) */}
             <div
               ref={previewContainerRef}
-              className={`relative flex min-h-[500px] max-h-[750px] overflow-auto bg-gray-300/60 p-4 justify-center items-start ${
-                isFullscreen ? 'bg-gray-900 p-8 max-h-screen h-screen' : ''
+              className={`flex flex-col ${
+                isFullscreen ? 'bg-gray-900 h-screen w-screen p-4 overflow-hidden' : ''
               }`}
             >
-              {cvLoading && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
-                  <RotateCw className="h-8 w-8 animate-spin text-blue-600" />
-                  <p className="mt-2 text-sm font-medium text-gray-700">Loading CV Preview...</p>
-                </div>
-              )}
+              {/* Viewer Controls Bar */}
+              <div
+                className={`flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 py-2.5 text-sm ${
+                  isFullscreen
+                    ? 'bg-gray-800 text-white border-gray-700 rounded-t-lg'
+                    : 'bg-gray-50'
+                }`}
+              >
+                {/* Zoom controls */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={zoomOut}
+                    disabled={scale <= 0.5}
+                    className={`rounded-md border p-1.5 shadow-xs transition disabled:opacity-40 ${
+                      isFullscreen
+                        ? 'border-gray-600 bg-gray-700 text-white hover:bg-gray-600'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                    title="Zoom Out"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
 
-              {cvError === 'NO_CV_FOUND' ? (
-                <div className="my-auto flex flex-col items-center justify-center p-8 text-center bg-white rounded-xl shadow-xs max-w-md">
-                  <FileText className="h-10 w-10 text-gray-400" />
-                  <h3 className="mt-3 text-base font-semibold text-gray-900">No CV Uploaded</h3>
-                  <p className="mt-1 text-xs text-gray-500">
-                    This applicant has not uploaded a CV. No actions available.
-                  </p>
+                  <select
+                    value={scale}
+                    onChange={handleScaleSelect}
+                    className={`rounded-md border px-2 py-1 text-xs font-semibold shadow-xs focus:outline-none ${
+                      isFullscreen
+                        ? 'border-gray-600 bg-gray-700 text-white focus:border-blue-400'
+                        : 'border-gray-300 bg-white text-gray-700 focus:border-blue-500'
+                    }`}
+                  >
+                    <option value={0.5}>50%</option>
+                    <option value={0.75}>75%</option>
+                    <option value={1.0}>100%</option>
+                    <option value={1.25}>125%</option>
+                    <option value={1.5}>150%</option>
+                    <option value={1.75}>175%</option>
+                    <option value={2.0}>200%</option>
+                  </select>
+
+                  <button
+                    type="button"
+                    onClick={zoomIn}
+                    disabled={scale >= 2.0}
+                    className={`rounded-md border p-1.5 shadow-xs transition disabled:opacity-40 ${
+                      isFullscreen
+                        ? 'border-gray-600 bg-gray-700 text-white hover:bg-gray-600'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                    title="Zoom In"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
                 </div>
-              ) : cvError ? (
-                <div className="my-auto flex flex-col items-center justify-center p-8 text-center bg-white rounded-xl shadow-xs max-w-md">
-                  <AlertCircle className="h-10 w-10 text-amber-500" />
-                  <h3 className="mt-3 text-base font-semibold text-gray-900">
-                    Preview Expired or Unavailable
-                  </h3>
-                  <p className="mt-1 text-xs text-gray-500">{cvError}</p>
+
+                {/* Page navigation */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={prevPage}
+                    disabled={pageNumber <= 1}
+                    className={`rounded-md border p-1.5 shadow-xs transition disabled:opacity-40 ${
+                      isFullscreen
+                        ? 'border-gray-600 bg-gray-700 text-white hover:bg-gray-600'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                    title="Previous Page"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+
+                  <span
+                    className={`text-xs font-medium ${isFullscreen ? 'text-gray-300' : 'text-gray-600'}`}
+                  >
+                    <span
+                      className={`font-semibold ${isFullscreen ? 'text-white' : 'text-gray-900'}`}
+                    >
+                      {pageNumber}
+                    </span>{' '}
+                    / {numPages || '--'}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={nextPage}
+                    disabled={!numPages || pageNumber >= numPages}
+                    className={`rounded-md border p-1.5 shadow-xs transition disabled:opacity-40 ${
+                      isFullscreen
+                        ? 'border-gray-600 bg-gray-700 text-white hover:bg-gray-600'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                    title="Next Page"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Fullscreen toggle & refresh */}
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={refreshCvUrl}
-                    className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-blue-700"
+                    disabled={cvLoading}
+                    className={`rounded-md border p-1.5 shadow-xs transition disabled:opacity-40 ${
+                      isFullscreen
+                        ? 'border-gray-600 bg-gray-700 text-white hover:bg-gray-600'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                    title="Refresh Link"
                   >
-                    <RotateCw className="h-3.5 w-3.5" />
-                    Refresh Preview Link
+                    <RotateCw className={`h-4 w-4 ${cvLoading ? 'animate-spin' : ''}`} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={toggleFullscreen}
+                    className={`rounded-md border p-1.5 shadow-xs transition ${
+                      isFullscreen
+                        ? 'border-gray-600 bg-gray-700 text-white hover:bg-gray-600'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                    title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                  >
+                    {isFullscreen ? (
+                      <Minimize2 className="h-4 w-4" />
+                    ) : (
+                      <Maximize2 className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
-              ) : cvData?.downloadUrl ? (
-                <Document
-                  file={cvData.downloadUrl}
-                  onLoadSuccess={onDocumentLoadSuccess}
-                  onLoadError={onDocumentLoadError}
-                  loading={
-                    <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-                      <FileText className="h-10 w-10 animate-bounce text-blue-500" />
-                      <p className="mt-2 text-sm font-medium">Fetching PDF document...</p>
-                    </div>
-                  }
-                >
-                  <Page
-                    pageNumber={pageNumber}
-                    scale={scale}
-                    renderAnnotationLayer={true}
-                    renderTextLayer={true}
-                    className="shadow-lg rounded-sm overflow-hidden bg-white"
-                  />
-                </Document>
-              ) : (
-                <div className="my-auto flex flex-col items-center justify-center p-8 text-center text-gray-500">
-                  <FileText className="h-12 w-12 text-gray-300" />
-                  <p className="mt-2 text-sm font-medium">No CV file found for this applicant.</p>
-                </div>
-              )}
+              </div>
+
+              {/* Main Preview Container */}
+              <div
+                className={`relative flex flex-1 justify-center items-start overflow-auto p-4 ${
+                  isFullscreen
+                    ? 'bg-gray-900 p-6 rounded-b-lg'
+                    : 'min-h-[500px] max-h-[750px] bg-gray-300/60'
+                }`}
+              >
+                {cvLoading && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 backdrop-blur-xs">
+                    <RotateCw className="h-8 w-8 animate-spin text-blue-600" />
+                    <p className="mt-2 text-sm font-medium text-gray-700">Loading CV Preview...</p>
+                  </div>
+                )}
+
+                {cvError === 'NO_CV_FOUND' ? (
+                  <div className="my-auto flex flex-col items-center justify-center p-8 text-center bg-white rounded-xl shadow-xs max-w-md">
+                    <FileText className="h-10 w-10 text-gray-400" />
+                    <h3 className="mt-3 text-base font-semibold text-gray-900">No CV Uploaded</h3>
+                    <p className="mt-1 text-xs text-gray-500">
+                      This applicant has not uploaded a CV. No actions available.
+                    </p>
+                  </div>
+                ) : cvError ? (
+                  <div className="my-auto flex flex-col items-center justify-center p-8 text-center bg-white rounded-xl shadow-xs max-w-md">
+                    <AlertCircle className="h-10 w-10 text-amber-500" />
+                    <h3 className="mt-3 text-base font-semibold text-gray-900">
+                      Preview Expired or Unavailable
+                    </h3>
+                    <p className="mt-1 text-xs text-gray-500">{cvError}</p>
+                    <button
+                      type="button"
+                      onClick={refreshCvUrl}
+                      className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-blue-700"
+                    >
+                      <RotateCw className="h-3.5 w-3.5" />
+                      Refresh Preview Link
+                    </button>
+                  </div>
+                ) : cvData?.downloadUrl ? (
+                  <Document
+                    file={cvData.downloadUrl}
+                    onLoadSuccess={onDocumentLoadSuccess}
+                    onLoadError={onDocumentLoadError}
+                    loading={
+                      <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+                        <FileText className="h-10 w-10 animate-bounce text-blue-500" />
+                        <p className="mt-2 text-sm font-medium">Fetching PDF document...</p>
+                      </div>
+                    }
+                  >
+                    <Page
+                      pageNumber={pageNumber}
+                      scale={scale}
+                      renderAnnotationLayer={true}
+                      renderTextLayer={true}
+                      className="shadow-lg rounded-sm overflow-hidden bg-white"
+                    />
+                  </Document>
+                ) : (
+                  <div className="my-auto flex flex-col items-center justify-center p-8 text-center text-gray-500">
+                    <FileText className="h-12 w-12 text-gray-300" />
+                    <p className="mt-2 text-sm font-medium">No CV file found for this applicant.</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Bottom Tip Bar */}

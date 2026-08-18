@@ -412,6 +412,10 @@ export async function getApplicantCv(applicationId, reqUser) {
 
   await assertJobOwnership(application.job._id.toString(), reqUser);
 
+  if (application.status === APPLICATION_STATUSES.WITHDRAWN) {
+    throw new ApiError(403, 'CV access is not available for a withdrawn application.');
+  }
+
   if (!application.resume?.publicId) {
     throw new ApiError(404, 'No CV available for this applicant.');
   }
