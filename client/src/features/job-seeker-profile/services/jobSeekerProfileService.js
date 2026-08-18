@@ -12,6 +12,21 @@ export async function updateMyProfile(payload) {
   return data.data.profile;
 }
 
+export async function uploadMyProfileImage(file) {
+  const formData = new FormData();
+  formData.append('profileImage', file);
+
+  const { data } = await apiClient.putForm('/job-seeker-profile/me/profile-image', formData);
+
+  return data.data.profileImage;
+}
+
+export async function deleteMyProfileImage() {
+  const { data } = await apiClient.delete('/job-seeker-profile/me/profile-image');
+
+  return data.data.profileImage;
+}
+
 export async function getMyProfileCompletion() {
   const { data } = await apiClient.get('/job-seeker-profile/me/completion');
 

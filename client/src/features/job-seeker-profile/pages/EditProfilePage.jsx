@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../../context/AuthContext.jsx';
+import ProfileImageManager from '../components/ProfileImageManager.jsx';
 import { getMyProfile, updateMyProfile } from '../services/jobSeekerProfileService.js';
 
 const INITIAL_FORM = {
@@ -10,15 +11,33 @@ const INITIAL_FORM = {
   careerSummary: '',
 };
 
+function CloseIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
 export default function EditProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState(INITIAL_FORM);
   const [profileImageUrl, setProfileImageUrl] = useState('');
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
   const [error, setError] = useState('');
+  const [mediaFeedback, setMediaFeedback] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -57,10 +76,6 @@ export default function EditProfilePage() {
   function handleChange(event) {
     const { name, value } = event.target;
 
-    /*
-     * Preserve legitimate professional text exactly as entered.
-     * The approved backend contract handles trimming and maximum lengths.
-     */
     setForm((current) => ({
       ...current,
       [name]: value,
@@ -105,6 +120,34 @@ export default function EditProfilePage() {
           </div>
 
           <div className="p-6 sm:p-8">
+            {/* Profile image success / delete feedback */}
+            {mediaFeedback && (
+              <div
+                className={`mb-6 flex items-start justify-between gap-4 rounded-lg border px-4 py-3 text-sm ${
+                  mediaFeedback.type === 'success'
+                    ? 'border-green-200 bg-green-50 text-green-700'
+                    : 'border-red-200 bg-red-50 text-red-700'
+                }`}
+                role="status"
+              >
+                <p>{mediaFeedback.message}</p>
+
+                <button
+                  type="button"
+                  onClick={() => setMediaFeedback(null)}
+                  aria-label="Dismiss profile image message"
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition ${
+                    mediaFeedback.type === 'success'
+                      ? 'text-green-600 hover:bg-green-100 hover:text-green-800'
+                      : 'text-red-600 hover:bg-red-100 hover:text-red-800'
+                  }`}
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+            )}
+
+            {/* General profile error */}
             {error && (
               <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                 {error}
@@ -150,21 +193,16 @@ export default function EditProfilePage() {
                 </div>
               </div>
 
-              {/* Profile image */}
-              <div className="-mt-1 flex flex-col items-center justify-start">
-                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-blue-100 bg-blue-50 text-3xl font-semibold text-blue-600">
-                  {profileImageUrl ? (
-                    <img
-                      src={profileImageUrl}
-                      alt={user?.name || 'Profile'}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    (user?.name || 'U').charAt(0).toUpperCase()
-                  )}
-                </div>
-
-                <p className="mt-3 text-center text-xs font-medium text-slate-400">Profile photo</p>
+              {/* Profile image
+                  Mobile: shown before Name and Email
+                  Tablet/Desktop: shown in the right column */}
+              <div className="order-first flex justify-center sm:order-none sm:justify-center">
+                <ProfileImageManager
+                  currentImageUrl={profileImageUrl}
+                  userName={user?.name}
+                  onImageChange={setProfileImageUrl}
+                  onFeedback={setMediaFeedback}
+                />
               </div>
             </div>
 
