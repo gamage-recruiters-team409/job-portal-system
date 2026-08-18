@@ -30,7 +30,7 @@ function VerificationBadge({ status }) {
 
   if (normalizedStatus === 'verified') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-2.5 py-1 text-xs font-semibold text-[#16A34A]">
+      <span className="animate-fade-in inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-2.5 py-1 text-xs font-semibold text-[#16A34A] transition-colors duration-200">
         <CheckCircle2 className="h-3.5 w-3.5" />
         Verified
       </span>
@@ -39,7 +39,7 @@ function VerificationBadge({ status }) {
 
   if (normalizedStatus === 'rejected') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-2.5 py-1 text-xs font-semibold text-[#DC2626]">
+      <span className="animate-fade-in inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-2.5 py-1 text-xs font-semibold text-[#DC2626] transition-colors duration-200">
         <AlertCircle className="h-3.5 w-3.5" />
         Rejected
       </span>
@@ -48,7 +48,7 @@ function VerificationBadge({ status }) {
 
   if (normalizedStatus === 'unverified') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+      <span className="animate-fade-in inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500 transition-colors duration-200">
         <AlertCircle className="h-3.5 w-3.5" />
         Not submitted
       </span>
@@ -56,7 +56,7 @@ function VerificationBadge({ status }) {
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEF3C7] px-2.5 py-1 text-xs font-semibold text-[#D97706]">
+    <span className="animate-fade-in inline-flex items-center gap-1.5 rounded-full bg-[#FEF3C7] px-2.5 py-1 text-xs font-semibold text-[#D97706] transition-colors duration-200">
       <Clock className="h-3.5 w-3.5" />
       Pending
     </span>
@@ -348,12 +348,12 @@ export default function EmployerDashboard() {
   }
 
   return (
-    <div className="space-y-6 p-6 font-[Inter,ui-sans-serif,system-ui,sans-serif]">
+    <div className="animate-fade-in space-y-6 p-6 font-[Inter,ui-sans-serif,system-ui,sans-serif]">
       {/* ── TOP BANNER ── */}
       {companyLoading ? (
         <div className="h-16 w-full animate-pulse rounded-xl bg-slate-200" />
       ) : noCompany ? (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-xs">
+        <div className="animate-fade-in flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-xs">
           <div className="flex items-center gap-3">
             <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
             <p className="text-sm font-medium">
@@ -363,14 +363,14 @@ export default function EmployerDashboard() {
           <button
             type="button"
             onClick={() => navigate('/employer/company/create')}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700"
           >
             <Plus className="h-4 w-4" />
             <span>Create Profile</span>
           </button>
         </div>
       ) : company?.verificationStatus === 'verified' ? (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 shadow-xs">
+        <div className="animate-fade-in flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 shadow-xs">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
             <p className="text-sm font-medium">
@@ -380,14 +380,14 @@ export default function EmployerDashboard() {
           <button
             type="button"
             onClick={() => navigate('/jobs/create')}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#16A34A] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#16A34A] px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-emerald-700"
           >
             <Plus className="h-4 w-4" />
             <span>Post a job</span>
           </button>
         </div>
       ) : company?.verificationStatus === 'rejected' ? (
-        <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 shadow-xs">
+        <div className="animate-fade-in flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 shadow-xs">
           <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
           <div className="text-sm">
             <p className="font-medium">Your company profile was rejected.</p>
@@ -397,7 +397,7 @@ export default function EmployerDashboard() {
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-xs">
+        <div className="animate-fade-in flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-xs">
           <Clock className="h-5 w-5 text-amber-600 shrink-0" />
           <p className="text-sm font-medium">
             Your company profile is pending verification. Our team is reviewing your information.
@@ -406,7 +406,7 @@ export default function EmployerDashboard() {
       )}
 
       {/* ── COMPANY HEADER CARD ── */}
-      <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+      <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
         {companyLoading ? (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between animate-pulse">
             <div className="flex items-center gap-4">
@@ -426,7 +426,7 @@ export default function EmployerDashboard() {
             <button
               type="button"
               onClick={() => navigate('/employer/company/create')}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white transition-colors duration-150 hover:bg-blue-700"
             >
               <Plus className="h-4 w-4" />
               <span>Create Company Profile</span>
@@ -475,7 +475,7 @@ export default function EmployerDashboard() {
                 <button
                   type="button"
                   onClick={() => navigate('/employer/company/edit')}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-slate-50 px-3 py-1.5 text-xs font-semibold text-[#0F172A] hover:bg-slate-100 transition"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-slate-50 px-3 py-1.5 text-xs font-semibold text-[#0F172A] transition-colors duration-150 hover:bg-slate-100"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   <span>Edit Profile</span>
@@ -513,12 +513,12 @@ export default function EmployerDashboard() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* LEFT COLUMN: Recent Applications */}
         <div className="space-y-6 lg:col-span-2">
-          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <h2 className="text-lg font-bold text-[#0F172A]">Recent applications</h2>
               <Link
                 to="/applicants"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[#2563EB] transition-colors duration-150 hover:underline"
               >
                 <span>View all</span>
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -548,7 +548,7 @@ export default function EmployerDashboard() {
                   <button
                     type="button"
                     onClick={fetchApplications}
-                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:underline"
+                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 transition-colors duration-150 hover:underline"
                   >
                     <RefreshCw className="h-3.5 w-3.5" />
                     <span>Retry loading</span>
@@ -605,14 +605,14 @@ export default function EmployerDashboard() {
         {/* RIGHT COLUMN: Quick Actions & Verification */}
         <div className="space-y-6 lg:col-span-1">
           {/* Quick Actions Card */}
-          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <h2 className="text-lg font-bold text-[#0F172A]">Quick actions</h2>
             <div className="mt-4 space-y-3">
               {noCompany || !company ? (
                 <button
                   type="button"
                   onClick={() => navigate('/employer/company/create')}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700"
                 >
                   <Plus className="h-4 w-4" />
                   <span>Create company profile</span>
@@ -628,7 +628,7 @@ export default function EmployerDashboard() {
                         ? 'Company verification is required to post jobs'
                         : ''
                     }
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus className="h-4 w-4" />
                     <span>Post a job</span>
@@ -637,7 +637,7 @@ export default function EmployerDashboard() {
                   <button
                     type="button"
                     onClick={() => navigate('/employer/company/edit')}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 py-2.5 text-sm font-semibold text-[#0F172A] shadow-xs hover:bg-slate-50 transition"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 py-2.5 text-sm font-semibold text-[#0F172A] shadow-xs transition-colors duration-150 hover:bg-slate-50"
                   >
                     <Pencil className="h-4 w-4 text-slate-500" />
                     <span>Edit company profile</span>
@@ -646,7 +646,7 @@ export default function EmployerDashboard() {
                   <button
                     type="button"
                     onClick={() => setIsLogoModalOpen(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 py-2.5 text-sm font-semibold text-[#0F172A] shadow-xs hover:bg-slate-50 transition"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 py-2.5 text-sm font-semibold text-[#0F172A] shadow-xs transition-colors duration-150 hover:bg-slate-50"
                   >
                     <Upload className="h-4 w-4 text-slate-500" />
                     <span>Upload logo</span>
@@ -657,7 +657,7 @@ export default function EmployerDashboard() {
           </div>
 
           {/* Verification Card */}
-          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <h2 className="text-lg font-bold text-[#0F172A]">Verification</h2>
             <div className="mt-4 space-y-3">
               <div className="flex items-center justify-between">
