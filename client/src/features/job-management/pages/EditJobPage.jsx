@@ -60,6 +60,7 @@ export default function EditJobPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const [isLockedAfterSubmit, setIsLockedAfterSubmit] = useState(false);
 
   const topRef = useRef(null);
 
@@ -163,6 +164,7 @@ export default function EditJobPage() {
       const payload = buildPayload(formValues);
       await updateJob(jobId, payload);
       await submitJobForReview(jobId);
+      setIsLockedAfterSubmit(true);
       setSuccessMessage(
         'Job updated and submitted for review successfully. Redirecting to Manage Jobs...'
       );
@@ -385,7 +387,7 @@ export default function EditJobPage() {
           </button>
           <button
             type="button"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isLockedAfterSubmit}
             onClick={handleSaveClick}
             className="rounded-lg border border-[#94A3B8] px-4 py-2 text-sm font-medium text-[#000000] hover:bg-[#94A3B8] disabled:opacity-50"
           >
@@ -393,7 +395,7 @@ export default function EditJobPage() {
           </button>
           <button
             type="button"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isLockedAfterSubmit}
             onClick={handleSaveAndSubmitClick}
             className="rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1E40AF] disabled:opacity-50"
           >
