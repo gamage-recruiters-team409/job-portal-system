@@ -148,21 +148,17 @@ export default function ManageJobsPage() {
 
   const renderActions = (job) => {
     const disabled = busyJobId === job._id;
-    const actions = [];
-
-    if (job.status === JOB_STATUSES.PUBLISHED) {
-      actions.push(
-        <button
-          key="preview"
-          type="button"
-          className={linkClass}
-          onClick={() => window.open(`/jobs/${job._id}`, '_blank')}
-          disabled={disabled}
-        >
-          Preview
-        </button>
-      );
-    }
+    const actions = [
+      <button
+        key="preview"
+        type="button"
+        className={linkClass}
+        onClick={() => window.open(`/jobs/${job._id}/preview`, '_blank')}
+        disabled={disabled}
+      >
+        Preview
+      </button>,
+    ];
 
     if (job.status === JOB_STATUSES.DRAFT || job.status === JOB_STATUSES.REJECTED) {
       actions.push(

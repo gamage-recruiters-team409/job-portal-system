@@ -41,6 +41,7 @@ import ExperiencePage from '../features/job-seeker-profile/pages/ExperiencePage.
 import PortfolioLinksPage from '../features/job-seeker-profile/pages/PortfolioLinksPage.jsx';
 import ApplicationHistoryPage from '../features/applications/pages/ApplicationHistoryPage.jsx';
 import ApplicationDetailsPage from '../features/applications/pages/ApplicationDetailsPage.jsx';
+import JobPreviewPage from '../features/job-management/pages/JobPreviewPage.jsx';
 
 function AppRoutes() {
   return (
@@ -173,6 +174,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
               <ManageJobsPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/jobs/:jobId/preview"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <JobPreviewPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
