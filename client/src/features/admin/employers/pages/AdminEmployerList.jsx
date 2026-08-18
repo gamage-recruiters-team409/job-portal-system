@@ -64,6 +64,7 @@ const AdminEmployerList = () => {
   const [stats, setStats] = useState({
     totalEmployers: 0,
     verifiedEmployers: 0,
+    pendingEmployers: 0,
     publishedJobs: 0,
   });
 
@@ -78,9 +79,10 @@ const AdminEmployerList = () => {
         if (statusFilter) params.status = statusFilter;
         if (searchQuery) params.search = searchQuery;
 
-        const [employerData, statsData] = await Promise.all([
+        const [employerData, statsData, pendingData] = await Promise.all([
           getAdminEmployers(params),
           getAdminStatistics().catch(() => null),
+          getAdminEmployers({ status: EMPLOYER_VERIFICATION_STATUSES.PENDING, limit: 1 }).catch(() => null),
         ]);
 
         if (isMounted) {
@@ -92,8 +94,11 @@ const AdminEmployerList = () => {
             setTotalEmployers(employerData.data.total || 0);
           }
 
-          if (statsData) {
-            setStats(statsData);
+          if (statsData || pendingData) {
+            setStats(prev => ({
+              ...(statsData || prev),
+              pendingEmployers: pendingData?.data?.total || 0,
+            }));
           }
         }
       } catch (err) {
@@ -285,7 +290,7 @@ const AdminEmployerList = () => {
             </div>
           </div>
           <span className="text-3xl font-bold text-slate-900 mt-1">
-            {Math.max(0, (stats.totalEmployers || totalEmployers) - (stats.verifiedEmployers || 0))}
+            {stats.pendingEmployers}
           </span>
         </div>
 
