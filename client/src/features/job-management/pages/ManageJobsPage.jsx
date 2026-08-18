@@ -9,6 +9,10 @@ import {
 } from '../../../services/jobService.js';
 import { JOB_STATUSES } from '../../../constants/statuses.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import CloseJobModal from '../components/CloseJobModal.jsx';
+import DeleteJobModal from '../components/DeleteJobModal.jsx';
+import ReopenJobModal from '../components/ReopenJobModal.jsx';
+import SubmitForReviewModal from '../components/SubmitForReviewModal.jsx';
 
 const STATUS_BADGES = {
   [JOB_STATUSES.DRAFT]: { label: 'Draft', className: 'bg-[#D0D0D0] text-[#000000]' },
@@ -46,6 +50,8 @@ export default function ManageJobsPage() {
   const [actionError, setActionError] = useState('');
   const [actionMessage, setActionMessage] = useState('');
   const [busyJobId, setBusyJobId] = useState(null);
+  const [activeModal, setActiveModal] = useState(null); // { type: 'close'|'delete'|'reopen'|'submit', job }
+  const [modalError, setModalError] = useState('');
 
   const loadJobs = async () => {
     try {
@@ -60,14 +66,7 @@ export default function ManageJobsPage() {
 
   useEffect(() => {
     (async () => {
-      try {
-        const { data } = await getEmployerJobs();
-        setJobs(data.jobs || []);
-      } catch (error) {
-        setActionError(error.response?.data?.message || 'Failed to load jobs.');
-      } finally {
-        setIsLoading(false);
-      }
+      await loadJobs();
     })();
   }, []);
 
@@ -94,46 +93,46 @@ export default function ManageJobsPage() {
     }
   };
 
-  const handleSubmitForReview = (jobId) =>
-    runAction(jobId, submitJobForReview, 'Job submitted for review.');
-
-  const handleClose = (jobId) => {
-    const reason = window.prompt('Reason for closing (optional):');
-    if (reason === null) {
-      return;
-    }
-    runAction(jobId, (id) => closeJob(id, reason || undefined), 'Job closed.');
+  const openModal = (type, job) => {
+    setModalError('');
+    setActiveModal({ type, job });
   };
 
-  const handleReopen = (job) => {
-    const isJobExpired = new Date(job.deadline) < new Date();
-
-    if (!isJobExpired) {
-      runAction(job._id, (id) => reopenJob(id), 'Job reopened.');
-      return;
-    }
-
-    const newDeadlineInput = window.prompt(
-      'This job has expired. Enter a new deadline (YYYY-MM-DD):'
-    );
-    if (!newDeadlineInput) {
-      return;
-    }
-
-    const parsedDate = new Date(newDeadlineInput);
-    if (Number.isNaN(parsedDate.getTime()) || parsedDate <= new Date()) {
-      setActionError('Please enter a valid future date in YYYY-MM-DD format.');
-      return;
-    }
-
-    runAction(job._id, (id) => reopenJob(id, parsedDate.toISOString()), 'Job reopened.');
+  const closeModal = () => {
+    setActiveModal(null);
+    setModalError('');
   };
 
-  const handleDelete = (jobId) => {
-    if (!window.confirm('Delete this job posting? This cannot be undone from this screen.')) {
-      return;
+  const confirmSubmitForReview = () => {
+    runAction(activeModal.job._id, submitJobForReview, 'Job submitted for review.');
+    closeModal();
+  };
+
+  const confirmClose = (reason) => {
+    runAction(activeModal.job._id, (id) => closeJob(id, reason), 'Job closed.');
+    closeModal();
+  };
+
+  const confirmReopen = async (newDeadlineInput) => {
+    const jobId = activeModal.job._id;
+    setModalError('');
+    setBusyJobId(jobId);
+    try {
+      const deadlineIso = newDeadlineInput ? new Date(newDeadlineInput).toISOString() : undefined;
+      await reopenJob(jobId, deadlineIso);
+      setActionMessage('Job reopened.');
+      await loadJobs();
+      closeModal();
+    } catch (error) {
+      setModalError(error.response?.data?.message || 'Failed to reopen job.');
+    } finally {
+      setBusyJobId(null);
     }
-    runAction(jobId, deleteJob, 'Job deleted.');
+  };
+
+  const confirmDelete = () => {
+    runAction(activeModal.job._id, deleteJob, 'Job deleted.');
+    closeModal();
   };
 
   const linkClass = 'text-sm font-medium text-[#2563EB] hover:text-[#1E40AF] hover:underline';
@@ -179,7 +178,7 @@ export default function ManageJobsPage() {
           key="submit"
           type="button"
           className={linkClass}
-          onClick={() => handleSubmitForReview(job._id)}
+          onClick={() => openModal('submit', job)}
           disabled={disabled}
         >
           Submit
@@ -188,7 +187,7 @@ export default function ManageJobsPage() {
           key="delete"
           type="button"
           className={dangerLinkClass}
-          onClick={() => handleDelete(job._id)}
+          onClick={() => openModal('delete', job)}
           disabled={disabled}
         >
           Delete
@@ -202,7 +201,7 @@ export default function ManageJobsPage() {
           key="close"
           type="button"
           className={linkClass}
-          onClick={() => handleClose(job._id)}
+          onClick={() => openModal('close', job)}
           disabled={disabled}
         >
           Close
@@ -216,7 +215,7 @@ export default function ManageJobsPage() {
           key="reopen"
           type="button"
           className={linkClass}
-          onClick={() => handleReopen(job)}
+          onClick={() => openModal('reopen', job)}
           disabled={disabled}
         >
           Reopen
@@ -225,7 +224,7 @@ export default function ManageJobsPage() {
           key="delete"
           type="button"
           className={dangerLinkClass}
-          onClick={() => handleDelete(job._id)}
+          onClick={() => openModal('delete', job)}
           disabled={disabled}
         >
           Delete
@@ -352,6 +351,44 @@ export default function ManageJobsPage() {
           </table>
         )}
       </div>
+
+      {activeModal?.type === 'submit' && (
+        <SubmitForReviewModal
+          jobTitle={activeModal.job.title}
+          onConfirm={confirmSubmitForReview}
+          onCancel={closeModal}
+          isSubmitting={busyJobId === activeModal.job._id}
+        />
+      )}
+
+      {activeModal?.type === 'close' && (
+        <CloseJobModal
+          jobTitle={activeModal.job.title}
+          onConfirm={confirmClose}
+          onCancel={closeModal}
+          isSubmitting={busyJobId === activeModal.job._id}
+        />
+      )}
+
+      {activeModal?.type === 'reopen' && (
+        <ReopenJobModal
+          job={activeModal.job}
+          onConfirm={confirmReopen}
+          onCancel={closeModal}
+          isSubmitting={busyJobId === activeModal.job._id}
+          error={modalError}
+        />
+      )}
+
+      {activeModal?.type === 'delete' && (
+        <DeleteJobModal
+          jobTitle={activeModal.job.title}
+          allowed
+          onConfirm={confirmDelete}
+          onCancel={closeModal}
+          isSubmitting={busyJobId === activeModal.job._id}
+        />
+      )}
     </div>
   );
 }
