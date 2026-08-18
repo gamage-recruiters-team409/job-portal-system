@@ -610,8 +610,11 @@ export default function ApplicantList() {
             </FilterSelect>
           </div>
 
+          {/* Spacer to push buttons to the right on desktop screens */}
+          <div className="hidden xl:block" />
+
           {/* Action buttons */}
-          <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-2">
+          <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-2 xl:col-span-1">
             <button
               id="btn-apply-filters"
               type="button"
