@@ -1,4 +1,15 @@
 import { JOB_STATUSES } from '../../../constants/statuses.js';
+import { useEffect, useState } from 'react';
+import { getApplicants } from '../../../services/applicantService.js';
+
+const STATUS_LABELS = {
+  [JOB_STATUSES.DRAFT]: 'Draft',
+  [JOB_STATUSES.PENDING_REVIEW]: 'Pending review',
+  [JOB_STATUSES.PUBLISHED]: 'Active',
+  [JOB_STATUSES.CLOSED]: 'Closed',
+  [JOB_STATUSES.SUSPENDED]: 'Suspended',
+  [JOB_STATUSES.REJECTED]: 'Rejected',
+};
 
 const STATUS_DOT_COLORS = {
   [JOB_STATUSES.DRAFT]: 'bg-[#94A3B8]',
@@ -18,6 +29,15 @@ const STATUS_HISTORY_LABELS = {
   [JOB_STATUSES.REJECTED]: 'Rejected by admin',
 };
 
+const STATUS_BADGE_STYLES = {
+  [JOB_STATUSES.DRAFT]: 'bg-[#F1F5F9] text-[#475569]',
+  [JOB_STATUSES.PENDING_REVIEW]: 'bg-[#FEF3C7] text-[#92400E]',
+  [JOB_STATUSES.PUBLISHED]: 'bg-[#DCFCE7] text-[#166534]',
+  [JOB_STATUSES.CLOSED]: 'bg-[#F1F5F9] text-[#475569]',
+  [JOB_STATUSES.SUSPENDED]: 'bg-[#FEE2E2] text-[#991B1B]',
+  [JOB_STATUSES.REJECTED]: 'bg-[#FEE2E2] text-[#991B1B]',
+};
+
 function formatDateTime(dateString) {
   return new Date(dateString).toLocaleDateString('en-GB', {
     day: '2-digit',
@@ -33,6 +53,29 @@ function getDaysRemaining(deadline) {
 }
 
 export default function JobStatusModal({ job, onClose, onEdit, onClosePosting }) {
+  const [applicantCount, setApplicantCount] = useState(null);
+
+  useEffect(() => {
+    if (!job) return;
+    let isCancelled = false;
+
+    getApplicants({ jobId: job._id, limit: 1 })
+      .then((response) => {
+        if (!isCancelled) {
+          setApplicantCount(response.data.pagination?.total ?? 0);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setApplicantCount(null);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [job]);
+
   if (!job) return null;
 
   const daysRemaining = getDaysRemaining(job.deadline);
@@ -41,13 +84,22 @@ export default function JobStatusModal({ job, onClose, onEdit, onClosePosting })
   const canClosePosting = job.status === JOB_STATUSES.PUBLISHED;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-lg">
-        <div className="flex items-start justify-between">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-[600px] rounded-xl bg-white shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header — fixed, never scrolls */}
+        <div className="flex items-start justify-between p-6 pb-0">
           <div>
             <h2 className="text-xl font-bold text-[#000000]">{job.title}</h2>
-            <span className="mt-1 inline-block rounded-full bg-[#DCFCE7] px-2 py-1 text-xs font-medium text-[#166534]">
-              {job.status}
+            <span
+              className={`mt-1 inline-block rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGE_STYLES[job.status] || 'bg-[#F1F5F9] text-[#475569]'}`}
+            >
+              {STATUS_LABELS[job.status] || job.status}
             </span>
           </div>
           <button
@@ -62,10 +114,13 @@ export default function JobStatusModal({ job, onClose, onEdit, onClosePosting })
           </button>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 gap-3">
+        {/* Stat cards — fixed, never scrolls */}
+        <div className="grid grid-cols-3 gap-3 p-6 pb-0">
           <div className="rounded-lg bg-[#F1F5F9] p-3 text-center">
             <p className="text-xs text-[#64748B]">Applicants</p>
-            <p className="mt-1 text-lg font-bold text-[#000000]">—</p>
+            <p className="mt-1 text-lg font-bold text-[#000000]">
+              {applicantCount === null ? '—' : applicantCount}
+            </p>
           </div>
           <div className="rounded-lg bg-[#F1F5F9] p-3 text-center">
             <p className="text-xs text-[#64748B]">Days remaining</p>
@@ -77,9 +132,10 @@ export default function JobStatusModal({ job, onClose, onEdit, onClosePosting })
           </div>
         </div>
 
-        <div className="mt-6">
+        {/* Status history — only this section scrolls */}
+        <div className="p-6">
           <p className="mb-2 text-sm font-semibold text-[#000000]">Status history</p>
-          <div className="space-y-3">
+          <div className="max-h-48 space-y-3 overflow-y-auto pr-1">
             {history.map((entry, index) => (
               <div key={index} className="flex items-start gap-3">
                 <span
@@ -97,7 +153,8 @@ export default function JobStatusModal({ job, onClose, onEdit, onClosePosting })
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-3">
+        {/* Footer — fixed, never scrolls */}
+        <div className="flex justify-end gap-3 border-t border-[#E2E8F0] p-6 pt-4">
           {canEdit && (
             <button
               type="button"
