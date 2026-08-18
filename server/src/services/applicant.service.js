@@ -4,6 +4,7 @@ import Job from '../models/Job.js';
 import JobSeekerProfile from '../models/JobSeekerProfile.js';
 import { ApiError } from '../utils/apiError.js';
 import { APPLICATION_STATUSES, USER_ROLES } from '../constants/statuses.js';
+import { generateJobSeekerCvDownloadUrl } from './jobSeekerProfileMedia.service.js';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -387,4 +388,43 @@ export async function rejectApplicant(applicationId, body, reqUser) {
     { status: APPLICATION_STATUSES.REJECTED, note: body.note },
     reqUser
   );
+}
+
+// ---------------------------------------------------------------------------
+// 6. Get applicant CV download URL
+// ---------------------------------------------------------------------------
+
+/**
+ * GET /api/v1/applicants/:id/cv
+ *
+ * Generates a short-lived signed Cloudinary download URL for an applicant's CV.
+ * Checks job ownership before generating the URL.
+ *
+ * @param {string} applicationId - the :id route param
+ * @param {object} reqUser       - req.user from protect middleware
+ * @returns {Promise<{ downloadUrl: string, expiresAt: number, fileName?: string }>}
+ */
+export async function getApplicantCv(applicationId, reqUser) {
+  const application = await Application.findById(applicationId).populate('job');
+  if (!application) {
+    throw new ApiError(404, 'Application not found.');
+  }
+
+  await assertJobOwnership(application.job._id.toString(), reqUser);
+
+  if (application.status === APPLICATION_STATUSES.WITHDRAWN) {
+    throw new ApiError(403, 'CV access is not available for a withdrawn application.');
+  }
+
+  if (!application.resume?.publicId) {
+    throw new ApiError(404, 'No CV available for this applicant.');
+  }
+
+  const { downloadUrl, expiresAt } = generateJobSeekerCvDownloadUrl(application.resume.publicId);
+
+  return {
+    downloadUrl,
+    expiresAt,
+    fileName: application.resume.fileName,
+  };
 }
