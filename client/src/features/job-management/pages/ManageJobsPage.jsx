@@ -179,6 +179,15 @@ export default function ManageJobsPage() {
     if (job.status === JOB_STATUSES.DRAFT || job.status === JOB_STATUSES.REJECTED) {
       actions.push(
         <button
+          key="edit"
+          type="button"
+          className={linkClass}
+          onClick={() => navigate(`/jobs/${job._id}/edit`)}
+          disabled={disabled}
+        >
+          Edit
+        </button>,
+        <button
           key="submit"
           type="button"
           className={linkClass}
