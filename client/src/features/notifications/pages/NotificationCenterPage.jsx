@@ -47,10 +47,25 @@ export default function NotificationCenterPage() {
         if (isRetry) setLoading(true);
         setError(null);
         const type = getTypeForTab(activeTab, user?.role);
-        const { notifications: data, pagination: pageInfo } =
-          await notificationService.getNotifications(page, 10, { type, unreadOnly });
-        setNotifications(data);
-        setPagination(pageInfo);
+
+        let targetPage = page;
+        let result = await notificationService.getNotifications(targetPage, 10, {
+          type,
+          unreadOnly,
+        });
+
+        // If the mutation shrank the filtered set, the page we asked for
+        // may no longer exist — fall back to the new last valid page.
+        if (result.pagination.totalPages > 0 && targetPage > result.pagination.totalPages) {
+          targetPage = result.pagination.totalPages;
+          result = await notificationService.getNotifications(targetPage, 10, {
+            type,
+            unreadOnly,
+          });
+        }
+
+        setNotifications(result.notifications);
+        setPagination(result.pagination);
       } catch (err) {
         console.error('Failed to load notifications:', err);
         setNotifications([]);
@@ -78,10 +93,7 @@ export default function NotificationCenterPage() {
   const handleMarkAsRead = async (id) => {
     try {
       await notificationService.markAsRead(id);
-      setNotifications((prev) =>
-        prev.map((notif) => (notif._id === id ? { ...notif, status: 'Read' } : notif))
-      );
-      refreshUnreadCount();
+      await Promise.all([fetchNotifications(pagination.page), refreshUnreadCount()]);
     } catch (err) {
       console.error('Failed to mark as read:', err);
     }
@@ -90,8 +102,8 @@ export default function NotificationCenterPage() {
   const handleMarkAllAsRead = async () => {
     try {
       await notificationService.markAllAsRead();
-      setNotifications((prev) => prev.map((notif) => ({ ...notif, status: 'Read' })));
       setUnreadCount(0);
+      await fetchNotifications(pagination.page);
     } catch (err) {
       console.error('Failed to mark all as read:', err);
     }
