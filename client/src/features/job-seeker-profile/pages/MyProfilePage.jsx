@@ -506,19 +506,23 @@ export default function MyProfilePage() {
               {/* CV */}
               <button
                 type="button"
-                disabled
-                title="CV management will be available when the CV page is integrated."
-                className="flex w-full cursor-not-allowed items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 text-left opacity-70"
+                onClick={() => navigate('/profile/cv')}
+                title={profile?.cv?.publicId ? 'Manage your CV' : 'Upload your CV'}
+                className="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 text-left transition-colors hover:bg-slate-50"
               >
                 <DocumentIcon />
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-slate-700">
-                    {profile?.cv?.publicId ? 'My CV' : 'CV not uploaded'}
+                  <p className="truncate text-sm font-medium text-slate-700">
+                    {profile?.cv?.publicId ? profile.cv.fileName || 'My CV' : 'CV not uploaded'}
+                  </p>
+
+                  <p className="mt-0.5 text-xs text-slate-400">
+                    {profile?.cv?.publicId ? 'Manage your uploaded CV' : 'Upload your CV'}
                   </p>
                 </div>
 
-                <span className="text-slate-300">›</span>
+                <span className="shrink-0 text-slate-300">›</span>
               </button>
 
               {/* Portfolio Links overview and management */}

@@ -37,6 +37,7 @@ import SkillsPage from '../features/job-seeker-profile/pages/SkillsPage.jsx';
 import EducationPage from '../features/job-seeker-profile/pages/EducationPage.jsx';
 import ExperiencePage from '../features/job-seeker-profile/pages/ExperiencePage.jsx';
 import PortfolioLinksPage from '../features/job-seeker-profile/pages/PortfolioLinksPage.jsx';
+import CVPage from '../features/job-seeker-profile/pages/CVPage.jsx';
 
 function AppRoutes() {
   return (
@@ -270,6 +271,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <PortfolioLinksPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/cv"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <CVPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
