@@ -73,17 +73,21 @@ function ResendForm() {
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const [status, setStatus] = useState(STATUS.LOADING);
+  // Async outcome of the verification request. The visible status is derived
+  // below (not stored via a synchronous effect call): missing token → INVALID,
+  // otherwise LOADING until the request settles.
+  const [result, setResult] = useState(null);
 
   useEffect(() => {
-    if (!token) {
-      setStatus(STATUS.INVALID);
-      return;
-    }
+    if (!token) return;
 
+    let active = true;
     verifyEmail(token)
-      .then(() => setStatus(STATUS.SUCCESS))
+      .then(() => {
+        if (active) setResult(STATUS.SUCCESS);
+      })
       .catch((error) => {
+        if (!active) return;
         const message = error?.response?.data?.message ?? '';
         // Backend returns 400 for invalid/already-used tokens and 410 for
         // expired tokens — map both to a user-friendly state.
@@ -91,12 +95,17 @@ export default function VerifyEmailPage() {
           error?.response?.status === 410 ||
           message.toLowerCase().includes('expired')
         ) {
-          setStatus(STATUS.EXPIRED);
+          setResult(STATUS.EXPIRED);
         } else {
-          setStatus(STATUS.INVALID);
+          setResult(STATUS.INVALID);
         }
       });
+    return () => {
+      active = false;
+    };
   }, [token]);
+
+  const status = !token ? STATUS.INVALID : result ?? STATUS.LOADING;
 
   if (status === STATUS.LOADING) {
     return (
