@@ -3,46 +3,77 @@ import { AlertCircle, RefreshCw } from 'lucide-react';
 import NotificationItem from '../components/NotificationItem.jsx';
 import EmptyNotificationState from '../components/EmptyNotificationState.jsx';
 import notificationService from '../../../services/notificationService.js';
+import { useAuth } from '../../../context/AuthContext.jsx';
+import { USER_ROLES } from '../../../constants/statuses.js';
 
-// Maps the tab labels users see to the real notification.type values the
-// backend actually creates. 'All' is handled separately (no filter applied).
-const TAB_TYPE_MAP = {
-  Application: ['application_submitted', 'new_application'],
-  Status: ['application_status_changed'],
-};
+// Maps the tab labels users see to the real notification.type value the
+// backend accepts. The backend only accepts ONE type per request, so
+// "Application" resolves to a single, role-aware type.
+function getTypeForTab(tab, role) {
+  if (tab === 'Application') {
+    return role === USER_ROLES.EMPLOYER ? 'new_application' : 'application_submitted';
+  }
+  if (tab === 'Status') {
+    return 'application_status_changed';
+  }
+  return undefined; // 'All' — no type filter
+}
 
 const TABS = ['All', 'Application', 'Status'];
 
 export default function NotificationCenterPage() {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('All');
   const [unreadOnly, setUnreadOnly] = useState(false);
 
-  const fetchNotifications = useCallback(async (page = 1, isRetry = false) => {
+  const refreshUnreadCount = useCallback(async () => {
     try {
-      if (isRetry) setLoading(true);
-      setError(null);
-      const { notifications: data, pagination: pageInfo } =
-        await notificationService.getNotifications(page, 10);
-      setNotifications(data);
-      setPagination(pageInfo);
+      const count = await notificationService.getUnreadCount();
+      setUnreadCount(count);
     } catch (err) {
-      console.error('Failed to load notifications:', err);
-      setNotifications([]);
-      setError("We couldn't load your notifications right now. Please try again in a moment.");
-    } finally {
-      setLoading(false);
+      // Non-fatal — badge just won't update this cycle.
+      console.error('Failed to load unread count:', err);
     }
   }, []);
 
+  const fetchNotifications = useCallback(
+    async (page = 1, isRetry = false) => {
+      try {
+        if (isRetry) setLoading(true);
+        setError(null);
+        const type = getTypeForTab(activeTab, user?.role);
+        const { notifications: data, pagination: pageInfo } =
+          await notificationService.getNotifications(page, 10, { type, unreadOnly });
+        setNotifications(data);
+        setPagination(pageInfo);
+      } catch (err) {
+        console.error('Failed to load notifications:', err);
+        setNotifications([]);
+        setError("We couldn't load your notifications right now. Please try again in a moment.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeTab, unreadOnly, user]
+  );
+
+  // Refetch from page 1 whenever the tab or unread filter changes.
   useEffect(() => {
     (async () => {
       await fetchNotifications(1);
     })();
   }, [fetchNotifications]);
+
+  useEffect(() => {
+    (async () => {
+      await refreshUnreadCount();
+    })();
+  }, [refreshUnreadCount]);
 
   const handleMarkAsRead = async (id) => {
     try {
@@ -50,34 +81,26 @@ export default function NotificationCenterPage() {
       setNotifications((prev) =>
         prev.map((notif) => (notif._id === id ? { ...notif, status: 'Read' } : notif))
       );
+      refreshUnreadCount();
     } catch (err) {
       console.error('Failed to mark as read:', err);
     }
   };
 
   const handleMarkAllAsRead = async () => {
-    const unreadIds = notifications.filter((n) => n.status === 'Unread').map((n) => n._id);
-    await Promise.all(unreadIds.map((id) => handleMarkAsRead(id)));
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications((prev) => prev.map((notif) => ({ ...notif, status: 'Read' })));
+      setUnreadCount(0);
+    } catch (err) {
+      console.error('Failed to mark all as read:', err);
+    }
   };
 
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
     fetchNotifications(newPage);
   };
-
-  // Filtering is done on the current page's data only — the backend does not
-  // yet support filtering by type or unread status server-side, so this is a
-  // client-side filter on top of the already-paginated real API results.
-  const filteredNotifications = notifications.filter((notif) => {
-    if (unreadOnly && notif.status !== 'Unread') return false;
-    if (activeTab !== 'All') {
-      const allowedTypes = TAB_TYPE_MAP[activeTab] || [];
-      if (!allowedTypes.includes(notif.type)) return false;
-    }
-    return true;
-  });
-
-  const unreadCount = notifications.filter((n) => n.status === 'Unread').length;
 
   return (
     <div className="space-y-6 p-6">
@@ -114,23 +137,6 @@ export default function NotificationCenterPage() {
         </div>
       </div>
 
-      {/* Error Banner */}
-      {error && (
-        <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <p className="text-sm">{error}</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => fetchNotifications(pagination.page, true)}
-            className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold hover:underline"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Retry
-          </button>
-        </div>
-      )}
-
       {/* Filter Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="inline-flex rounded-[8px] bg-[#F1F5F9] p-1">
@@ -163,14 +169,28 @@ export default function NotificationCenterPage() {
         </button>
       </div>
 
-      {/* List / Empty State / Loading */}
-      {loading ? (
+      {/* Error Banner OR List / Empty State / Loading — never both */}
+      {error ? (
+        <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 shrink-0" />
+            <p className="text-sm">{error}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => fetchNotifications(pagination.page, true)}
+            className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold hover:underline"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> Retry
+          </button>
+        </div>
+      ) : loading ? (
         <div className="py-20 text-center text-[14px] text-[#64748B]">Loading notifications...</div>
-      ) : filteredNotifications.length === 0 ? (
+      ) : notifications.length === 0 ? (
         <EmptyNotificationState
-          variant={notifications.length === 0 ? 'empty' : 'filter'}
+          variant={activeTab === 'All' && !unreadOnly ? 'empty' : 'filter'}
           onAction={() => {
-            if (notifications.length === 0) {
+            if (activeTab === 'All' && !unreadOnly) {
               fetchNotifications(pagination.page, true);
             } else {
               setActiveTab('All');
@@ -180,7 +200,7 @@ export default function NotificationCenterPage() {
         />
       ) : (
         <div className="overflow-hidden rounded-[14px] border border-[#E2E8F0] bg-white shadow-sm">
-          {filteredNotifications.map((notification) => (
+          {notifications.map((notification) => (
             <NotificationItem
               key={notification._id}
               notification={notification}

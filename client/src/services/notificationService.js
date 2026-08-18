@@ -1,11 +1,13 @@
 import apiClient from './apiClient.js';
 
 export const notificationService = {
-  async getNotifications(page = 1, limit = 20) {
+  async getNotifications(page = 1, limit = 20, { type, unreadOnly } = {}) {
     try {
-      const response = await apiClient.get('/notifications', {
-        params: { page, limit },
-      });
+      const params = { page, limit };
+      if (type) params.type = type;
+      if (unreadOnly) params.unreadOnly = 'true';
+
+      const response = await apiClient.get('/notifications', { params });
 
       if (response.data && response.data.success) {
         return {
@@ -44,6 +46,38 @@ export const notificationService = {
     } catch (error) {
       console.error(`API Error [markAsRead - ID: ${notificationId}]:`, error);
       throw new Error('Failed to mark notification as read. Please try again.', { cause: error });
+    }
+  },
+
+  async markAllAsRead() {
+    try {
+      const response = await apiClient.patch('/notifications/mark-all-read');
+
+      if (response.data && response.data.success) {
+        return response.data.data; // { modifiedCount }
+      }
+
+      throw new Error('Failed to mark all notifications as read.');
+    } catch (error) {
+      console.error('API Error [markAllAsRead]:', error);
+      throw new Error('Failed to mark all notifications as read. Please try again.', {
+        cause: error,
+      });
+    }
+  },
+
+  async getUnreadCount() {
+    try {
+      const response = await apiClient.get('/notifications/unread-count');
+
+      if (response.data && response.data.success) {
+        return response.data.data.count ?? 0;
+      }
+
+      throw new Error('Failed to retrieve unread count.');
+    } catch (error) {
+      console.error('API Error [getUnreadCount]:', error);
+      throw new Error('Unable to load unread count at this time.', { cause: error });
     }
   },
 };
