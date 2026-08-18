@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { AlertTriangle, Ban, EyeOff, Lock, Check } from 'lucide-react';
+import { AlertTriangle, Ban, Lock, Check } from 'lucide-react';
 
 const SuspendAccountModal = ({
   isOpen,
@@ -67,18 +67,6 @@ const SuspendAccountModal = ({
                 <p className="text-xs font-bold text-slate-900">Instant Lockout</p>
                 <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
                   User cannot log in or access any portal features.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-red-100 text-[#DC2626] flex items-center justify-center shrink-0 mt-0.5">
-                <EyeOff size={13} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-900">Profile Hidden</p>
-                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                  The public profile and active job applications will be delisted.
                 </p>
               </div>
             </div>
