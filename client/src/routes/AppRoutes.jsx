@@ -267,7 +267,9 @@ function AppRoutes() {
       <Route
         path="/notifications"
         element={
-          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER, USER_ROLES.ADMIN]}>
+          <ProtectedRoute
+            allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER, USER_ROLES.ADMIN]}
+          >
             <AuthenticatedLayout>
               <NotificationCenterPage />
             </AuthenticatedLayout>
