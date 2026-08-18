@@ -285,8 +285,7 @@ export const JOB_SEEKER_NAV_ITEMS = [
   {
     label: 'My Applications',
     icon: CheckSquareIcon,
-    path: '/applications',
-    disabled: true,
+    path: '/my-applications',
   },
   {
     label: 'My reported jobs',
