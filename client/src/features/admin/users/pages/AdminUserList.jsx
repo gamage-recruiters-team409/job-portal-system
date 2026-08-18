@@ -57,6 +57,7 @@ const AdminUserList = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [statusFilter, setStatusFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -77,6 +78,7 @@ const AdminUserList = () => {
         setError(null);
         const params = { page, limit };
         if (statusFilter) params.status = statusFilter;
+        if (roleFilter) params.role = roleFilter;
         if (searchQuery) params.search = searchQuery;
 
         const data = await getAdminUsers(params);
@@ -105,7 +107,7 @@ const AdminUserList = () => {
     return () => {
       isMounted = false;
     };
-  }, [page, limit, statusFilter, searchQuery, refreshTrigger]);
+  }, [page, limit, statusFilter, roleFilter, searchQuery, refreshTrigger]);
 
   // Fetch Stats
   useEffect(() => {
@@ -137,6 +139,11 @@ const AdminUserList = () => {
 
   const handleStatusChange = (status) => {
     setStatusFilter(status);
+    setPage(1);
+  };
+
+  const handleRoleChange = (e) => {
+    setRoleFilter(e.target.value);
     setPage(1);
   };
 
@@ -350,25 +357,39 @@ const AdminUserList = () => {
       {/* Main Content Box */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
         {/* Filters & Actions */}
-        <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row gap-4 w-full justify-between items-center">
-          {/* Search */}
-          <div className="relative w-full md:w-80 shrink-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            <input
-              className={
-                'w-full h-11 pl-10 pr-4 bg-white border border-slate-200 ' +
-                'rounded-xl text-sm text-slate-900 focus:outline-none ' +
-                'focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all shadow-sm'
-              }
-              placeholder="Search by name or email..."
-              type="text"
-              value={searchQuery}
-              onChange={handleSearchChange}
-            />
+        <div className="p-4 border-b border-slate-200 flex flex-col xl:flex-row gap-4 w-full justify-between items-start xl:items-center">
+          
+          <div className="flex flex-col sm:flex-row gap-4 w-full xl:w-auto">
+            {/* Search */}
+            <div className="relative w-full sm:w-80 shrink-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <input
+                className={
+                  'w-full h-11 pl-10 pr-4 bg-white border border-slate-200 ' +
+                  'rounded-xl text-sm text-slate-900 focus:outline-none ' +
+                  'focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all shadow-sm'
+                }
+                placeholder="Search by name or email..."
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
+            </div>
+
+            {/* Role Filter */}
+            <select
+              value={roleFilter}
+              onChange={handleRoleChange}
+              className="h-11 px-4 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all shadow-sm shrink-0 appearance-none min-w-[140px] bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%208l5%205%205-5%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%221.5%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-no-repeat bg-[position:right_12px_center] pr-10"
+            >
+              <option value="">All Roles</option>
+              <option value="job_seeker">Job Seeker</option>
+              <option value="employer">Employer</option>
+            </select>
           </div>
 
           {/* Tabs */}
-          <div className="w-full md:w-auto min-w-0 flex md:justify-end">
+          <div className="w-full xl:w-auto min-w-0 flex xl:justify-end overflow-x-auto">
             <div
               className={
                 'flex items-center gap-1 bg-slate-50 border border-slate-200 p-1 ' +
