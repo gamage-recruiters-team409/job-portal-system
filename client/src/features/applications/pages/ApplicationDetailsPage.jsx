@@ -48,14 +48,17 @@ function formatDate(dateString) {
 function getBannerMessage(application) {
   const { status, job } = application;
   const companyName = job?.companyId?.companyName ?? 'The employer';
-
   switch (status) {
-    case 'selected':
-      return `Congratulations! ${companyName} has extended an offer for this role.`;
-    case 'rejected':
-      return `${companyName} has decided to move forward with other candidates. We apologize for the inconvenience caused.`;
+    case 'applied':
+      return `Your application has been received. ${companyName} will review it shortly.`;
+    case 'under_review':
+      return "Your application is under review. We'll notify you as soon as there's an update.";
     case 'shortlisted':
       return "Your application has been shortlisted. We'll notify you as soon as there's an update.";
+    case 'selected':
+      return `Good news! ${companyName} has selected your application for this role. They will contact you with next steps.`;
+    case 'rejected':
+      return `${companyName} has decided to move forward with other candidates. We apologize for the inconvenience caused.`;
     default:
       return "Your application is under review. We'll notify you as soon as there's an update.";
   }

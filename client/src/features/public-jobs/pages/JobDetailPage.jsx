@@ -143,6 +143,8 @@ export default function JobDetailPage() {
       return;
     }
     if (!isJobSeeker) {
+      setActionFeedback('Only Job Seeker accounts can apply for jobs.');
+      setTimeout(() => setActionFeedback(''), 4000);
       return;
     }
     setApplyError('');
@@ -266,11 +268,19 @@ export default function JobDetailPage() {
                   <button
                     type="button"
                     onClick={handleOpenApplyModal}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-center text-sm font-semibold text-white shadow transition-colors hover:bg-blue-700 sm:flex-initial"
+                    title={
+                      isAuthenticated && !isJobSeeker
+                        ? 'Only Job Seeker accounts can apply for jobs.'
+                        : undefined
+                    }
+                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-6 py-3 text-center text-sm font-semibold shadow transition-colors sm:flex-initial ${
+                      isAuthenticated && !isJobSeeker
+                        ? 'cursor-not-allowed bg-slate-300 text-slate-500'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
                   >
-                    Apply Now
+                    {isAuthenticated && !isJobSeeker ? ' Apply Now' : 'Apply Now'}
                   </button>
-
                   <button
                     type="button"
                     onClick={handleToggleSave}
