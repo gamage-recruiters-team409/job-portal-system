@@ -13,6 +13,7 @@ import MyReportedJobs from '../features/reported-jobs/job-seeker/pages/MyReporte
 import ReportDetails from '../features/reported-jobs/job-seeker/pages/ReportDetails.jsx';
 import ApplicantList from '../features/applicant-management/pages/ApplicantList.jsx';
 import ApplicantDetails from '../features/applicant-management/pages/ApplicantDetails.jsx';
+import ApplicantCvView from '../features/applicant-management/pages/ApplicantCvView.jsx';
 import AboutPage from '../features/help-support/pages/AboutPage.jsx';
 import ContactPage from '../features/help-support/pages/ContactPage.jsx';
 import FAQPage from '../features/help-support/pages/FAQPage.jsx';
@@ -34,6 +35,7 @@ import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.js
 import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
 import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileCompletionPage.jsx';
 import SkillsPage from '../features/job-seeker-profile/pages/SkillsPage.jsx';
+import EditJobPage from '../features/job-management/pages/EditJobPage.jsx';
 import EducationPage from '../features/job-seeker-profile/pages/EducationPage.jsx';
 import ExperiencePage from '../features/job-seeker-profile/pages/ExperiencePage.jsx';
 import PortfolioLinksPage from '../features/job-seeker-profile/pages/PortfolioLinksPage.jsx';
@@ -131,6 +133,17 @@ function AppRoutes() {
         }
       />
 
+      <Route
+        path="/applicants/:id/cv"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <ApplicantCvView />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
       {/* Create Job - Employer only */}
       <Route
         path="/jobs/create"
@@ -138,6 +151,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
               <CreateJobPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/jobs/:jobId/edit"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <EditJobPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
@@ -154,6 +178,7 @@ function AppRoutes() {
         }
       />
 
+      {/* Dashboard Statistics - Employer */}
       {/* Saved Jobs - Job Seeker only */}
       <Route
         path="/saved-jobs"
