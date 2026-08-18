@@ -41,6 +41,11 @@ import ExperiencePage from '../features/job-seeker-profile/pages/ExperiencePage.
 import PortfolioLinksPage from '../features/job-seeker-profile/pages/PortfolioLinksPage.jsx';
 import ApplicationHistoryPage from '../features/applications/pages/ApplicationHistoryPage.jsx';
 import ApplicationDetailsPage from '../features/applications/pages/ApplicationDetailsPage.jsx';
+import AdminLayout from '../layouts/admin/AdminLayout.jsx';
+import AdminDashboard from '../features/admin/dashboard/AdminDashboard.jsx';
+import AdminReportList from '../features/admin/reports/pages/AdminReportList.jsx';
+import AdminReportDetails from '../features/admin/reports/pages/AdminReportDetails.jsx';
+import AdminPlaceholderPage from '../pages/AdminPlaceholderPage.jsx';
 
 function AppRoutes() {
   return (
@@ -337,6 +342,24 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Admin Console - Admin only. Routing owned by Bimsara.
+           Dashboard + Reported Jobs are merged on develop; User Management and
+           Manage Employers arrive with PR #68; every other AdminSidebar module
+           falls back to the placeholder until its page is merged. */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="reported-jobs" element={<AdminReportList />} />
+        <Route path="reported-jobs/:id" element={<AdminReportDetails />} />
+        <Route path="*" element={<AdminPlaceholderPage />} />
+      </Route>
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
