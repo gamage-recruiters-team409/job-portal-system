@@ -21,6 +21,7 @@ const ConfirmationModal = ({
   requireCheckbox = false,
   checkboxLabel = 'I understand the administrative implications of this action.',
   isLoading = false,
+  consequences = [], // Array of { icon: ReactNode, title: string, description: string }
 }) => {
   const [isChecked, setIsChecked] = useState(false);
 
@@ -37,10 +38,6 @@ const ConfirmationModal = ({
     if (requireCheckbox && !isChecked) return;
     onConfirm();
   };
-
-  const isSuspendAction =
-    title?.toLowerCase().includes('suspend') ||
-    confirmText?.toLowerCase().includes('suspend');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150">
@@ -69,32 +66,22 @@ const ConfirmationModal = ({
             )}
           </div>
 
-          {/* Consequences / Impact Callout for Suspend Actions */}
-          {isSuspendAction && (
+          {/* Consequences / Impact Callout */}
+          {consequences && consequences.length > 0 && (
             <div className="bg-red-50/70 border border-red-100/90 rounded-2xl p-4.5 space-y-3.5 text-left">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-red-100 text-[#DC2626] flex items-center justify-center shrink-0 mt-0.5">
-                  <Lock size={13} />
+              {consequences.map((consequence, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-red-100 text-[#DC2626] flex items-center justify-center shrink-0 mt-0.5">
+                    {consequence.icon || <AlertTriangle size={13} />}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900">{consequence.title}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                      {consequence.description}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-900">Instant Delisting</p>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                    Job post is immediately hidden from the platform and search results.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-red-100 text-[#DC2626] flex items-center justify-center shrink-0 mt-0.5">
-                  <EyeOff size={13} />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-900">Report Resolution</p>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                    The report will be marked as resolved and administrative action is logged.
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           )}
 

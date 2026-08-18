@@ -29,6 +29,8 @@ import {
   Clock,
   DollarSign,
   Star,
+  Lock,
+  EyeOff,
 } from 'lucide-react';
 import ConfirmationModal from '../../../../components/common/ConfirmationModal';
 
@@ -660,8 +662,8 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
         title={modalConfig.actionType === 'suspend' ? 'Suspend Job Post' : 'Dismiss Report'}
         description={
           modalConfig.actionType === 'suspend'
-            ? 'Are you sure you want to suspend this job post? Suspending will hide' +
-              'the job from the platform and it will no longer be visible to job' +
+            ? 'Are you sure you want to suspend this job post? Suspending will hide ' +
+              'the job from the platform and it will no longer be visible to job ' +
               'seekers. This action will also resolve the report.'
             : 'Are you sure you want to dismiss this report? No additional moderation ' +
               'action will be applied to this job. This action cannot be undone.'
@@ -671,6 +673,22 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
         requireCheckbox={modalConfig.actionType === 'suspend'}
         checkboxLabel="I understand the administrative implications of suspending this job post."
         isLoading={isSubmitting}
+        consequences={
+          modalConfig.actionType === 'suspend'
+            ? [
+                {
+                  icon: <Lock size={13} />,
+                  title: 'Instant Delisting',
+                  description: 'Job post is immediately hidden from the platform and search results.',
+                },
+                {
+                  icon: <EyeOff size={13} />,
+                  title: 'Report Resolution',
+                  description: 'The report will be marked as resolved and administrative action is logged.',
+                },
+              ]
+            : []
+        }
       />
     </div>
   );
