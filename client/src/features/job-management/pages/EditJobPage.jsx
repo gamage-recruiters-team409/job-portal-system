@@ -18,9 +18,7 @@ import Breadcrumb from '../components/Breadcrumb.jsx';
 const editJobFormSchema = z
   .object({
     title: z.string().trim().min(1, 'Job title is required.'),
-    deadline: z.coerce
-      .date({ error: 'Deadline is required.' })
-      .refine((date) => date > new Date(), 'Deadline must be a future date.'),
+    deadline: z.coerce.date({ error: 'Deadline is required.' }),
     description: z.string().trim().min(1, 'Job description is required.'),
     responsibilities: z.string().trim().min(1, 'Responsibilities are required.'),
     requirements: z.string().trim().min(1, 'Requirements are required.'),
@@ -69,7 +67,7 @@ export default function EditJobPage() {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, dirtyFields },
   } = useForm({
     resolver: zodResolver(editJobFormSchema),
   });
@@ -124,6 +122,8 @@ export default function EditJobPage() {
   const buildPayload = (formValues) => ({
     ...formValues,
     skills: selectedSkillIds,
+    salaryMin: formValues.salaryMin === '' ? null : Number(formValues.salaryMin),
+    salaryMax: formValues.salaryMax === '' ? null : Number(formValues.salaryMax),
   });
 
   const onSave = async (formValues) => {
@@ -131,7 +131,11 @@ export default function EditJobPage() {
     setSuccessMessage('');
     setIsSubmitting(true);
     try {
-      await updateJob(jobId, buildPayload(formValues));
+      const payload = buildPayload(formValues);
+      if (!dirtyFields.deadline) {
+        delete payload.deadline;
+      }
+      await updateJob(jobId, payload);
       setSuccessMessage('Job updated successfully.');
       topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
@@ -145,12 +149,25 @@ export default function EditJobPage() {
   const onSaveAndSubmit = async (formValues) => {
     setServerError('');
     setSuccessMessage('');
+
+    if (new Date(formValues.deadline) <= new Date()) {
+      setServerError(
+        'Deadline must be a future date to submit this job for review. Please update it before submitting.'
+      );
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      await updateJob(jobId, buildPayload(formValues));
+      const payload = buildPayload(formValues);
+      await updateJob(jobId, payload);
       await submitJobForReview(jobId);
-      setSuccessMessage('Job updated and submitted for review successfully.');
+      setSuccessMessage(
+        'Job updated and submitted for review successfully. Redirecting to Manage Jobs...'
+      );
       topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => navigate('/jobs/manage'), 1500);
     } catch (error) {
       setServerError(
         error.response?.data?.message ||
