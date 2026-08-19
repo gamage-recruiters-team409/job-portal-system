@@ -75,6 +75,7 @@ const AdminJobDetails = () => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Moderation modal state
   const [modalState, setModalState] = useState({
@@ -111,7 +112,7 @@ const AdminJobDetails = () => {
     return () => {
       isMounted = false;
     };
-  }, [jobId]);
+  }, [jobId, refreshTrigger]);
 
   const handleOpenModeration = (targetStatus) => {
     setModalState({ isOpen: true, targetStatus });
@@ -122,13 +123,15 @@ const AdminJobDetails = () => {
 
     try {
       setIsSubmittingModeration(true);
-      const res = await moderateAdminJob(job._id, { status, reviewNote });
-      const updatedJob = res?.data?.job || res?.data || { ...job, status, reviewNote };
+      await moderateAdminJob(job._id, { status, reviewNote });
 
       toast.success(
         `Job "${job.title}" successfully ${status === 'published' ? 'published' : status}!`
       );
-      setJob(updatedJob);
+      
+      // Refetch the full job details to restore populated fields (Company, Category, Skills)
+      setRefreshTrigger(prev => prev + 1);
+      
       setModalState({ isOpen: false, targetStatus: JOB_STATUSES.PUBLISHED });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update job moderation status.');
