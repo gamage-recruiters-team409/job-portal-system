@@ -42,6 +42,15 @@ import PortfolioLinksPage from '../features/job-seeker-profile/pages/PortfolioLi
 import CVPage from '../features/job-seeker-profile/pages/CVPage.jsx';
 import ApplicationHistoryPage from '../features/applications/pages/ApplicationHistoryPage.jsx';
 import ApplicationDetailsPage from '../features/applications/pages/ApplicationDetailsPage.jsx';
+import AdminLayout from '../layouts/admin/AdminLayout.jsx';
+import AdminDashboard from '../features/admin/dashboard/AdminDashboard.jsx';
+import AdminReportList from '../features/admin/reports/pages/AdminReportList.jsx';
+import AdminReportDetails from '../features/admin/reports/pages/AdminReportDetails.jsx';
+import AdminUserList from '../features/admin/users/pages/AdminUserList.jsx';
+import AdminUserDetails from '../features/admin/users/pages/AdminUserDetails.jsx';
+import AdminEmployerList from '../features/admin/employers/pages/AdminEmployerList.jsx';
+import AdminEmployerDetails from '../features/admin/employers/pages/AdminEmployerDetails.jsx';
+import AdminPlaceholderPage from '../pages/AdminPlaceholderPage.jsx';
 
 function AppRoutes() {
   return (
@@ -349,6 +358,29 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Admin Console - Admin only. Routing owned by Bimsara.
+           Based on the current accepted develop's AppRoutes. Merged admin
+           modules are wired directly (Dashboard, Reported Jobs, User
+           Management, Employer Management); the remaining AdminSidebar modules
+           fall back to the placeholder until their pages are merged. */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUserList />} />
+        <Route path="users/:userId" element={<AdminUserDetails />} />
+        <Route path="employers" element={<AdminEmployerList />} />
+        <Route path="employers/:companyId" element={<AdminEmployerDetails />} />
+        <Route path="reported-jobs" element={<AdminReportList />} />
+        <Route path="reported-jobs/:id" element={<AdminReportDetails />} />
+        <Route path="*" element={<AdminPlaceholderPage />} />
+      </Route>
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

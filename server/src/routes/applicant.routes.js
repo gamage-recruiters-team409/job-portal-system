@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   listApplicantsController,
+  getApplicantFilterOptionsController,
   getApplicantByIdController,
   updateApplicantStatusController,
   shortlistApplicantController,
@@ -25,6 +26,9 @@ applicantRouter.use(protect, requireRole(USER_ROLES.EMPLOYER, USER_ROLES.ADMIN))
 
 // GET /api/v1/applicants?jobId=&status=&search=&page=&limit=
 applicantRouter.get('/', validate(listApplicantsQuerySchema, 'query'), listApplicantsController);
+
+// GET /api/v1/applicants/filter-options
+applicantRouter.get('/filter-options', getApplicantFilterOptionsController);
 
 // GET /api/v1/applicants/:id
 applicantRouter.get('/:id', validate(applicantIdParamSchema, 'params'), getApplicantByIdController);
