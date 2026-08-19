@@ -258,14 +258,14 @@ export default function ManageJobsPage() {
   };
 
   return (
-    <div className="mx-0 max-w-7xl p-10">
+    <div className="mx-0 max-w-7xl p-4 sm:p-6 md:p-10">
       <Breadcrumb items={[{ label: 'Jobs' }]} />
-      <div className="mt-0 flex items-center justify-between">
-        <h1 className="mt-4 text-3xl md:text-4xl font-bold text-[#000000]">Manage jobs</h1>
+      <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#000000]">Manage jobs</h1>
         <button
           type="button"
           onClick={() => navigate('/jobs/create')}
-          className="rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1E40AF]"
+          className="w-full sm:w-auto rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8]"
         >
           + Post new job
         </button>
@@ -282,7 +282,7 @@ export default function ManageJobsPage() {
         </div>
       )}
 
-      <div className="mt-6 flex flex-wrap gap-4">
+      <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
         <div className="relative flex-1">
           <svg
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]"
@@ -330,7 +330,7 @@ export default function ManageJobsPage() {
         </select>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-[#E2E8F0] bg-white">
+      <div className="mt-4 sm:mt-6 overflow-x-auto rounded-xl border border-[#E2E8F0] bg-white">
         {isLoading ? (
           <p className="p-6 text-sm text-[#64748B]">Loading jobs...</p>
         ) : filteredJobs.length === 0 ? (
@@ -339,11 +339,11 @@ export default function ManageJobsPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-[#94A3B8] text-xs uppercase text-[#000000]">
               <tr>
-                <th className="px-4 py-3">Job title</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Deadline</th>
-                <th className="px-4 py-3">Applications</th>
-                <th className="px-4 py-3">Actions</th>
+                <th className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">Job title</th>
+                <th className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">Status</th>
+                <th className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">Deadline</th>
+                <th className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">Applications</th>
+                <th className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -351,17 +351,21 @@ export default function ManageJobsPage() {
                 const badge = getBadge(job);
                 return (
                   <tr key={job._id} className="border-t border-[#E2E8F0]">
-                    <td className="px-4 py-3 font-medium text-[#0F172A]">{job.title}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2 sm:px-4 sm:py-3 font-medium text-[#0F172A]">
+                      {job.title}
+                    </td>
+                    <td className="px-3 py-2 sm:px-4 sm:py-3">
                       <span
                         className={`rounded-full px-2 py-1 text-xs font-medium ${badge.className}`}
                       >
                         {badge.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-[#475569]">{formatDate(job.deadline)}</td>
-                    <td className="px-4 py-3 text-[#475569]">—</td>
-                    <td className="px-4 py-3">{renderActions(job)}</td>
+                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-[#475569]">
+                      {formatDate(job.deadline)}
+                    </td>
+                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-[#475569]">—</td>
+                    <td className="px-3 py-2 sm:px-4 sm:py-3">{renderActions(job)}</td>
                   </tr>
                 );
               })}

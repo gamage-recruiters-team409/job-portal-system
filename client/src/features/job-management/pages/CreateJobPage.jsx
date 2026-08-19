@@ -147,12 +147,12 @@ export default function CreateJobPage() {
   const handleSaveAsDraftClick = () => handleSubmit(onSaveAsDraft)();
   const handleSubmitForReviewClick = () => handleSubmit(onSubmitForReview)();
 
-  const labelClass = 'mb-2 block text-sm font-medium text-[#000000]';
+  const labelClass = 'mb-1 sm:mb-2 block text-sm font-medium text-[#000000]';
   const inputClass =
-    'w-full rounded-lg border border-[#94A3B8] px-3 py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]';
+    'w-full rounded-lg border border-[#94A3B8] px-2.5 py-1.5 sm:px-3 sm:py-2 text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]';
   const errorClass = 'mt-1 text-xs text-[#DC2626]';
   const selectClass =
-    'w-full appearance-none rounded-lg border border-[#94A3B8] bg-white bg-no-repeat px-3 py-2 pr-10 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]';
+    'w-full appearance-none rounded-lg border border-[#94A3B8] bg-white bg-no-repeat px-2.5 py-1.5 sm:px-3 sm:py-2 pr-9 sm:pr-10 text-sm text-[#0F172A] focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]';
   const selectArrowStyle = {
     backgroundImage:
       "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
@@ -160,27 +160,29 @@ export default function CreateJobPage() {
   };
 
   return (
-    <div ref={topRef} className="mx-0 max-w-7xl p-10">
+    <div ref={topRef} className="mx-0 max-w-7xl p-4 sm:p-6 md:p-10">
       <Breadcrumb items={[{ label: 'Jobs', path: '/jobs/manage' }, { label: 'Post a new job' }]} />
-      <h1 className="mt-4 text-3xl md:text-4xl font-bold text-[#000000]">Post a new job</h1>
-      <p className="mt-2 text-base font-normal text-[#000000]">
+      <h1 className="mt-3 text-xl sm:text-2xl md:text-4xl font-bold text-[#000000]">
+        Post a new job
+      </h1>
+      <p className="mt-1 text-sm md:text-base font-normal text-[#000000]">
         Fill in the details below to publish a new opening
       </p>
 
       {serverError && (
-        <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm text-[#DC2626]">
+        <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#DC2626]">
           {serverError}
         </div>
       )}
 
       {successMessage && (
-        <div className="mt-4 rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-4 py-3 text-sm text-[#15803D]">
+        <div className="mt-4 rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#15803D]">
           {successMessage}
         </div>
       )}
 
-      <form className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-10 shadow-[0_0_3px_rgba(0,0,0,0.25)]">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <form className="mt-4 sm:mt-6 rounded-xl border border-[#E2E8F0] bg-white p-4 sm:p-6 md:p-10 shadow-[0_0_3px_rgba(0,0,0,0.25)]">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
           <div>
             <label className={labelClass}>
               Job Title <span className="text-[#DC2626]">*</span>
@@ -337,11 +339,11 @@ export default function CreateJobPage() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-[#E2E8F0] pt-6">
+        <div className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row sm:flex-wrap justify-end gap-2 sm:gap-3 border-t border-[#E2E8F0] pt-4 sm:pt-6">
           <button
             type="button"
             onClick={() => navigate('/jobs/manage')}
-            className="rounded-lg border border-[#94A3B8] px-4 py-2 text-base font-semibold text-[#000000] hover:bg-[#94A3B8]"
+            className="w-full sm:w-auto rounded-lg border border-[#94A3B8] px-4 py-2 text-sm sm:text-base font-semibold text-[#000000] hover:bg-[#94A3B8]"
           >
             Cancel
           </button>
@@ -349,7 +351,7 @@ export default function CreateJobPage() {
             type="button"
             disabled={isSubmitting}
             onClick={handleSaveAsDraftClick}
-            className="rounded-lg border border-[#94A3B8] px-4 py-2 text-base font-semibold text-[#000000] hover:bg-[#94A3B8] disabled:opacity-50"
+            className="w-full sm:w-auto rounded-lg border border-[#94A3B8] px-4 py-2 text-sm sm:text-base font-semibold text-[#000000] hover:bg-[#94A3B8] disabled:opacity-50"
           >
             Save as draft
           </button>
@@ -357,7 +359,7 @@ export default function CreateJobPage() {
             type="button"
             disabled={isSubmitting}
             onClick={handleSubmitForReviewClick}
-            className="rounded-lg bg-[#2563EB] px-4 py-2 text-base font-semibold text-white hover:bg-[#1E40AF] disabled:opacity-50"
+            className="w-full sm:w-auto rounded-lg bg-[#2563EB] px-4 py-2 text-sm sm:text-base font-semibold text-white hover:bg-[#1E40AF] disabled:opacity-50"
           >
             Submit for review
           </button>

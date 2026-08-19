@@ -16,7 +16,7 @@ export default function CloseJobModal({ jobTitle, onConfirm, onCancel, isSubmitt
       onClick={isSubmitting ? undefined : onCancel}
     >
       <div
-        className="w-full max-w-[440px] rounded-xl bg-white p-6 shadow-lg"
+        className="w-full max-w-[440px] rounded-xl bg-white p-4 sm:p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-center">
@@ -65,7 +65,7 @@ export default function CloseJobModal({ jobTitle, onConfirm, onCancel, isSubmitt
           </select>
         </div>
 
-        <div className="mt-6 flex justify-center gap-3">
+        <div className="mt-4 sm:mt-6 flex justify-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={onCancel}
