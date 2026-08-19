@@ -47,7 +47,7 @@ const NotificationDropdown = ({
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-6 top-16 w-[380px] bg-white rounded-[14px] shadow-lg border border-[#E2E8F0] z-50 overflow-hidden"
+      className="absolute right-6 top-16 w-[calc(100vw-3rem)] max-w-[380px] bg-white rounded-[14px] shadow-lg border border-[#E2E8F0] z-50 overflow-hidden"
     >
       {/* Decorative caret pointing to the bell icon */}
       <div className="absolute -top-2 right-6 w-4 h-4 bg-white border-t border-l border-[#E2E8F0] transform rotate-45"></div>

@@ -18,6 +18,10 @@ export default function AuthenticatedLayout({ children, navItems }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsError, setNotificationsError] = useState(null);
   const notificationButtonRef = useRef(null);
+  // Tracks notification IDs with a markAsRead request currently in flight,
+  // so a rapid second click on the same item can't fire a duplicate PATCH
+  // and double-decrement the unread badge.
+  const pendingMarkAsReadIds = useRef(new Set());
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -61,6 +65,17 @@ export default function AuthenticatedLayout({ children, navItems }) {
 
   // --- Mark a single notification as read (real API call + state update) ---
   const handleMarkAsRead = async (id) => {
+    // Ignore a click on a notification that already has a request in
+    // flight — prevents duplicate PATCH calls (and a double-decremented
+    // badge) from rapid repeated clicks on the same unread item.
+    if (pendingMarkAsReadIds.current.has(id)) return;
+    pendingMarkAsReadIds.current.add(id);
+
+    // Clear any previous error so a fresh attempt isn't stuck showing
+    // a stale failure — the dropdown renders the error state instead
+    // of the list whenever this is set, so it must reset on retry.
+    setNotificationsError(null);
+
     // Optimistic-safe: only touch state if the call actually succeeds,
     // so the UI never shows a "read" state that isn't true in the DB.
     try {
@@ -71,11 +86,15 @@ export default function AuthenticatedLayout({ children, navItems }) {
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
       setNotificationsError('Unable to mark notification as read.');
+    } finally {
+      pendingMarkAsReadIds.current.delete(id);
     }
   };
 
   // --- Mark all notifications as read (real API call + state update) ---
   const handleMarkAllAsRead = async () => {
+    setNotificationsError(null);
+
     try {
       await notificationService.markAllAsRead();
 
