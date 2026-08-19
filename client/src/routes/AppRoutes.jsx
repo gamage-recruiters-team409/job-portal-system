@@ -46,6 +46,10 @@ import AdminLayout from '../layouts/admin/AdminLayout.jsx';
 import AdminDashboard from '../features/admin/dashboard/AdminDashboard.jsx';
 import AdminReportList from '../features/admin/reports/pages/AdminReportList.jsx';
 import AdminReportDetails from '../features/admin/reports/pages/AdminReportDetails.jsx';
+import AdminUserList from '../features/admin/users/pages/AdminUserList.jsx';
+import AdminUserDetails from '../features/admin/users/pages/AdminUserDetails.jsx';
+import AdminEmployerList from '../features/admin/employers/pages/AdminEmployerList.jsx';
+import AdminEmployerDetails from '../features/admin/employers/pages/AdminEmployerDetails.jsx';
 import AdminPlaceholderPage from '../pages/AdminPlaceholderPage.jsx';
 
 function AppRoutes() {
@@ -356,9 +360,10 @@ function AppRoutes() {
       />
 
       {/* Admin Console - Admin only. Routing owned by Bimsara.
-           Dashboard + Reported Jobs are merged on develop; User Management and
-           Manage Employers arrive with PR #68; every other AdminSidebar module
-           falls back to the placeholder until its page is merged. */}
+           Based on the current accepted develop's AppRoutes. Merged admin
+           modules are wired directly (Dashboard, Reported Jobs, User
+           Management, Employer Management); the remaining AdminSidebar modules
+           fall back to the placeholder until their pages are merged. */}
       <Route
         path="/admin"
         element={
@@ -368,6 +373,10 @@ function AppRoutes() {
         }
       >
         <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUserList />} />
+        <Route path="users/:userId" element={<AdminUserDetails />} />
+        <Route path="employers" element={<AdminEmployerList />} />
+        <Route path="employers/:companyId" element={<AdminEmployerDetails />} />
         <Route path="reported-jobs" element={<AdminReportList />} />
         <Route path="reported-jobs/:id" element={<AdminReportDetails />} />
         <Route path="*" element={<AdminPlaceholderPage />} />
