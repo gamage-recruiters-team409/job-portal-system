@@ -228,29 +228,31 @@ const AdminJobDetails = () => {
   const isDeadlinePassed = job.deadline && new Date(job.deadline) < new Date();
 
   return (
-    <div className="flex flex-col gap-6 w-full pb-16 animate-in fade-in duration-200">
+    <div className="flex flex-col gap-6 w-full min-w-0 max-w-full pb-16 animate-in fade-in duration-200">
       {/* ─── Header & Breadcrumbs ────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full min-w-0">
         <div>
-          <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm text-slate-500 mb-1.5">
             <span>Admin</span>
             <span className="text-slate-300">/</span>
-            <Link to="/admin/jobs" className="hover:text-blue-600 transition-colors">
+            <Link to="/admin/jobs" className="hover:text-blue-600 transition-colors shrink-0">
               Manage Job Posts
             </Link>
             <span className="text-slate-300">/</span>
-            <span className="text-slate-900 font-medium truncate max-w-[200px]">{job.title}</span>
+            <span className="text-slate-900 font-medium truncate max-w-[160px] sm:max-w-[280px]">
+              {job.title}
+            </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
             {job.title}
           </h1>
         </div>
 
         {/* Action Bar */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <Link
             to="/admin/jobs"
-            className="inline-flex items-center justify-center gap-2 px-4 h-11 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-medium transition-all shadow-2xs"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 h-10 sm:h-11 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs sm:text-sm font-medium transition-all shadow-2xs"
           >
             <ArrowLeft size={16} />
             <span>Back to list</span>
@@ -262,14 +264,14 @@ const AdminJobDetails = () => {
               <button
                 onClick={() => handleOpenModeration(JOB_STATUSES.PUBLISHED)}
                 disabled={isDeadlinePassed}
-                className="inline-flex items-center justify-center gap-2 px-4 h-11 bg-[#16A34A] hover:bg-green-700 text-white rounded-xl text-sm font-medium transition-all shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 h-10 sm:h-11 bg-[#16A34A] hover:bg-green-700 text-white rounded-xl text-xs sm:text-sm font-medium transition-all shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <CheckCircle2 size={16} />
                 <span>Approve & Publish</span>
               </button>
               <button
                 onClick={() => handleOpenModeration(JOB_STATUSES.REJECTED)}
-                className="inline-flex items-center justify-center gap-2 px-4 h-11 bg-[#DC2626] hover:bg-red-700 text-white rounded-xl text-sm font-medium transition-all shadow-2xs"
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 h-10 sm:h-11 bg-[#DC2626] hover:bg-red-700 text-white rounded-xl text-xs sm:text-sm font-medium transition-all shadow-2xs"
               >
                 <XCircle size={16} />
                 <span>Reject Job</span>
@@ -281,7 +283,7 @@ const AdminJobDetails = () => {
           {job.status === JOB_STATUSES.PUBLISHED && (
             <button
               onClick={() => handleOpenModeration(JOB_STATUSES.SUSPENDED)}
-              className="inline-flex items-center justify-center gap-2 px-4 h-11 bg-[#DC2626] hover:bg-red-700 text-white rounded-xl text-sm font-medium transition-all shadow-2xs"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 h-10 sm:h-11 bg-[#DC2626] hover:bg-red-700 text-white rounded-xl text-xs sm:text-sm font-medium transition-all shadow-2xs"
             >
               <ShieldAlert size={16} />
               <span>Suspend Job</span>
@@ -291,43 +293,43 @@ const AdminJobDetails = () => {
       </div>
 
       {/* ─── Hero Overview Card ──────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-2xs">
-        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <div className="flex items-start gap-5">
+      <div className="bg-white rounded-2xl p-5 sm:p-8 border border-slate-200 shadow-2xs w-full min-w-0">
+        <div className="flex flex-col gap-5 sm:gap-6 md:flex-row md:items-start md:justify-between w-full min-w-0">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-5 min-w-0 flex-1">
             {job.companyId?.companyLogo ? (
               <img
                 src={job.companyId.companyLogo}
                 alt={companyName}
-                className="h-16 w-16 rounded-2xl object-contain border border-slate-100 bg-slate-50 p-2 shadow-2xs"
+                className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl object-contain border border-slate-100 bg-slate-50 p-2 shadow-2xs shrink-0"
               />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EFF6FF] border border-blue-100 font-bold text-[#2563EB] text-xl shadow-2xs">
+              <div className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-[#EFF6FF] border border-blue-100 font-bold text-[#2563EB] text-lg sm:text-xl shadow-2xs">
                 {getInitials(companyName)}
               </div>
             )}
 
-            <div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 tracking-tight break-words">
                   {job.title}
                 </h2>
                 {renderStatusBadge(job.status)}
               </div>
 
-              <div className="mt-2 flex flex-wrap items-center gap-y-1 gap-x-3 text-sm text-slate-600">
+              <div className="mt-2.5 flex flex-wrap items-center gap-y-1.5 gap-x-2.5 sm:gap-x-3 text-xs sm:text-sm text-slate-600">
                 <span className="font-semibold text-slate-800 flex items-center gap-1.5">
-                  <Building2 className="h-4 w-4 text-slate-400" />
-                  {companyName}
+                  <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
+                  <span className="truncate max-w-[160px] sm:max-w-none">{companyName}</span>
                 </span>
-                <span>•</span>
+                <span className="text-slate-300 hidden sm:inline">•</span>
                 <span className="flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4 text-slate-400" />
-                  {job.location}
+                  <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
+                  <span>{job.location || 'Remote'}</span>
                 </span>
-                <span>•</span>
+                <span className="text-slate-300 hidden sm:inline">•</span>
                 <span className="flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4 text-slate-400" />
-                  Posted {formatDate(job.createdAt)}
+                  <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
+                  <span>Posted {formatDate(job.createdAt)}</span>
                 </span>
               </div>
             </div>
@@ -335,36 +337,36 @@ const AdminJobDetails = () => {
         </div>
 
         {/* 4 Highlight Stat Boxes */}
-        <div className="mt-8 grid grid-cols-2 gap-4 border-t border-slate-100 pt-6 sm:grid-cols-4">
-          <div className="rounded-xl bg-slate-50/70 p-3.5 border border-slate-200/80">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+        <div className="mt-6 sm:mt-8 grid grid-cols-2 gap-3 sm:gap-4 border-t border-slate-100 pt-5 sm:pt-6 sm:grid-cols-4">
+          <div className="rounded-xl bg-slate-50/70 p-3 sm:p-3.5 border border-slate-200/80">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
               Employment Type
             </span>
-            <p className="mt-1 text-sm font-bold text-slate-800 capitalize">
+            <p className="mt-1 text-xs sm:text-sm font-bold text-slate-800 capitalize truncate">
               {job.jobType?.replace('_', ' ') || 'Full Time'}
             </p>
           </div>
-          <div className="rounded-xl bg-slate-50/70 p-3.5 border border-slate-200/80">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          <div className="rounded-xl bg-slate-50/70 p-3 sm:p-3.5 border border-slate-200/80">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
               Work Mode
             </span>
-            <p className="mt-1 text-sm font-bold text-slate-800 capitalize">
+            <p className="mt-1 text-xs sm:text-sm font-bold text-slate-800 capitalize truncate">
               {job.workMode || 'On-site'}
             </p>
           </div>
-          <div className="rounded-xl bg-slate-50/70 p-3.5 border border-slate-200/80">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          <div className="rounded-xl bg-slate-50/70 p-3 sm:p-3.5 border border-slate-200/80">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
               Experience Level
             </span>
-            <p className="mt-1 text-sm font-bold text-slate-800">
+            <p className="mt-1 text-xs sm:text-sm font-bold text-slate-800 truncate">
               {job.experienceYears > 0 ? `${job.experienceYears}+ Years` : 'Entry / Any'}
             </p>
           </div>
-          <div className="rounded-xl bg-slate-50/70 p-3.5 border border-slate-200/80">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          <div className="rounded-xl bg-slate-50/70 p-3 sm:p-3.5 border border-slate-200/80">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
               Salary Offering
             </span>
-            <p className="mt-1 text-sm font-bold text-slate-800">
+            <p className="mt-1 text-xs sm:text-sm font-bold text-slate-800 truncate">
               {job.salaryMin
                 ? `${job.salaryCurrency} ${job.salaryMin.toLocaleString()} - ${job.salaryMax ? job.salaryMax.toLocaleString() : 'Negotiable'}`
                 : 'Not Disclosed'}

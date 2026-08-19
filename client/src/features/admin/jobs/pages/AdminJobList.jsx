@@ -76,7 +76,6 @@ const AdminJobList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
 
-
   // Moderation Modal state
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -219,9 +218,9 @@ const AdminJobList = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full pb-16">
+    <div className="flex flex-col gap-6 w-full min-w-0 max-w-full pb-16">
       {/* ─── Header ──────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full min-w-0">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Manage Job Posts</h1>
           <p className="text-sm text-slate-500 mt-1">
@@ -231,7 +230,7 @@ const AdminJobList = () => {
       </div>
 
       {/* ─── Top Statistics KPI Cards (Empty Placeholders) ─────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-full min-w-0">
         <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs min-h-[145px]"></div>
         <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs min-h-[145px]"></div>
         <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs min-h-[145px]"></div>
@@ -239,11 +238,11 @@ const AdminJobList = () => {
       </div>
 
       {/* ─── Main Content Box ────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col w-full min-w-0 max-w-full overflow-hidden">
         {/* Filters & Actions Bar */}
-        <div className="p-4 border-b border-slate-200 flex flex-col xl:flex-row gap-4 w-full justify-between items-start xl:items-center">
+        <div className="p-4 border-b border-slate-200 flex flex-col xl:flex-row gap-4 w-full min-w-0 justify-between items-stretch xl:items-center">
           {/* Search Input */}
-          <div className="relative w-full sm:w-80 shrink-0">
+          <div className="relative w-full xl:w-80 shrink-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
             <input
               type="text"
@@ -262,9 +261,9 @@ const AdminJobList = () => {
             )}
           </div>
 
-          {/* Filter Tabs */}
-          <div className="w-full xl:w-auto min-w-0 flex xl:justify-end overflow-x-auto">
-            <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 p-1 rounded-xl overflow-x-auto max-w-full">
+          {/* Filter Tabs Container with Horizontal Scroll on Mobile/Tablet */}
+          <div className="w-full xl:w-auto min-w-0 overflow-x-auto pb-1 xl:pb-0">
+            <div className="inline-flex items-center gap-1 bg-slate-50 border border-slate-200 p-1 rounded-xl min-w-max">
               {FILTER_TABS.map((tab) => {
                 const isActive = selectedTab === tab.value;
                 return (
@@ -274,7 +273,7 @@ const AdminJobList = () => {
                       setSelectedTab(tab.value);
                       setPage(1);
                     }}
-                    className={`px-4 h-9 rounded-lg text-sm font-medium whitespace-nowrap shrink-0 transition-all ${
+                    className={`px-3 sm:px-4 h-9 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap shrink-0 transition-all ${
                       isActive
                         ? 'bg-white text-blue-600 shadow-xs border border-slate-200'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-transparent'
@@ -289,13 +288,13 @@ const AdminJobList = () => {
         </div>
 
         {/* Card Grid Content Area */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6 w-full min-w-0">
           {loading ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 w-full min-w-0">
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-72 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xs animate-pulse flex flex-col justify-between"
+                  className="h-72 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xs animate-pulse flex flex-col justify-between min-w-0"
                 >
                   <div>
                     <div className="flex items-center justify-between">
@@ -308,14 +307,14 @@ const AdminJobList = () => {
                     </div>
                   </div>
                   <div className="pt-4 border-t border-slate-100 flex gap-2">
-                    <div className="h-10 flex-1 rounded-xl bg-slate-200" />
-                    <div className="h-10 w-10 rounded-xl bg-slate-200" />
+                    <div className="h-11 flex-1 rounded-xl bg-slate-200" />
+                    <div className="h-11 w-11 rounded-xl bg-slate-200" />
                   </div>
                 </div>
               ))}
             </div>
           ) : error ? (
-            <div className="rounded-xl border border-red-200 bg-red-50/70 p-8 text-center">
+            <div className="rounded-xl border border-red-200 bg-red-50/70 p-6 sm:p-8 text-center">
               <AlertOctagon className="mx-auto h-12 w-12 text-[#DC2626]" />
               <h3 className="mt-3 text-lg font-bold text-slate-900">Failed to Load Jobs</h3>
               <p className="mt-1 text-sm text-red-600">{error}</p>
@@ -327,7 +326,7 @@ const AdminJobList = () => {
               </button>
             </div>
           ) : jobs.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-200 bg-white p-12 text-center">
+            <div className="rounded-xl border border-dashed border-slate-200 bg-white p-8 sm:p-12 text-center">
               <Briefcase className="mx-auto h-12 w-12 text-slate-300" />
               <h3 className="mt-4 text-base font-bold text-slate-900">No Job Postings Found</h3>
               <p className="mt-1 text-sm text-slate-500">
@@ -348,7 +347,7 @@ const AdminJobList = () => {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 w-full min-w-0">
               {jobs.map((job) => {
                 const companyName = job.companyId?.companyName || 'Unknown Company';
                 const companyLogo = job.companyId?.companyLogo;
@@ -356,7 +355,7 @@ const AdminJobList = () => {
                 return (
                   <div
                     key={job._id}
-                    className="group relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-2xs transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
+                    className="group relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xs transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md min-w-0"
                   >
                     {/* Top Row: Logo & Status Badge */}
                     <div>
@@ -497,8 +496,8 @@ const AdminJobList = () => {
 
         {/* ─── Standard Platform Pagination ──────────────────────────────────── */}
         {!loading && totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-slate-200 rounded-b-xl">
-            <p className="text-sm text-slate-500">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-4 bg-white border-t border-slate-200 rounded-b-xl">
+            <p className="text-xs sm:text-sm text-slate-500 text-center sm:text-left">
               Showing <span className="font-medium text-slate-900">{(page - 1) * limit + 1}</span>{' '}
               to{' '}
               <span className="font-medium text-slate-900">

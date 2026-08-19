@@ -138,16 +138,18 @@ const ModerateJobModal = ({
           </div>
 
           {/* Job Target Summary Box */}
-          <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-            <div className="flex items-center justify-between gap-3">
+          <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 sm:p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  <Briefcase className="h-3.5 w-3.5 text-slate-400" />
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <Briefcase className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                   <span>Job Posting</span>
                 </div>
-                <h4 className="mt-1 truncate text-sm font-bold text-slate-900">{job.title}</h4>
+                <h4 className="mt-1 font-bold text-slate-900 text-sm break-words line-clamp-2">
+                  {job.title}
+                </h4>
                 <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
-                  <Building2 className="h-3.5 w-3.5" />
+                  <Building2 className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">
                     {job.companyId?.companyName || 'Unknown Company'}
                   </span>
@@ -155,11 +157,11 @@ const ModerateJobModal = ({
               </div>
 
               {/* Status Transition Preview */}
-              <div className="flex items-center gap-1.5 shrink-0 text-xs font-medium">
+              <div className="flex items-center gap-1.5 shrink-0 text-xs font-medium self-start sm:self-center">
                 <span className="rounded-md bg-slate-200 px-2 py-0.5 text-slate-700 capitalize">
                   {job.status?.replace('_', ' ') || 'unknown'}
                 </span>
-                <ArrowRight className="h-3.5 w-3.5 text-slate-400" />
+                <ArrowRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                 <span className="rounded-md bg-slate-900 px-2 py-0.5 font-semibold text-white capitalize">
                   {targetStatus?.replace('_', ' ')}
                 </span>
@@ -223,19 +225,19 @@ const ModerateJobModal = ({
             </div>
 
             {/* Actions */}
-            <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <div className="mt-6 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-100">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="h-11 min-w-[120px] rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-2xs hover:bg-slate-50 focus:outline-hidden focus:ring-1 focus:ring-slate-300 disabled:opacity-50 transition-colors"
+                className="h-11 w-full sm:w-auto min-w-[120px] rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-2xs hover:bg-slate-50 focus:outline-hidden focus:ring-1 focus:ring-slate-300 disabled:opacity-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || !isLengthValid}
-                className={`h-11 min-w-[120px] flex items-center justify-center gap-2 rounded-xl text-sm font-medium shadow-xs transition-all focus:outline-hidden focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${config.buttonClass}`}
+                className={`h-11 w-full sm:w-auto min-w-[120px] flex items-center justify-center gap-2 rounded-xl text-sm font-medium shadow-xs transition-all focus:outline-hidden focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${config.buttonClass}`}
               >
                 {isSubmitting ? (
                   <>
