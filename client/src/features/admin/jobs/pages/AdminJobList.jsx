@@ -35,9 +35,11 @@ import ModerateJobModal from '../components/ModerateJobModal';
 const FILTER_TABS = [
   { label: 'All', value: '' },
   { label: 'Pending', value: JOB_STATUSES.PENDING_REVIEW },
-  { label: 'Live', value: JOB_STATUSES.PUBLISHED },
+  { label: 'Published', value: JOB_STATUSES.PUBLISHED },
   { label: 'Suspended', value: JOB_STATUSES.SUSPENDED },
   { label: 'Rejected', value: JOB_STATUSES.REJECTED },
+  { label: 'Closed', value: JOB_STATUSES.CLOSED },
+  { label: 'Draft', value: JOB_STATUSES.DRAFT },
 ];
 
 const formatDate = (dateString) => {
@@ -142,7 +144,7 @@ const AdminJobList = () => {
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#16A34A] text-xs font-semibold border border-green-200/80">
             <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-            LIVE
+            PUBLISHED
           </span>
         );
       case JOB_STATUSES.PENDING_REVIEW:
@@ -171,6 +173,13 @@ const AdminJobList = () => {
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F1F5F9] text-[#64748B] text-xs font-semibold border border-slate-200">
             <span className="w-1.5 h-1.5 rounded-full bg-[#64748B]"></span>
             CLOSED
+          </span>
+        );
+      case JOB_STATUSES.DRAFT:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            DRAFT
           </span>
         );
       default:

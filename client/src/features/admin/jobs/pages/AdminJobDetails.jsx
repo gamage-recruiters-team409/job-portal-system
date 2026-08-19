@@ -144,7 +144,7 @@ const AdminJobDetails = () => {
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#DCFCE7] text-[#16A34A] text-xs font-semibold border border-green-200/80 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] animate-pulse"></span>
-            LIVE / PUBLISHED
+            PUBLISHED
           </span>
         );
       case JOB_STATUSES.PENDING_REVIEW:
@@ -173,6 +173,13 @@ const AdminJobDetails = () => {
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1F5F9] text-[#64748B] text-xs font-semibold border border-slate-200">
             <span className="w-1.5 h-1.5 rounded-full bg-[#64748B]"></span>
             CLOSED
+          </span>
+        );
+      case JOB_STATUSES.DRAFT:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            DRAFT
           </span>
         );
       default:
