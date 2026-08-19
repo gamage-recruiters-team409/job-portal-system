@@ -69,7 +69,8 @@ const getInitials = (name) => {
 /* ─── Main AdminJobDetails Component ──────────────────────────────────────── */
 
 const AdminJobDetails = () => {
-  const { jobId } = useParams();
+  const { id, jobId: routeJobId } = useParams();
+  const jobId = id || routeJobId;
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +85,8 @@ const AdminJobDetails = () => {
 
   useEffect(() => {
     let isMounted = true;
+    if (!jobId) return;
+
     const fetchJob = async () => {
       try {
         setLoading(true);
@@ -103,9 +106,7 @@ const AdminJobDetails = () => {
       }
     };
 
-    if (jobId) {
-      fetchJob();
-    }
+    fetchJob();
 
     return () => {
       isMounted = false;
