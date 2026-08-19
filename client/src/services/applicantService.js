@@ -13,17 +13,46 @@ import apiClient from './apiClient.js';
  *
  * @returns {Promise<object>} The raw `data` envelope from the API response.
  */
-export const getApplicants = async ({ jobId, status, search, page, limit, signal } = {}) => {
+export const getApplicants = async ({
+  jobId,
+  status,
+  search,
+  skill,
+  education,
+  minExperience,
+  maxExperience,
+  page,
+  limit,
+  signal,
+} = {}) => {
   const { data } = await apiClient.get('/applicants', {
     params: {
       ...(jobId && { jobId }),
       ...(status && { status }),
       ...(search && { search }),
+      ...(skill && { skill }),
+      ...(education && { education }),
+      ...(minExperience !== undefined && minExperience !== '' && { minExperience }),
+      ...(maxExperience !== undefined && maxExperience !== '' && { maxExperience }),
       ...(page && { page }),
       ...(limit && { limit }),
     },
     signal, // <--- This passes the abort signal to axios
   });
+
+  return data;
+};
+
+/**
+ * Fetch applicant filter options (e.g. distinct education qualifications).
+ *
+ * Endpoint: GET /api/v1/applicants/filter-options
+ * Auth:     Bearer token (employer / admin role)
+ *
+ * @returns {Promise<object>} The raw `data` envelope containing { educationOptions: string[] }.
+ */
+export const getApplicantFilterOptions = async () => {
+  const { data } = await apiClient.get('/applicants/filter-options');
 
   return data;
 };

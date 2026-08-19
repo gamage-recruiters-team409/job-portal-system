@@ -50,6 +50,18 @@ export const listApplicantsQuerySchema = z.object({
 
   search: z.string().trim().max(100, 'search cannot exceed 100 characters').optional(),
 
+  skill: z
+    .string()
+    .trim()
+    .regex(/^[a-f\d]{24}$/i, 'skill must be a valid MongoDB ObjectId')
+    .optional(),
+
+  education: z.string().trim().max(150, 'education cannot exceed 150 characters').optional(),
+
+  minExperience: z.coerce.number().int().min(0).optional(),
+
+  maxExperience: z.coerce.number().int().min(0).optional(),
+
   page: z.coerce
     .number({ error: 'page must be a number' })
     .int('page must be an integer')

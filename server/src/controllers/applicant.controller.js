@@ -6,6 +6,7 @@ import {
   shortlistApplicant,
   rejectApplicant,
   getApplicantCv,
+  getApplicantFilterOptions,
 } from '../services/applicant.service.js';
 
 /**
@@ -15,6 +16,21 @@ import {
  * req.query is a getter-only property in Express 5). Falls back to the raw
  * request object only if the validated version isn't present.
  */
+
+/**
+ * GET /api/v1/applicants/filter-options
+ */
+export async function getApplicantFilterOptionsController(req, res, next) {
+  try {
+    const filterOptions = await getApplicantFilterOptions(req.user);
+    return sendSuccess(res, {
+      message: 'Applicant filter options retrieved successfully.',
+      data: filterOptions,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
 
 /**
  * GET /api/v1/applicants?jobId=&status=&search=&page=&limit=
