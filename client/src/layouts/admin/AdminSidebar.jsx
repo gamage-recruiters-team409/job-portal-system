@@ -52,10 +52,10 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
 
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Mobile & Tablet Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-slate-900/50 transition-opacity md:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/50 transition-opacity lg:hidden"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
@@ -65,7 +65,7 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
         className={[
           'fixed inset-y-0 left-0 z-50 flex h-full w-[280px]',
           'transform flex-col border-r border-slate-200 bg-[#F8FAFC]',
-          'transition-transform duration-300 ease-in-out md:relative md:translate-x-0',
+          'transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full',
         ].join(' ')}
       >

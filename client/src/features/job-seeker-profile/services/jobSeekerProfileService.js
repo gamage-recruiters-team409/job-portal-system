@@ -12,6 +12,21 @@ export async function updateMyProfile(payload) {
   return data.data.profile;
 }
 
+export async function uploadMyProfileImage(file) {
+  const formData = new FormData();
+  formData.append('profileImage', file);
+
+  const { data } = await apiClient.putForm('/job-seeker-profile/me/profile-image', formData);
+
+  return data.data.profileImage;
+}
+
+export async function deleteMyProfileImage() {
+  const { data } = await apiClient.delete('/job-seeker-profile/me/profile-image');
+
+  return data.data.profileImage;
+}
+
 export async function getMyProfileCompletion() {
   const { data } = await apiClient.get('/job-seeker-profile/me/completion');
 
@@ -84,4 +99,26 @@ export async function deleteMyPortfolioLink(entryId) {
   const { data } = await apiClient.delete(`/job-seeker-profile/me/portfolio/${entryId}`);
 
   return data.data.portfolioLink;
+}
+
+export async function uploadMyCv(file) {
+  const formData = new FormData();
+
+  formData.append('cv', file);
+
+  const { data } = await apiClient.putForm('/job-seeker-profile/me/cv', formData);
+
+  return data.data.cv;
+}
+
+export async function getMyCvDownloadUrl() {
+  const { data } = await apiClient.get('/job-seeker-profile/me/cv/download-url');
+
+  return data.data;
+}
+
+export async function deleteMyCv() {
+  const { data } = await apiClient.delete('/job-seeker-profile/me/cv');
+
+  return data.data.cv;
 }

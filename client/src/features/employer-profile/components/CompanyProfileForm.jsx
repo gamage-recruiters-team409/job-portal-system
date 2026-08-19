@@ -311,10 +311,11 @@ export default function CompanyProfileForm({
 
   return (
     <div className="animate-fade-in min-h-screen overflow-x-hidden bg-[#F8FAFC] p-4 font-[Inter,sans-serif] md:p-8">
-      <form onSubmit={handleSubmit}>
+      <div className="mx-auto max-w-4xl">
+        <form onSubmit={handleSubmit}>
         {/* Header row */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold text-[#0F172A]">{title}</h1>
+          <h1 className="text-2xl font-bold text-[#0F172A] lg:text-3xl">{title}</h1>
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -574,9 +575,10 @@ export default function CompanyProfileForm({
             <span>Save changes</span>
           </button>
         </div>
-      </form>
+        </form>
 
-      {dangerZone && <div className="mt-6">{dangerZone}</div>}
+        {dangerZone && <div className="mt-6">{dangerZone}</div>}
+      </div>
     </div>
   );
 }
