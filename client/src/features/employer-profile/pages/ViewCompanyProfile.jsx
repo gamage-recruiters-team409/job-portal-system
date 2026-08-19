@@ -14,6 +14,9 @@ import {
   Loader2,
   Briefcase,
   ImageUp,
+  FileText,
+  ShieldCheck,
+  Info,
 } from 'lucide-react';
 import { getMyCompany } from '../../../services/companyService.js';
 import { getEmployerJobs } from '../../../services/applicantService.js';
@@ -408,7 +411,10 @@ export default function ViewCompanyProfile() {
         <div className="space-y-6 lg:col-span-2">
           {/* About Card */}
           <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <h2 className="text-lg font-bold text-[#0F172A]">About</h2>
+            <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
+              <FileText className="h-5 w-5 text-slate-500" />
+              About
+            </h2>
             {descriptionParagraphs.length > 0 ? (
               <div className="mt-4 space-y-3 text-sm text-[#475569] leading-relaxed">
                 {descriptionParagraphs.map((para, index) => (
@@ -425,7 +431,10 @@ export default function ViewCompanyProfile() {
           {/* Open positions Card */}
           <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h2 className="text-lg font-bold text-[#0F172A]">Open positions</h2>
+              <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
+                <Briefcase className="h-5 w-5 text-blue-600" />
+                Open positions
+              </h2>
               {jobs.length > 0 && (
                 <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-[#2563EB]">
                   {jobs.length} {jobs.length === 1 ? 'position' : 'positions'}
@@ -516,7 +525,10 @@ export default function ViewCompanyProfile() {
         <div className="space-y-6 lg:col-span-1">
           {/* Company details Card */}
           <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <h2 className="text-lg font-bold text-[#0F172A]">Company details</h2>
+            <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
+              <Info className="h-5 w-5 text-slate-500" />
+              Company details
+            </h2>
             <div className="mt-4 divide-y divide-slate-100 text-sm">
               <div className="flex items-center justify-between py-2.5">
                 <span className="text-[#64748B]">Industry</span>
@@ -590,7 +602,10 @@ export default function ViewCompanyProfile() {
           {/* Verification Card */}
           <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-[#0F172A]">Verification</h2>
+              <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
+                <ShieldCheck className="h-5 w-5 text-slate-500" />
+                Verification
+              </h2>
               <VerificationBadge status={company.verificationStatus} />
             </div>
 

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { AlertTriangle, Building2, Loader2, Upload } from 'lucide-react';
+import { AlertTriangle, Building2, FileText, Loader2, Save, Upload } from 'lucide-react';
 import SearchableSelect from './SearchableSelect.jsx';
 
 const INDUSTRY_OPTIONS = [
@@ -358,9 +358,12 @@ export default function CompanyProfileForm({
 
         {/* Company logo card */}
         <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <h2 className="text-lg font-bold text-[#0F172A]">Company logo</h2>
-          <div className="mt-4 flex flex-wrap items-center gap-4">
-            <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E2E8F0] bg-slate-100">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
+            <ImageUp className="h-5 w-5 text-blue-600" />
+            Company logo
+          </h2>
+          <div className="mt-4 flex flex-wrap items-center gap-5">
+            <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E2E8F0] bg-slate-100 shadow-xs">
               {displayedLogo ? (
                 <img
                   src={displayedLogo}
@@ -377,7 +380,7 @@ export default function CompanyProfileForm({
                 <button
                   type="button"
                   onClick={handleLogoButtonClick}
-                  className="inline-flex items-center gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-semibold text-[#0F172A] transition-colors duration-150 hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-semibold text-[#0F172A] shadow-xs transition-colors duration-150 hover:bg-slate-50"
                 >
                   <Upload className="h-4 w-4" />
                   {mode === 'edit' || displayedLogo ? 'Replace logo' : 'Add logo'}
@@ -409,9 +412,13 @@ export default function CompanyProfileForm({
 
         {/* Company details card */}
         <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <h2 className="text-lg font-bold text-[#0F172A]">Company details</h2>
+          <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
+            <Building2 className="h-5 w-5 text-blue-600" />
+            Company details
+          </h2>
 
-          <div className="mt-4 grid grid-cols-1 gap-5">
+          <div className="mt-5 grid grid-cols-1 gap-5">
+            {/* Company Name */}
             <div>
               <label className={labelCls}>Company name</label>
               <input
@@ -425,42 +432,62 @@ export default function CompanyProfileForm({
               <FieldError message={fieldError('companyName')} />
             </div>
 
-            <SearchableSelect
-              label="Industry"
-              value={values.industry}
-              onChange={(v) => handleChange('industry', v)}
-              options={INDUSTRY_OPTIONS}
-              placeholder="Select industry"
-              searchPlaceholder="Search industry..."
-              error={errors.industry}
-              allowCustom
-            />
-
-            <SearchableSelect
-              label="Number of employees"
-              value={values.companySize}
-              onChange={(v) => handleChange('companySize', v)}
-              options={COMPANY_SIZE_OPTIONS}
-              placeholder="Select company size"
-              searchPlaceholder="Search number of employees..."
-              error={errors.companySize}
-            />
-
-            <div>
-              <label className={labelCls}>Founded year</label>
-              <input
-                type="number"
-                value={values.foundedYear}
-                onChange={(e) => handleChange('foundedYear', e.target.value)}
-                onBlur={() => handleBlur('foundedYear')}
-                className={inputCls(errors.foundedYear)}
-                placeholder="e.g. 2018"
-                min="1900"
-                max={currentYear}
+            {/* Industry & Company Size */}
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <SearchableSelect
+                label="Industry"
+                value={values.industry}
+                onChange={(v) => handleChange('industry', v)}
+                options={INDUSTRY_OPTIONS}
+                placeholder="Select industry"
+                searchPlaceholder="Search industry..."
+                error={errors.industry}
+                allowCustom
               />
-              <FieldError message={errors.foundedYear} />
+
+              <SearchableSelect
+                label="Number of employees"
+                value={values.companySize}
+                onChange={(v) => handleChange('companySize', v)}
+                options={COMPANY_SIZE_OPTIONS}
+                placeholder="Select company size"
+                searchPlaceholder="Search number of employees..."
+                error={errors.companySize}
+              />
             </div>
 
+            {/* Founded Year & Work Email */}
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <label className={labelCls}>Founded year</label>
+                <input
+                  type="number"
+                  value={values.foundedYear}
+                  onChange={(e) => handleChange('foundedYear', e.target.value)}
+                  onBlur={() => handleBlur('foundedYear')}
+                  className={inputCls(errors.foundedYear)}
+                  placeholder="e.g. 2018"
+                  min="1900"
+                  max={currentYear}
+                />
+                <FieldError message={errors.foundedYear} />
+              </div>
+
+              <div>
+                <label className={labelCls}>Work email</label>
+                <input
+                  type="email"
+                  value={values.companyEmail}
+                  onChange={(e) => handleChange('companyEmail', e.target.value)}
+                  onBlur={() => handleBlur('companyEmail')}
+                  className={inputCls(fieldError('companyEmail'))}
+                  placeholder="hr@example.com"
+                />
+                <FieldError message={fieldError('companyEmail')} />
+              </div>
+            </div>
+
+            {/* Website & Phone */}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
                 <label className={labelCls}>Website</label>
@@ -489,50 +516,43 @@ export default function CompanyProfileForm({
               </div>
             </div>
 
-            <div>
-              <label className={labelCls}>Work email</label>
-              <input
-                type="email"
-                value={values.companyEmail}
-                onChange={(e) => handleChange('companyEmail', e.target.value)}
-                onBlur={() => handleBlur('companyEmail')}
-                className={inputCls(fieldError('companyEmail'))}
-                placeholder="hr@example.com"
-              />
-              <FieldError message={fieldError('companyEmail')} />
-            </div>
+            {/* Address & Location */}
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <label className={labelCls}>Address</label>
+                <input
+                  type="text"
+                  value={values.companyAddress}
+                  onChange={(e) => handleChange('companyAddress', e.target.value)}
+                  onBlur={() => handleBlur('companyAddress')}
+                  className={inputCls(errors.companyAddress)}
+                  placeholder="42 Galle Road, Colombo 03"
+                />
+                <FieldError message={errors.companyAddress} />
+              </div>
 
-            <div>
-              <label className={labelCls}>Address</label>
-              <input
-                type="text"
-                value={values.companyAddress}
-                onChange={(e) => handleChange('companyAddress', e.target.value)}
-                onBlur={() => handleBlur('companyAddress')}
-                className={inputCls(errors.companyAddress)}
-                placeholder="42 Galle Road, Colombo 03"
-              />
-              <FieldError message={errors.companyAddress} />
-            </div>
-
-            <div>
-              <label className={labelCls}>Location</label>
-              <input
-                type="text"
-                value={values.companyLocation}
-                onChange={(e) => handleChange('companyLocation', e.target.value)}
-                onBlur={() => handleBlur('companyLocation')}
-                className={inputCls(errors.companyLocation)}
-                placeholder="e.g. Colombo, Sri Lanka"
-              />
-              <FieldError message={errors.companyLocation} />
+              <div>
+                <label className={labelCls}>Location</label>
+                <input
+                  type="text"
+                  value={values.companyLocation}
+                  onChange={(e) => handleChange('companyLocation', e.target.value)}
+                  onBlur={() => handleBlur('companyLocation')}
+                  className={inputCls(errors.companyLocation)}
+                  placeholder="e.g. Colombo, Sri Lanka"
+                />
+                <FieldError message={errors.companyLocation} />
+              </div>
             </div>
           </div>
         </div>
 
         {/* About card */}
         <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <h2 className="text-lg font-bold text-[#0F172A]">About</h2>
+          <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
+            <FileText className="h-5 w-5 text-slate-500" />
+            About
+          </h2>
           <div className="mt-4">
             <label className={labelCls}>
               Company description
@@ -571,7 +591,7 @@ export default function CompanyProfileForm({
             disabled={submitting}
             className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700 disabled:opacity-60"
           >
-            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             <span>Save changes</span>
           </button>
         </div>
