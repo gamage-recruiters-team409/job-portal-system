@@ -12,11 +12,6 @@ import toast from 'react-hot-toast';
 import { getAdminReportById, reviewAdminReport } from '../../../../services/adminReport.service';
 import { reviewReportSchema } from '../../../../validations/adminReport.schema';
 import {
-  SuccessFeedbackIcon,
-  ErrorFeedbackIcon,
-  CloseFeedbackIcon,
-} from '../../../../components/common/FeedbackIcons';
-import {
   AlertTriangle,
   ArrowLeft,
   Briefcase,
@@ -34,6 +29,8 @@ import {
   Clock,
   DollarSign,
   Star,
+  Lock,
+  EyeOff,
 } from 'lucide-react';
 import ConfirmationModal from '../../../../components/common/ConfirmationModal';
 
@@ -95,74 +92,6 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
     }
   };
 
-  const showFeedbackToast = (title, subtitle, type = 'success') => {
-    toast.custom(
-      (t) => (
-        <>
-          <style>{`
-          @keyframes progress-shrink-${t.id} {
-            from { transform: scaleX(1); }
-            to { transform: scaleX(0); }
-          }
-          .animate-progress-shrink-${t.id} {
-            animation: progress-shrink-${t.id} 2500ms linear forwards;
-          }
-        `}</style>
-          <div
-            className={`${
-              t.visible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
-            } relative max-w-[420px] w-full bg-white shadow-xl shadow-slate-200/50 rounded-2xl pointer-events-auto flex flex-col border border-blue-50/80 transition-all duration-300 overflow-hidden`}
-          >
-            <div className="flex items-center w-full gap-4 p-4">
-              {type === 'success' ? (
-                <div
-                  className={
-                    'flex-shrink-0 w-12 h-12 rounded-full bg-green-100/50 flex items-center ' +
-                    'justify-center text-[#16A34A] '
-                  }
-                >
-                  <SuccessFeedbackIcon />
-                </div>
-              ) : (
-                <div
-                  className={
-                    'flex-shrink-0 w-12 h-12 rounded-full bg-red-50 flex items-center ' +
-                    'justify-center text-[#DC2626] '
-                  }
-                >
-                  <ErrorFeedbackIcon />
-                </div>
-              )}
-              <div className="flex-1">
-                <p className="text-[17px] font-semibold text-slate-800 leading-snug">{title}</p>
-                {subtitle && (
-                  <p className="mt-0.5 text-[14.5px] text-slate-500 font-medium">{subtitle}</p>
-                )}
-              </div>
-              <div className="flex-shrink-0">
-                <button
-                  onClick={() => toast.dismiss(t.id)}
-                  className={
-                    'w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-50 ' +
-                    'transition-colors text-[#737686] '
-                  }
-                >
-                  <CloseFeedbackIcon />
-                </button>
-              </div>
-            </div>
-
-            {/* Progress bar */}
-            <div
-              className={`h-1 w-full origin-left ${type === 'success' ? 'bg-[#4ADE80]' : 'bg-[#DC2626]'} ${t.visible ? `animate-progress-shrink-${t.id}` : ''}`}
-            />
-          </div>
-        </>
-      ),
-      { duration: 3000 }
-    );
-  };
-
   const onReviewSubmit = async (data, actionConfig) => {
     try {
       setIsSubmitting(true);
@@ -175,11 +104,7 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
 
       await reviewAdminReport(reportId, payload);
 
-      showFeedbackToast(
-        actionConfig.successTitle || 'Action Successful',
-        actionConfig.successMessage,
-        'success'
-      );
+      toast.success(actionConfig.successMessage || 'Report updated successfully!');
 
       // Refresh the report data
       await fetchReportStandalone();
@@ -187,11 +112,7 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
 
       if (onSuccess) onSuccess();
     } catch (err) {
-      showFeedbackToast(
-        'Action Failed',
-        err.response?.data?.message || 'Failed to process action',
-        'error'
-      );
+      toast.error(err.response?.data?.message || err.message || 'Failed to process action');
     } finally {
       setIsSubmitting(false);
     }
@@ -741,8 +662,8 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
         title={modalConfig.actionType === 'suspend' ? 'Suspend Job Post' : 'Dismiss Report'}
         description={
           modalConfig.actionType === 'suspend'
-            ? 'Are you sure you want to suspend this job post? Suspending will hide' +
-              'the job from the platform and it will no longer be visible to job' +
+            ? 'Are you sure you want to suspend this job post? Suspending will hide ' +
+              'the job from the platform and it will no longer be visible to job ' +
               'seekers. This action will also resolve the report.'
             : 'Are you sure you want to dismiss this report? No additional moderation ' +
               'action will be applied to this job. This action cannot be undone.'
@@ -752,6 +673,22 @@ const AdminReportDetails = ({ reportId, onClose, onSuccess }) => {
         requireCheckbox={modalConfig.actionType === 'suspend'}
         checkboxLabel="I understand the administrative implications of suspending this job post."
         isLoading={isSubmitting}
+        consequences={
+          modalConfig.actionType === 'suspend'
+            ? [
+                {
+                  icon: <Lock size={13} />,
+                  title: 'Instant Delisting',
+                  description: 'Job post is immediately hidden from the platform and search results.',
+                },
+                {
+                  icon: <EyeOff size={13} />,
+                  title: 'Report Resolution',
+                  description: 'The report will be marked as resolved and administrative action is logged.',
+                },
+              ]
+            : []
+        }
       />
     </div>
   );

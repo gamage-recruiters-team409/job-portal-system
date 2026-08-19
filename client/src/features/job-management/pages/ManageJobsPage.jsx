@@ -13,6 +13,7 @@ import CloseJobModal from '../components/CloseJobModal.jsx';
 import DeleteJobModal from '../components/DeleteJobModal.jsx';
 import ReopenJobModal from '../components/ReopenJobModal.jsx';
 import SubmitForReviewModal from '../components/SubmitForReviewModal.jsx';
+import JobStatusModal from '../components/JobStatusModal.jsx';
 
 const STATUS_BADGES = {
   [JOB_STATUSES.DRAFT]: { label: 'Draft', className: 'bg-[#D0D0D0] text-[#000000]' },
@@ -52,6 +53,7 @@ export default function ManageJobsPage() {
   const [busyJobId, setBusyJobId] = useState(null);
   const [activeModal, setActiveModal] = useState(null); // { type: 'close'|'delete'|'reopen'|'submit', job }
   const [modalError, setModalError] = useState('');
+  const [statusModalJob, setStatusModalJob] = useState(null);
 
   const loadJobs = async () => {
     try {
@@ -147,7 +149,17 @@ export default function ManageJobsPage() {
 
   const renderActions = (job) => {
     const disabled = busyJobId === job._id;
-    const actions = [];
+    const actions = [
+      <button
+        key="status"
+        type="button"
+        className={linkClass}
+        onClick={() => setStatusModalJob(job)}
+        disabled={disabled}
+      >
+        Status
+      </button>,
+    ];
 
     if (job.status === JOB_STATUSES.PUBLISHED) {
       actions.push(
@@ -387,6 +399,21 @@ export default function ManageJobsPage() {
           onConfirm={confirmDelete}
           onCancel={closeModal}
           isSubmitting={busyJobId === activeModal.job._id}
+        />
+      )}
+
+      {statusModalJob && (
+        <JobStatusModal
+          job={statusModalJob}
+          onClose={() => setStatusModalJob(null)}
+          onEdit={() => {
+            setStatusModalJob(null);
+            navigate(`/jobs/${statusModalJob._id}/edit`);
+          }}
+          onClosePosting={() => {
+            setStatusModalJob(null);
+            openModal('close', statusModalJob);
+          }}
         />
       )}
     </div>

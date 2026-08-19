@@ -24,12 +24,12 @@ import JobDetailPage from '../features/public-jobs/pages/JobDetailPage.jsx';
 import AuthenticatedLayout from '../layouts/authenticated/AuthenticatedLayout.jsx';
 import ViewCompanyProfile from '../features/employer-profile/pages/ViewCompanyProfile.jsx';
 import CreateCompanyProfile from '../features/employer-profile/pages/CreateCompanyProfile.jsx';
+import NotificationCenterPage from '../features/notifications/pages/NotificationCenterPage.jsx';
 import EditCompanyProfile from '../features/employer-profile/pages/EditCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
 import ManageJobsPage from '../features/job-management/pages/ManageJobsPage.jsx';
 import SavedJobsPage from '../features/saved-jobs/pages/SavedJobsPage.jsx';
-import DashboardStatisticsPage from '../features/notifications/pages/DashboardStatisticsPage.jsx';
 import EmployerDashboard from '../features/employer-profile/pages/EmployerDashboard.jsx';
 import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.jsx';
 import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
@@ -39,6 +39,9 @@ import EditJobPage from '../features/job-management/pages/EditJobPage.jsx';
 import EducationPage from '../features/job-seeker-profile/pages/EducationPage.jsx';
 import ExperiencePage from '../features/job-seeker-profile/pages/ExperiencePage.jsx';
 import PortfolioLinksPage from '../features/job-seeker-profile/pages/PortfolioLinksPage.jsx';
+import CVPage from '../features/job-seeker-profile/pages/CVPage.jsx';
+import ApplicationHistoryPage from '../features/applications/pages/ApplicationHistoryPage.jsx';
+import ApplicationDetailsPage from '../features/applications/pages/ApplicationDetailsPage.jsx';
 
 function AppRoutes() {
   return (
@@ -81,6 +84,28 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <ReportDetails />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-applications"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <ApplicationHistoryPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-applications/:id"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <ApplicationDetailsPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
@@ -284,6 +309,31 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <ExperiencePage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/cv"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <CVPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Notification Center - Shared across all authenticated roles */}
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute
+            allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER, USER_ROLES.ADMIN]}
+          >
+            <AuthenticatedLayout>
+              <NotificationCenterPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
