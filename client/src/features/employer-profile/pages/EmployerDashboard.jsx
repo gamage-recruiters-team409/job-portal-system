@@ -556,7 +556,11 @@ export default function EmployerDashboard() {
                       : '—';
 
                     return (
-                      <div key={app._id} className="flex items-center justify-between py-3.5">
+                      <div
+                        key={app._id}
+                        onClick={() => navigate(`/applicants/${app._id}`)}
+                        className="flex cursor-pointer items-center justify-between rounded-lg px-2 py-3.5 transition-colors duration-150 hover:bg-slate-50"
+                      >
                         <div className="flex items-center gap-3">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-[#2563EB] text-sm">
                             {getInitials(applicantName)}

@@ -484,7 +484,11 @@ export default function ViewCompanyProfile() {
                       );
 
                     return (
-                      <div key={job._id} className="flex flex-col gap-2 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+                      <div
+                        key={job._id}
+                        onClick={() => navigate(`/jobs/${job._id}`)}
+                        className="flex cursor-pointer flex-col gap-2 py-3.5 rounded-lg px-2 transition-colors duration-150 hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
+                      >
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className="text-sm font-bold text-[#0F172A]">{job.title}</h3>
