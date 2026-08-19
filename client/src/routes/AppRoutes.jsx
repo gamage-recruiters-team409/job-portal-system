@@ -39,6 +39,7 @@ import EditJobPage from '../features/job-management/pages/EditJobPage.jsx';
 import EducationPage from '../features/job-seeker-profile/pages/EducationPage.jsx';
 import ExperiencePage from '../features/job-seeker-profile/pages/ExperiencePage.jsx';
 import PortfolioLinksPage from '../features/job-seeker-profile/pages/PortfolioLinksPage.jsx';
+import CVPage from '../features/job-seeker-profile/pages/CVPage.jsx';
 import ApplicationHistoryPage from '../features/applications/pages/ApplicationHistoryPage.jsx';
 import ApplicationDetailsPage from '../features/applications/pages/ApplicationDetailsPage.jsx';
 import AdminLayout from '../layouts/admin/AdminLayout.jsx';
@@ -313,6 +314,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <ExperiencePage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/cv"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <CVPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
