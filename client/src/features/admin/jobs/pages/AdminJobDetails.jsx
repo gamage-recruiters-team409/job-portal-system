@@ -144,48 +144,48 @@ const AdminJobDetails = () => {
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#DCFCE7] text-[#16A34A] text-xs font-semibold border border-green-200/80 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] animate-pulse"></span>
-            PUBLISHED
+            Published
           </span>
         );
       case JOB_STATUSES.PENDING_REVIEW:
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEF3C7] text-[#D97706] text-xs font-semibold border border-amber-200/80 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
-            PENDING REVIEW
+            Pending Review
           </span>
         );
       case JOB_STATUSES.SUSPENDED:
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEE2E2] text-[#DC2626] text-xs font-semibold border border-red-200/80 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]"></span>
-            SUSPENDED
+            Suspended
           </span>
         );
       case JOB_STATUSES.REJECTED:
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEE2E2] text-[#DC2626] text-xs font-semibold border border-red-200/80 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]"></span>
-            REJECTED
+            Rejected
           </span>
         );
       case JOB_STATUSES.CLOSED:
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1F5F9] text-[#64748B] text-xs font-semibold border border-slate-200">
             <span className="w-1.5 h-1.5 rounded-full bg-[#64748B]"></span>
-            CLOSED
+            Closed
           </span>
         );
       case JOB_STATUSES.DRAFT:
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            DRAFT
+            Draft
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#F1F5F9] text-[#64748B] text-xs font-semibold border border-slate-200">
-            {status?.toUpperCase() || 'DRAFT'}
+          <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#F1F5F9] text-[#64748B] text-xs font-semibold border border-slate-200 capitalize">
+            {status?.replace('_', ' ') || 'Draft'}
           </span>
         );
     }
@@ -250,7 +250,7 @@ const AdminJobDetails = () => {
         <div className="flex items-center gap-3">
           <Link
             to="/admin/jobs"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-medium transition-all shadow-2xs"
+            className="inline-flex items-center justify-center gap-2 px-4 h-11 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-medium transition-all shadow-2xs"
           >
             <ArrowLeft size={16} />
             <span>Back to list</span>
@@ -262,14 +262,14 @@ const AdminJobDetails = () => {
               <button
                 onClick={() => handleOpenModeration(JOB_STATUSES.PUBLISHED)}
                 disabled={isDeadlinePassed}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-green-700 text-white rounded-xl text-sm font-medium transition-all shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center gap-2 px-4 h-11 bg-[#16A34A] hover:bg-green-700 text-white rounded-xl text-sm font-medium transition-all shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <CheckCircle2 size={16} />
                 <span>Approve & Publish</span>
               </button>
               <button
                 onClick={() => handleOpenModeration(JOB_STATUSES.REJECTED)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#DC2626] hover:bg-red-700 text-white rounded-xl text-sm font-medium transition-all shadow-2xs"
+                className="inline-flex items-center justify-center gap-2 px-4 h-11 bg-[#DC2626] hover:bg-red-700 text-white rounded-xl text-sm font-medium transition-all shadow-2xs"
               >
                 <XCircle size={16} />
                 <span>Reject Job</span>
@@ -281,7 +281,7 @@ const AdminJobDetails = () => {
           {job.status === JOB_STATUSES.PUBLISHED && (
             <button
               onClick={() => handleOpenModeration(JOB_STATUSES.SUSPENDED)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#DC2626] hover:bg-red-700 text-white rounded-xl text-sm font-medium transition-all shadow-2xs"
+              className="inline-flex items-center justify-center gap-2 px-4 h-11 bg-[#DC2626] hover:bg-red-700 text-white rounded-xl text-sm font-medium transition-all shadow-2xs"
             >
               <ShieldAlert size={16} />
               <span>Suspend Job</span>

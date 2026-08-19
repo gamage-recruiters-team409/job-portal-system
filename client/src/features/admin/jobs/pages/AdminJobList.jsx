@@ -13,7 +13,6 @@ import {
   CheckCircle2,
   XCircle,
   ShieldAlert,
-  Clock,
   History,
   AlertOctagon,
   Briefcase,
@@ -22,8 +21,6 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  CheckCircle,
-  Building2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getAdminJobs, moderateAdminJob } from '../../../../services/adminJob.service';
@@ -98,7 +95,7 @@ const AdminJobList = () => {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Fetch Jobs and Stats
+  // Fetch Jobs
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
@@ -144,48 +141,48 @@ const AdminJobList = () => {
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#16A34A] text-xs font-semibold border border-green-200/80">
             <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-            PUBLISHED
+            Published
           </span>
         );
       case JOB_STATUSES.PENDING_REVIEW:
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FEF3C7] text-[#D97706] text-xs font-semibold border border-amber-200/80">
             <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
-            PENDING
+            Pending
           </span>
         );
       case JOB_STATUSES.SUSPENDED:
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FEE2E2] text-[#DC2626] text-xs font-semibold border border-red-200/80">
             <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]"></span>
-            SUSPENDED
+            Suspended
           </span>
         );
       case JOB_STATUSES.REJECTED:
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FEE2E2] text-[#DC2626] text-xs font-semibold border border-red-200/80">
             <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]"></span>
-            REJECTED
+            Rejected
           </span>
         );
       case JOB_STATUSES.CLOSED:
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F1F5F9] text-[#64748B] text-xs font-semibold border border-slate-200">
             <span className="w-1.5 h-1.5 rounded-full bg-[#64748B]"></span>
-            CLOSED
+            Closed
           </span>
         );
       case JOB_STATUSES.DRAFT:
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            DRAFT
+            Draft
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#F1F5F9] text-[#64748B] text-xs font-semibold border border-slate-200">
-            {status?.toUpperCase() || 'DRAFT'}
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#F1F5F9] text-[#64748B] text-xs font-semibold border border-slate-200 capitalize">
+            {status?.replace('_', ' ') || 'Draft'}
           </span>
         );
     }
@@ -441,7 +438,7 @@ const AdminJobList = () => {
                         {/* Primary View Details Button */}
                         <Link
                           to={`/admin/jobs/${job._id}`}
-                          className="flex-1 h-10 flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white shadow-xs hover:bg-[#1E40AF] transition-all"
+                          className="flex-1 h-11 flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 text-xs font-semibold text-white shadow-xs hover:bg-[#1E40AF] transition-all"
                         >
                           <Eye size={14} />
                           <span>View</span>
@@ -453,14 +450,14 @@ const AdminJobList = () => {
                             <button
                               onClick={() => handleOpenModeration(job, JOB_STATUSES.PUBLISHED)}
                               title="Approve & Publish"
-                              className="h-10 w-10 flex items-center justify-center rounded-xl bg-[#DCFCE7] text-[#16A34A] border border-green-200 hover:bg-green-200 transition-colors"
+                              className="h-11 w-11 flex items-center justify-center rounded-xl bg-[#DCFCE7] text-[#16A34A] border border-green-200 hover:bg-green-200 transition-colors"
                             >
                               <CheckCircle2 size={16} />
                             </button>
                             <button
                               onClick={() => handleOpenModeration(job, JOB_STATUSES.REJECTED)}
                               title="Reject Posting"
-                              className="h-10 w-10 flex items-center justify-center rounded-xl bg-[#FEE2E2] text-[#DC2626] border border-red-200 hover:bg-red-200 transition-colors"
+                              className="h-11 w-11 flex items-center justify-center rounded-xl bg-[#FEE2E2] text-[#DC2626] border border-red-200 hover:bg-red-200 transition-colors"
                             >
                               <XCircle size={16} />
                             </button>
@@ -472,7 +469,7 @@ const AdminJobList = () => {
                           <button
                             onClick={() => handleOpenModeration(job, JOB_STATUSES.SUSPENDED)}
                             title="Suspend Job Listing"
-                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-[#FEE2E2] text-[#DC2626] border border-red-200 hover:bg-red-200 transition-colors"
+                            className="h-11 w-11 flex items-center justify-center rounded-xl bg-[#FEE2E2] text-[#DC2626] border border-red-200 hover:bg-red-200 transition-colors"
                           >
                             <ShieldAlert size={16} />
                           </button>
@@ -484,7 +481,7 @@ const AdminJobList = () => {
                           <Link
                             to={`/admin/jobs/${job._id}#history`}
                             title="View Status History"
-                            className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                            className="h-11 w-11 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
                           >
                             <History size={16} />
                           </Link>
