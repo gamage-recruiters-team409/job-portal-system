@@ -81,6 +81,7 @@ export default function ManageJobsPage() {
   }, [jobs, searchTerm, statusFilter]);
 
   const runAction = async (jobId, actionFn, successText) => {
+    setModalError('');
     setActionError('');
     setActionMessage('');
     setBusyJobId(jobId);
@@ -88,8 +89,10 @@ export default function ManageJobsPage() {
       await actionFn(jobId);
       setActionMessage(successText);
       await loadJobs();
+      return true;
     } catch (error) {
-      setActionError(error.response?.data?.message || 'Action failed.');
+      setModalError(error.response?.data?.message || 'Action failed.');
+      return false;
     } finally {
       setBusyJobId(null);
     }
@@ -105,14 +108,16 @@ export default function ManageJobsPage() {
     setModalError('');
   };
 
-  const confirmSubmitForReview = () => {
-    runAction(activeModal.job._id, submitJobForReview, 'Job submitted for review.');
-    closeModal();
+  const confirmSubmitForReview = async () => {
+    const jobId = activeModal.job._id;
+    const success = await runAction(jobId, submitJobForReview, 'Job submitted for review.');
+    if (success) closeModal();
   };
 
-  const confirmClose = (reason) => {
-    runAction(activeModal.job._id, (id) => closeJob(id, reason), 'Job closed.');
-    closeModal();
+  const confirmClose = async (reason) => {
+    const jobId = activeModal.job._id;
+    const success = await runAction(jobId, (id) => closeJob(id, reason), 'Job closed.');
+    if (success) closeModal();
   };
 
   const confirmReopen = async (newDeadlineInput) => {
@@ -132,9 +137,10 @@ export default function ManageJobsPage() {
     }
   };
 
-  const confirmDelete = () => {
-    runAction(activeModal.job._id, deleteJob, 'Job deleted.');
-    closeModal();
+  const confirmDelete = async () => {
+    const jobId = activeModal.job._id;
+    const success = await runAction(jobId, deleteJob, 'Job deleted.');
+    if (success) closeModal();
   };
 
   const linkClass = 'text-sm font-medium text-[#2563EB] hover:text-[#1E40AF] hover:underline';
@@ -370,6 +376,7 @@ export default function ManageJobsPage() {
           onConfirm={confirmSubmitForReview}
           onCancel={closeModal}
           isSubmitting={busyJobId === activeModal.job._id}
+          error={modalError}
         />
       )}
 
@@ -379,6 +386,7 @@ export default function ManageJobsPage() {
           onConfirm={confirmClose}
           onCancel={closeModal}
           isSubmitting={busyJobId === activeModal.job._id}
+          error={modalError}
         />
       )}
 
@@ -399,6 +407,7 @@ export default function ManageJobsPage() {
           onConfirm={confirmDelete}
           onCancel={closeModal}
           isSubmitting={busyJobId === activeModal.job._id}
+          error={modalError}
         />
       )}
 

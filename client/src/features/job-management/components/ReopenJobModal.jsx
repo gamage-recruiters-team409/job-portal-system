@@ -17,7 +17,7 @@ export default function ReopenJobModal({ job, onConfirm, onCancel, isSubmitting,
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onCancel}
+      onClick={isSubmitting ? undefined : onCancel}
     >
       <div
         className="w-full max-w-[440px] rounded-xl bg-white p-6 shadow-lg"

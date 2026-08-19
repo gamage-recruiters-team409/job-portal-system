@@ -1,8 +1,15 @@
-export default function DeleteJobModal({ jobTitle, allowed, onConfirm, onCancel, isSubmitting }) {
+export default function DeleteJobModal({
+  jobTitle,
+  allowed,
+  onConfirm,
+  onCancel,
+  isSubmitting,
+  error,
+}) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onCancel}
+      onClick={isSubmitting ? undefined : onCancel}
     >
       <div
         className="w-full max-w-[440px] rounded-xl bg-white p-6 shadow-lg"
@@ -29,9 +36,15 @@ export default function DeleteJobModal({ jobTitle, allowed, onConfirm, onCancel,
           Delete this job posting?
         </h2>
         <p className="mt-2 text-center text-sm text-[#64748B]">
-          "{jobTitle}" will be removed from your job listings. This can be reversed by contacting
-          support if needed.
+          "{jobTitle}" will be removed from your job listings. The record is retained internally for
+          history, but there is currently no way to restore it through the application.
         </p>
+
+        {error && (
+          <div className="mt-3 rounded-lg bg-[#FEE2E2] px-4 py-2 text-center text-sm text-[#991B1B]">
+            {error}
+          </div>
+        )}
 
         {!allowed && (
           <div className="mt-4 rounded-lg bg-[#FEE2E2] px-4 py-3 text-center text-sm text-[#991B1B]">

@@ -7,13 +7,13 @@ const CLOSE_REASONS = [
   'Other',
 ];
 
-export default function CloseJobModal({ jobTitle, onConfirm, onCancel, isSubmitting }) {
+export default function CloseJobModal({ jobTitle, onConfirm, onCancel, isSubmitting, error }) {
   const [reason, setReason] = useState('');
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onCancel}
+      onClick={isSubmitting ? undefined : onCancel}
     >
       <div
         className="w-full max-w-[440px] rounded-xl bg-white p-6 shadow-lg"
@@ -42,6 +42,12 @@ export default function CloseJobModal({ jobTitle, onConfirm, onCancel, isSubmitt
         <p className="mt-2 text-center text-sm text-[#64748B]">
           "{jobTitle}" will stop accepting new applications. Existing applications stay visible.
         </p>
+
+        {error && (
+          <div className="mt-3 rounded-lg bg-[#FEE2E2] px-4 py-2 text-center text-sm text-[#991B1B]">
+            {error}
+          </div>
+        )}
 
         <div className="mt-4">
           <label className="mb-1 block text-sm font-medium text-[#000000]">Reason (optional)</label>
