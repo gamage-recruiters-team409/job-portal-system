@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CompanyProfileForm from '../components/CompanyProfileForm.jsx';
 import ConfirmDeleteCompanyModal from '../components/ConfirmDeleteCompanyModal.jsx';
@@ -222,14 +222,17 @@ export default function EditCompanyProfile() {
 
   const dangerZone = (
     <div className="rounded-xl border border-[#DC2626]/30 bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <h2 className="text-lg font-bold text-[#DC2626]">Danger zone</h2>
+      <h2 className="flex items-center gap-2 text-lg font-bold text-[#DC2626]">
+        <AlertTriangle className="h-5 w-5 text-[#DC2626]" />
+        Danger zone
+      </h2>
       <div className="mt-4 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <p className="text-sm font-semibold text-[#0F172A]">Delete company profile</p>
           <p className="mt-1 text-sm text-[#64748B]">
-            Permanently remove this company profile. This cannot be undone. Companies that have
-            ever had a job post — including closed or removed ones — can&apos;t currently be
-            deleted, since removing a job keeps its record on file rather than erasing it.
+            Permanently remove this company profile. This cannot be undone. Companies that have ever
+            had a job post — including closed or removed ones — can&apos;t currently be deleted,
+            since removing a job keeps its record on file rather than erasing it.
           </p>
         </div>
         <button

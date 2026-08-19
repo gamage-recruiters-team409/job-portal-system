@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { AlertTriangle, Building2, FileText, Loader2, Save, Upload } from 'lucide-react';
+import { AlertTriangle, Building2, FileText, ImageUp, Loader2, Save, Upload } from 'lucide-react';
 import SearchableSelect from './SearchableSelect.jsx';
 
 const INDUSTRY_OPTIONS = [
@@ -313,10 +313,271 @@ export default function CompanyProfileForm({
     <div className="animate-fade-in min-h-screen overflow-x-hidden bg-[#F8FAFC] p-4 font-[Inter,sans-serif] md:p-8">
       <div className="mx-auto max-w-4xl">
         <form onSubmit={handleSubmit}>
-        {/* Header row */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold text-[#0F172A] lg:text-3xl">{title}</h1>
-          <div className="flex items-center gap-3">
+          {/* Header row */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-2xl font-bold text-[#0F172A] sm:text-3xl">{title}</h1>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={submitting}
+                className="h-11 rounded-[10px] border border-[#E2E8F0] px-4 text-sm font-medium text-[#475569] transition-colors duration-150 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700 disabled:opacity-60"
+              >
+                {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                <span>Save changes</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Re-verification warning */}
+          {/* Matches the backend's actual reset rule (company.service.js
+            REVERIFICATION_FIELDS + the companyName/companyEmail checks in
+            updateCompany + the unconditional reset in updateLogo): every
+            field resets verification to pending when changed EXCEPT
+            companyDescription. Because that's almost every field, we tag the
+            one exception (see SafeFieldTag on the description below) instead
+            of repeating a "needs re-verification" pill on every other field
+            — do not narrow the warning back down to just name/email without
+            updating the backend rule first. */}
+          {showReverifyWarning && (
+            <div className="animate-fade-in mt-6 flex items-start gap-3 rounded-xl border border-[#FDE68A] bg-[#FEF3C7] p-4">
+              <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#D97706]" />
+              <p className="min-w-0 text-sm font-medium text-[#D97706]">
+                Changing any company detail below — except the description — will send your profile
+                back for re-verification.
+              </p>
+            </div>
+          )}
+
+          {/* Company logo card */}
+          <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
+              <ImageUp className="h-5 w-5 text-blue-600" />
+              Company logo
+            </h2>
+            <div className="mt-4 flex flex-wrap items-center gap-5">
+              <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E2E8F0] bg-slate-100 shadow-xs">
+                {displayedLogo ? (
+                  <img
+                    src={displayedLogo}
+                    alt="Company logo preview"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Building2 className="h-9 w-9 text-slate-400" />
+                )}
+              </div>
+
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleLogoButtonClick}
+                    className="inline-flex items-center gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-semibold text-[#0F172A] shadow-xs transition-colors duration-150 hover:bg-slate-50"
+                  >
+                    <Upload className="h-4 w-4" />
+                    {mode === 'edit' || displayedLogo ? 'Replace logo' : 'Add logo'}
+                  </button>
+
+                  {(mode === 'edit' || logoFile) && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveLogo}
+                      disabled={!logoFile}
+                      className="text-sm font-semibold text-[#DC2626] transition-colors duration-150 hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline"
+                    >
+                      Remove
+                    </button>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png, image/jpeg, image/jpg"
+                    onChange={handleLogoFileChange}
+                    className="hidden"
+                  />
+                </div>
+                <p className="mt-2 text-xs text-[#64748B]">PNG or JPG, max 2MB, min 200x200px</p>
+                {logoError && <FieldError message={logoError} />}
+              </div>
+            </div>
+          </div>
+
+          {/* Company details card */}
+          <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
+              <Building2 className="h-5 w-5 text-blue-600" />
+              Company details
+            </h2>
+
+            <div className="mt-4 grid grid-cols-1 gap-5">
+              {/* Company Name */}
+              <div>
+                <label className={labelCls}>Company name</label>
+                <input
+                  type="text"
+                  value={values.companyName}
+                  onChange={(e) => handleChange('companyName', e.target.value)}
+                  onBlur={() => handleBlur('companyName')}
+                  className={inputCls(fieldError('companyName'))}
+                  placeholder="e.g. Acme Corporation"
+                />
+                <FieldError message={fieldError('companyName')} />
+              </div>
+
+              {/* Industry & Company Size */}
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <SearchableSelect
+                  label="Industry"
+                  value={values.industry}
+                  onChange={(v) => handleChange('industry', v)}
+                  options={INDUSTRY_OPTIONS}
+                  placeholder="Select industry"
+                  searchPlaceholder="Search industry..."
+                  error={errors.industry}
+                  allowCustom
+                />
+
+                <SearchableSelect
+                  label="Number of employees"
+                  value={values.companySize}
+                  onChange={(v) => handleChange('companySize', v)}
+                  options={COMPANY_SIZE_OPTIONS}
+                  placeholder="Select company size"
+                  searchPlaceholder="Search number of employees..."
+                  error={errors.companySize}
+                />
+              </div>
+
+              {/* Founded Year & Work Email */}
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div>
+                  <label className={labelCls}>Founded year</label>
+                  <input
+                    type="number"
+                    value={values.foundedYear}
+                    onChange={(e) => handleChange('foundedYear', e.target.value)}
+                    onBlur={() => handleBlur('foundedYear')}
+                    className={inputCls(errors.foundedYear)}
+                    placeholder="e.g. 2018"
+                    min="1900"
+                    max={currentYear}
+                  />
+                  <FieldError message={errors.foundedYear} />
+                </div>
+
+                <div>
+                  <label className={labelCls}>Work email</label>
+                  <input
+                    type="email"
+                    value={values.companyEmail}
+                    onChange={(e) => handleChange('companyEmail', e.target.value)}
+                    onBlur={() => handleBlur('companyEmail')}
+                    className={inputCls(fieldError('companyEmail'))}
+                    placeholder="hr@example.com"
+                  />
+                  <FieldError message={fieldError('companyEmail')} />
+                </div>
+              </div>
+
+              {/* Website & Phone */}
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div>
+                  <label className={labelCls}>Website</label>
+                  <input
+                    type="text"
+                    value={values.website}
+                    onChange={(e) => handleChange('website', e.target.value)}
+                    onBlur={() => handleBlur('website')}
+                    className={inputCls(errors.website)}
+                    placeholder="https://example.com"
+                  />
+                  <FieldError message={errors.website} />
+                </div>
+
+                <div>
+                  <label className={labelCls}>Company phone</label>
+                  <input
+                    type="text"
+                    value={values.companyTelephone}
+                    onChange={(e) => handleChange('companyTelephone', e.target.value)}
+                    onBlur={() => handleBlur('companyTelephone')}
+                    className={inputCls(errors.companyTelephone)}
+                    placeholder="+94 11 234 5678"
+                  />
+                  <FieldError message={errors.companyTelephone} />
+                </div>
+              </div>
+
+              {/* Address & Location */}
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div>
+                  <label className={labelCls}>Address</label>
+                  <input
+                    type="text"
+                    value={values.companyAddress}
+                    onChange={(e) => handleChange('companyAddress', e.target.value)}
+                    onBlur={() => handleBlur('companyAddress')}
+                    className={inputCls(errors.companyAddress)}
+                    placeholder="42 Galle Road, Colombo 03"
+                  />
+                  <FieldError message={errors.companyAddress} />
+                </div>
+
+                <div>
+                  <label className={labelCls}>Location</label>
+                  <input
+                    type="text"
+                    value={values.companyLocation}
+                    onChange={(e) => handleChange('companyLocation', e.target.value)}
+                    onBlur={() => handleBlur('companyLocation')}
+                    className={inputCls(errors.companyLocation)}
+                    placeholder="e.g. Colombo, Sri Lanka"
+                  />
+                  <FieldError message={errors.companyLocation} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* About card */}
+          <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
+              <FileText className="h-5 w-5 text-blue-600" />
+              About
+            </h2>
+            <div className="mt-4">
+              <label className={labelCls}>
+                Company description
+                {showReverifyWarning && <SafeFieldTag />}
+              </label>
+              <textarea
+                value={values.companyDescription}
+                onChange={handleDescriptionChange}
+                onBlur={() => handleBlur('companyDescription')}
+                rows={6}
+                maxLength={500}
+                className={`${inputCls(errors.companyDescription)} h-auto resize-none py-2.5`}
+                placeholder="Tell candidates about your company..."
+              />
+              <div className="mt-1 flex items-center justify-between">
+                <FieldError message={errors.companyDescription} />
+                <span className="ml-auto text-xs text-[#64748B]">
+                  {values.companyDescription.length}/500
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom action row */}
+          <div className="mt-6 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onCancel}
@@ -330,271 +591,14 @@ export default function CompanyProfileForm({
               disabled={submitting}
               className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700 disabled:opacity-60"
             >
-              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              {submitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
               <span>Save changes</span>
             </button>
           </div>
-        </div>
-
-        {/* Re-verification warning */}
-        {/* Matches the backend's actual reset rule (company.service.js
-            REVERIFICATION_FIELDS + the companyName/companyEmail checks in
-            updateCompany + the unconditional reset in updateLogo): every
-            field resets verification to pending when changed EXCEPT
-            companyDescription. Because that's almost every field, we tag the
-            one exception (see SafeFieldTag on the description below) instead
-            of repeating a "needs re-verification" pill on every other field
-            — do not narrow the warning back down to just name/email without
-            updating the backend rule first. */}
-        {showReverifyWarning && (
-          <div className="animate-fade-in mt-6 flex items-start gap-3 rounded-xl border border-[#FDE68A] bg-[#FEF3C7] p-4">
-            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#D97706]" />
-            <p className="min-w-0 text-sm font-medium text-[#D97706]">
-              Changing any company detail below — except the description — will send your profile
-              back for re-verification.
-            </p>
-          </div>
-        )}
-
-        {/* Company logo card */}
-        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
-            <ImageUp className="h-5 w-5 text-blue-600" />
-            Company logo
-          </h2>
-          <div className="mt-4 flex flex-wrap items-center gap-5">
-            <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E2E8F0] bg-slate-100 shadow-xs">
-              {displayedLogo ? (
-                <img
-                  src={displayedLogo}
-                  alt="Company logo preview"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <Building2 className="h-9 w-9 text-slate-400" />
-              )}
-            </div>
-
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleLogoButtonClick}
-                  className="inline-flex items-center gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-semibold text-[#0F172A] shadow-xs transition-colors duration-150 hover:bg-slate-50"
-                >
-                  <Upload className="h-4 w-4" />
-                  {mode === 'edit' || displayedLogo ? 'Replace logo' : 'Add logo'}
-                </button>
-
-                {(mode === 'edit' || logoFile) && (
-                  <button
-                    type="button"
-                    onClick={handleRemoveLogo}
-                    disabled={!logoFile}
-                    className="text-sm font-semibold text-[#DC2626] transition-colors duration-150 hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline"
-                  >
-                    Remove
-                  </button>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/png, image/jpeg, image/jpg"
-                  onChange={handleLogoFileChange}
-                  className="hidden"
-                />
-              </div>
-              <p className="mt-2 text-xs text-[#64748B]">PNG or JPG, max 2MB, min 200x200px</p>
-              {logoError && <FieldError message={logoError} />}
-            </div>
-          </div>
-        </div>
-
-        {/* Company details card */}
-        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
-            <Building2 className="h-5 w-5 text-blue-600" />
-            Company details
-          </h2>
-
-          <div className="mt-5 grid grid-cols-1 gap-5">
-            {/* Company Name */}
-            <div>
-              <label className={labelCls}>Company name</label>
-              <input
-                type="text"
-                value={values.companyName}
-                onChange={(e) => handleChange('companyName', e.target.value)}
-                onBlur={() => handleBlur('companyName')}
-                className={inputCls(fieldError('companyName'))}
-                placeholder="e.g. Acme Corporation"
-              />
-              <FieldError message={fieldError('companyName')} />
-            </div>
-
-            {/* Industry & Company Size */}
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <SearchableSelect
-                label="Industry"
-                value={values.industry}
-                onChange={(v) => handleChange('industry', v)}
-                options={INDUSTRY_OPTIONS}
-                placeholder="Select industry"
-                searchPlaceholder="Search industry..."
-                error={errors.industry}
-                allowCustom
-              />
-
-              <SearchableSelect
-                label="Number of employees"
-                value={values.companySize}
-                onChange={(v) => handleChange('companySize', v)}
-                options={COMPANY_SIZE_OPTIONS}
-                placeholder="Select company size"
-                searchPlaceholder="Search number of employees..."
-                error={errors.companySize}
-              />
-            </div>
-
-            {/* Founded Year & Work Email */}
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div>
-                <label className={labelCls}>Founded year</label>
-                <input
-                  type="number"
-                  value={values.foundedYear}
-                  onChange={(e) => handleChange('foundedYear', e.target.value)}
-                  onBlur={() => handleBlur('foundedYear')}
-                  className={inputCls(errors.foundedYear)}
-                  placeholder="e.g. 2018"
-                  min="1900"
-                  max={currentYear}
-                />
-                <FieldError message={errors.foundedYear} />
-              </div>
-
-              <div>
-                <label className={labelCls}>Work email</label>
-                <input
-                  type="email"
-                  value={values.companyEmail}
-                  onChange={(e) => handleChange('companyEmail', e.target.value)}
-                  onBlur={() => handleBlur('companyEmail')}
-                  className={inputCls(fieldError('companyEmail'))}
-                  placeholder="hr@example.com"
-                />
-                <FieldError message={fieldError('companyEmail')} />
-              </div>
-            </div>
-
-            {/* Website & Phone */}
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div>
-                <label className={labelCls}>Website</label>
-                <input
-                  type="text"
-                  value={values.website}
-                  onChange={(e) => handleChange('website', e.target.value)}
-                  onBlur={() => handleBlur('website')}
-                  className={inputCls(errors.website)}
-                  placeholder="https://example.com"
-                />
-                <FieldError message={errors.website} />
-              </div>
-
-              <div>
-                <label className={labelCls}>Company phone</label>
-                <input
-                  type="text"
-                  value={values.companyTelephone}
-                  onChange={(e) => handleChange('companyTelephone', e.target.value)}
-                  onBlur={() => handleBlur('companyTelephone')}
-                  className={inputCls(errors.companyTelephone)}
-                  placeholder="+94 11 234 5678"
-                />
-                <FieldError message={errors.companyTelephone} />
-              </div>
-            </div>
-
-            {/* Address & Location */}
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div>
-                <label className={labelCls}>Address</label>
-                <input
-                  type="text"
-                  value={values.companyAddress}
-                  onChange={(e) => handleChange('companyAddress', e.target.value)}
-                  onBlur={() => handleBlur('companyAddress')}
-                  className={inputCls(errors.companyAddress)}
-                  placeholder="42 Galle Road, Colombo 03"
-                />
-                <FieldError message={errors.companyAddress} />
-              </div>
-
-              <div>
-                <label className={labelCls}>Location</label>
-                <input
-                  type="text"
-                  value={values.companyLocation}
-                  onChange={(e) => handleChange('companyLocation', e.target.value)}
-                  onBlur={() => handleBlur('companyLocation')}
-                  className={inputCls(errors.companyLocation)}
-                  placeholder="e.g. Colombo, Sri Lanka"
-                />
-                <FieldError message={errors.companyLocation} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* About card */}
-        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
-            <FileText className="h-5 w-5 text-slate-500" />
-            About
-          </h2>
-          <div className="mt-4">
-            <label className={labelCls}>
-              Company description
-              {showReverifyWarning && <SafeFieldTag />}
-            </label>
-            <textarea
-              value={values.companyDescription}
-              onChange={handleDescriptionChange}
-              onBlur={() => handleBlur('companyDescription')}
-              rows={6}
-              maxLength={500}
-              className={`${inputCls(errors.companyDescription)} h-auto resize-none py-2.5`}
-              placeholder="Tell candidates about your company..."
-            />
-            <div className="mt-1 flex items-center justify-between">
-              <FieldError message={errors.companyDescription} />
-              <span className="ml-auto text-xs text-[#64748B]">
-                {values.companyDescription.length}/500
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom action row */}
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={submitting}
-            className="h-11 rounded-[10px] border border-[#E2E8F0] px-4 text-sm font-medium text-[#475569] transition-colors duration-150 hover:bg-slate-50 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700 disabled:opacity-60"
-          >
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            <span>Save changes</span>
-          </button>
-        </div>
         </form>
 
         {dangerZone && <div className="mt-6">{dangerZone}</div>}
