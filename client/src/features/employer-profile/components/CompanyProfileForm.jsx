@@ -310,7 +310,7 @@ export default function CompanyProfileForm({
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#F8FAFC] p-4 font-[Inter,sans-serif] md:p-8">
+    <div className="animate-fade-in min-h-screen overflow-x-hidden bg-[#F8FAFC] p-4 font-[Inter,sans-serif] md:p-8">
       <form onSubmit={handleSubmit}>
         {/* Header row */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -320,14 +320,14 @@ export default function CompanyProfileForm({
               type="button"
               onClick={onCancel}
               disabled={submitting}
-              className="h-11 rounded-[10px] border border-[#E2E8F0] px-4 text-sm font-medium text-[#475569] transition hover:bg-slate-50 disabled:opacity-50"
+              className="h-11 rounded-[10px] border border-[#E2E8F0] px-4 text-sm font-medium text-[#475569] transition-colors duration-150 hover:bg-slate-50 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-60"
+              className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700 disabled:opacity-60"
             >
               {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
               <span>Save changes</span>
@@ -346,7 +346,7 @@ export default function CompanyProfileForm({
             — do not narrow the warning back down to just name/email without
             updating the backend rule first. */}
         {showReverifyWarning && (
-          <div className="mt-6 flex items-start gap-3 rounded-xl border border-[#FDE68A] bg-[#FEF3C7] p-4">
+          <div className="animate-fade-in mt-6 flex items-start gap-3 rounded-xl border border-[#FDE68A] bg-[#FEF3C7] p-4">
             <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#D97706]" />
             <p className="min-w-0 text-sm font-medium text-[#D97706]">
               Changing any company detail below — except the description — will send your profile
@@ -356,7 +356,7 @@ export default function CompanyProfileForm({
         )}
 
         {/* Company logo card */}
-        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
           <h2 className="text-lg font-bold text-[#0F172A]">Company logo</h2>
           <div className="mt-4 flex flex-wrap items-center gap-4">
             <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E2E8F0] bg-slate-100">
@@ -376,7 +376,7 @@ export default function CompanyProfileForm({
                 <button
                   type="button"
                   onClick={handleLogoButtonClick}
-                  className="inline-flex items-center gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-semibold text-[#0F172A] transition hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-semibold text-[#0F172A] transition-colors duration-150 hover:bg-slate-50"
                 >
                   <Upload className="h-4 w-4" />
                   {mode === 'edit' || displayedLogo ? 'Replace logo' : 'Add logo'}
@@ -387,7 +387,7 @@ export default function CompanyProfileForm({
                     type="button"
                     onClick={handleRemoveLogo}
                     disabled={!logoFile}
-                    className="text-sm font-semibold text-[#DC2626] transition hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline"
+                    className="text-sm font-semibold text-[#DC2626] transition-colors duration-150 hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline"
                   >
                     Remove
                   </button>
@@ -407,7 +407,7 @@ export default function CompanyProfileForm({
         </div>
 
         {/* Company details card */}
-        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
           <h2 className="text-lg font-bold text-[#0F172A]">Company details</h2>
 
           <div className="mt-4 grid grid-cols-1 gap-5">
@@ -530,7 +530,7 @@ export default function CompanyProfileForm({
         </div>
 
         {/* About card */}
-        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
+        <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
           <h2 className="text-lg font-bold text-[#0F172A]">About</h2>
           <div className="mt-4">
             <label className={labelCls}>
@@ -561,14 +561,14 @@ export default function CompanyProfileForm({
             type="button"
             onClick={onCancel}
             disabled={submitting}
-            className="h-11 rounded-[10px] border border-[#E2E8F0] px-4 text-sm font-medium text-[#475569] transition hover:bg-slate-50 disabled:opacity-50"
+            className="h-11 rounded-[10px] border border-[#E2E8F0] px-4 text-sm font-medium text-[#475569] transition-colors duration-150 hover:bg-slate-50 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-blue-700 disabled:opacity-60"
+            className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#2563EB] px-5 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700 disabled:opacity-60"
           >
             {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
             <span>Save changes</span>

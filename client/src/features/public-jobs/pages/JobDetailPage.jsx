@@ -1,25 +1,47 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Bookmark, Flag } from 'lucide-react';
 import { getJob } from '../../../services/jobService.js';
 import { getCategories, getSkills } from '../../../services/referenceService.js';
+import { saveJob, removeSavedJob, getSavedJobs } from '../../../services/savedJobService.js';
 import { formatSalary, timeAgo, formatExperience, titleCase } from '../utils/format.js';
 import JobCard from '../../../components/jobs/JobCard.jsx';
 import LoadingState from '../../../components/jobs/LoadingState.jsx';
+import ReportFakeJobModal from '../../reported-jobs/job-seeker/components/ReportFakeJobModal.jsx';
+import ApplyJobModal from '../../../components/jobs/ApplyJobModal.jsx';
+import ApplicationSubmittedModal from '../../../components/jobs/ApplicationSubmittedModal.jsx';
+import { applyToJob } from '../../../services/applicationService.js';
+import { useAuth } from '../../../context/AuthContext.jsx';
+import { USER_ROLES } from '../../../constants/statuses.js';
 
 /**
  * @file JobDetailPage.jsx
  * @description Single Public Job detail view. Shows complete job information,
- * company info, apply call-to-action, and up to 4 similar job recommendations.
+ * company info, apply call-to-action, Save Job toggle, Report Job modal, and up to 4 similar job recommendations.
  * Owned by Bimsara.
  */
 export default function JobDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const isJobSeeker = user?.role === USER_ROLES.JOB_SEEKER;
+
   const [job, setJob] = useState(null);
   const [similar, setSimilar] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [skillsMap, setSkillsMap] = useState({});
   const [categoriesMap, setCategoriesMap] = useState({});
+
+  // Save Job & Report Job state
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [applyError, setApplyError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [actionFeedback, setActionFeedback] = useState('');
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadReferenceData() {
@@ -28,8 +50,6 @@ export default function JobDetailPage() {
           getCategories().catch(() => []),
           getSkills().catch(() => []),
         ]);
-        // Normalise to a { name } shape so consumers use one field. The API
-        // returns categoryName / skillName (not `name`).
         const catMap = {};
         cats.forEach((c) => {
           catMap[c._id] = { name: c.categoryName };
@@ -69,6 +89,105 @@ export default function JobDetailPage() {
     }
   }, [id]);
 
+  // Fetch initial saved status if authenticated as Job Seeker
+  useEffect(() => {
+    async function checkSavedStatus() {
+      if (!isAuthenticated || !isJobSeeker || !id) return;
+      try {
+        const savedList = (await getSavedJobs()) ?? [];
+        const exists = savedList.some((item) => item.job && item.job._id === id);
+        setIsSaved(exists);
+      } catch (err) {
+        console.error('Failed to fetch saved status:', err);
+      }
+    }
+    checkSavedStatus();
+  }, [id, isAuthenticated, isJobSeeker]);
+
+  const handleToggleSave = async () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: `/jobs/${id}` } });
+      return;
+    }
+
+    if (!isJobSeeker) {
+      setActionFeedback('Saving jobs is available for job seekers.');
+      setTimeout(() => setActionFeedback(''), 4000);
+      return;
+    }
+
+    setSaveLoading(true);
+    setActionFeedback('');
+    try {
+      if (isSaved) {
+        await removeSavedJob(id);
+        setIsSaved(false);
+        setActionFeedback('Job removed from saved list.');
+      } else {
+        await saveJob(id);
+        setIsSaved(true);
+        setActionFeedback('Job saved successfully!');
+      }
+    } catch (err) {
+      console.error('Error updating saved job:', err);
+      setActionFeedback(err?.response?.data?.message || 'Failed to update saved job.');
+    } finally {
+      setSaveLoading(false);
+      setTimeout(() => setActionFeedback(''), 4000);
+    }
+  };
+
+  function handleOpenApplyModal() {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: `/jobs/${id}` } });
+      return;
+    }
+    if (!isJobSeeker) {
+      setActionFeedback('Only Job Seeker accounts can apply for jobs.');
+      setTimeout(() => setActionFeedback(''), 4000);
+      return;
+    }
+    setApplyError('');
+    setShowApplyModal(true);
+  }
+
+  function handleCloseApplyModal() {
+    if (submitting) return;
+    setShowApplyModal(false);
+    setApplyError('');
+  }
+
+  async function handleSubmitApplication(coverLetter) {
+    setSubmitting(true);
+    setApplyError('');
+    try {
+      await applyToJob(job._id, coverLetter);
+      setShowApplyModal(false);
+      setShowSuccessModal(true);
+    } catch (err) {
+      setApplyError(
+        err?.response?.data?.message || 'Failed to submit application. Please try again.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const handleOpenReport = () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: `/jobs/${id}` } });
+      return;
+    }
+
+    if (!isJobSeeker) {
+      setActionFeedback('Reporting jobs is available for job seekers.');
+      setTimeout(() => setActionFeedback(''), 4000);
+      return;
+    }
+
+    setIsReportModalOpen(true);
+  };
+
   if (loading) return <LoadingState label="Loading job details…" />;
 
   if (error || !job) {
@@ -98,7 +217,10 @@ export default function JobDetailPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       {/* Back Link */}
       <div className="mb-6">
-        <Link to="/jobs" className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 transition-colors hover:text-blue-800">
+        <Link
+          to="/jobs"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 transition-colors hover:text-blue-800"
+        >
           ← Back to jobs
         </Link>
       </div>
@@ -106,7 +228,7 @@ export default function JobDetailPage() {
       {/* Main Job Details Layout */}
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Left Column: Job Overview & Main Details */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="space-y-8 lg:col-span-2">
           {/* Hero Banner Card */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
@@ -140,43 +262,96 @@ export default function JobDetailPage() {
                 </div>
               </div>
 
+              {/* Action Buttons Cluster: Apply Now, Save Job, Report Job */}
               <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
-                <Link
-                  to="/login"
-                  className="w-full rounded-xl bg-blue-600 px-6 py-3 text-center text-sm font-semibold text-white shadow transition-colors hover:bg-blue-700 sm:w-auto"
-                >
-                  Apply Now
-                </Link>
+                <div className="flex w-full flex-wrap items-center gap-2.5 sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={handleOpenApplyModal}
+                    title={
+                      isAuthenticated && !isJobSeeker
+                        ? 'Only Job Seeker accounts can apply for jobs.'
+                        : undefined
+                    }
+                    className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl px-6 py-3 text-center text-sm font-semibold shadow transition-colors sm:flex-initial ${
+                      isAuthenticated && !isJobSeeker
+                        ? 'cursor-not-allowed bg-slate-300 text-slate-500'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    {isAuthenticated && !isJobSeeker ? ' Apply Now' : 'Apply Now'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleToggleSave}
+                    disabled={saveLoading}
+                    title={isSaved ? 'Remove from saved jobs' : 'Save this job'}
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-all ${
+                      isSaved
+                        ? 'border-blue-600 bg-blue-50 text-blue-700 hover:bg-blue-100'
+                        : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Bookmark
+                      size={18}
+                      className={isSaved ? 'fill-blue-600 text-blue-600' : 'text-slate-500'}
+                    />
+                    <span>{isSaved ? 'Saved' : 'Save Job'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleOpenReport}
+                    title="Report fake or suspicious job posting"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm font-medium text-slate-600 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Flag size={18} className="text-slate-400" />
+                    <span className="hidden sm:inline">Report</span>
+                  </button>
+                </div>
+
+                {actionFeedback && (
+                  <p className="text-xs font-medium text-blue-600">{actionFeedback}</p>
+                )}
+
                 <p className="text-xs text-slate-400">Posted {timeAgo(job.createdAt)}</p>
               </div>
             </div>
           </div>
 
           {/* Description Section */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 space-y-6">
+          <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <div>
               <h3 className="text-lg font-bold text-slate-900">Job Description</h3>
-              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">{job.description}</p>
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                {job.description}
+              </p>
             </div>
 
             {job.responsibilities && (
               <div className="border-t border-slate-100 pt-6">
                 <h3 className="text-lg font-bold text-slate-900">Key Responsibilities</h3>
-                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">{job.responsibilities}</p>
+                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                  {job.responsibilities}
+                </p>
               </div>
             )}
 
             {job.requirements && (
               <div className="border-t border-slate-100 pt-6">
                 <h3 className="text-lg font-bold text-slate-900">Requirements & Qualifications</h3>
-                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">{job.requirements}</p>
+                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                  {job.requirements}
+                </p>
               </div>
             )}
 
             {job.benefits && (
               <div className="border-t border-slate-100 pt-6">
                 <h3 className="text-lg font-bold text-slate-900">Benefits & Perks</h3>
-                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">{job.benefits}</p>
+                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                  {job.benefits}
+                </p>
               </div>
             )}
 
@@ -185,7 +360,10 @@ export default function JobDetailPage() {
                 <h3 className="text-sm font-bold text-slate-900">Required Skills</h3>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {skillNames.map((name) => (
-                    <span key={name} className="rounded-lg bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                    <span
+                      key={name}
+                      className="rounded-lg bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700"
+                    >
                       {name}
                     </span>
                   ))}
@@ -207,7 +385,9 @@ export default function JobDetailPage() {
               </div>
               <div className="flex justify-between py-3">
                 <dt className="text-slate-500">Experience</dt>
-                <dd className="font-semibold text-slate-900">{formatExperience(job.experienceYears)}</dd>
+                <dd className="font-semibold text-slate-900">
+                  {formatExperience(job.experienceYears)}
+                </dd>
               </div>
               <div className="flex justify-between py-3">
                 <dt className="text-slate-500">Job Category</dt>
@@ -216,7 +396,13 @@ export default function JobDetailPage() {
               {job.deadline && (
                 <div className="flex justify-between py-3">
                   <dt className="text-slate-500">Application Deadline</dt>
-                  <dd className="font-semibold text-slate-900">{new Date(job.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</dd>
+                  <dd className="font-semibold text-slate-900">
+                    {new Date(job.deadline).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </dd>
                 </div>
               )}
               <div className="flex justify-between py-3">
@@ -231,7 +417,11 @@ export default function JobDetailPage() {
             <h3 className="text-base font-bold text-slate-900">About the Employer</h3>
             <div className="mt-4 flex items-center gap-3">
               {company.companyLogo ? (
-                <img src={company.companyLogo} alt={companyName} className="h-12 w-12 rounded-lg object-cover" />
+                <img
+                  src={company.companyLogo}
+                  alt={companyName}
+                  className="h-12 w-12 rounded-lg object-cover"
+                />
               ) : (
                 <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 font-bold text-blue-700">
                   {companyName.charAt(0)}
@@ -239,7 +429,9 @@ export default function JobDetailPage() {
               )}
               <div>
                 <p className="font-semibold text-slate-900">{companyName}</p>
-                {company.companyLocation && <p className="text-xs text-slate-500">📍 {company.companyLocation}</p>}
+                {company.companyLocation && (
+                  <p className="text-xs text-slate-500">📍 {company.companyLocation}</p>
+                )}
               </div>
             </div>
           </div>
@@ -252,10 +444,35 @@ export default function JobDetailPage() {
           <h2 className="text-xl font-bold text-slate-900">Similar Job Openings</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {similar.map((simJob) => (
-              <JobCard key={simJob._id} job={simJob} skillsMap={skillsMap} categoriesMap={categoriesMap} />
+              <JobCard
+                key={simJob._id}
+                job={simJob}
+                skillsMap={skillsMap}
+                categoriesMap={categoriesMap}
+              />
             ))}
           </div>
         </div>
+      )}
+
+      {/* Report Fake Job Modal */}
+      <ReportFakeJobModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        jobId={id}
+      />
+
+      {showApplyModal && (
+        <ApplyJobModal
+          job={job}
+          onClose={handleCloseApplyModal}
+          onSubmit={handleSubmitApplication}
+          submitting={submitting}
+          error={applyError}
+        />
+      )}
+      {showSuccessModal && (
+        <ApplicationSubmittedModal job={job} onClose={() => setShowSuccessModal(false)} />
       )}
     </div>
   );

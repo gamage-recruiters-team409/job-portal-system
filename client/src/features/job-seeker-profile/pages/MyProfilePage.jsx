@@ -441,9 +441,20 @@ export default function MyProfilePage() {
           <SectionCard
             title="Experience"
             action={
-              <span className="text-xs font-medium text-slate-400">
-                {profile?.experience?.length || 0} entries
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-medium text-slate-400">
+                  {profile?.experience?.length || 0}{' '}
+                  {profile?.experience?.length === 1 ? 'entry' : 'entries'}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile/experience')}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                >
+                  Show all
+                </button>
+              </div>
             }
           >
             {firstExperience ? (
@@ -510,47 +521,46 @@ export default function MyProfilePage() {
                 <span className="text-slate-300">›</span>
               </button>
 
-              {/* Single Portfolio Links overview item */}
-              <button
-                type="button"
-                disabled={!hasPortfolioLinks}
-                aria-expanded={hasPortfolioLinks ? isPortfolioOpen : undefined}
-                onClick={() => {
-                  if (hasPortfolioLinks) {
-                    setIsPortfolioOpen((current) => !current);
-                  }
-                }}
-                title={hasPortfolioLinks ? 'View portfolio links' : 'No portfolio links added'}
-                className={[
-                  'flex w-full items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 text-left transition-colors',
-                  hasPortfolioLinks
-                    ? 'cursor-pointer hover:bg-slate-50'
-                    : 'cursor-not-allowed opacity-70',
-                ].join(' ')}
-              >
-                <LinkIcon />
+              {/* Portfolio Links overview and management */}
+              <div className="rounded-lg border border-slate-200">
+                <div className="flex items-center gap-3 px-3 py-3">
+                  <LinkIcon />
 
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-slate-700">Portfolio links</p>
+                  <button
+                    type="button"
+                    aria-expanded={hasPortfolioLinks ? isPortfolioOpen : undefined}
+                    onClick={() => {
+                      if (hasPortfolioLinks) {
+                        setIsPortfolioOpen((current) => !current);
+                      }
+                    }}
+                    disabled={!hasPortfolioLinks}
+                    title={hasPortfolioLinks ? 'View portfolio links' : 'No portfolio links added'}
+                    className={[
+                      'min-w-0 flex-1 text-left',
+                      hasPortfolioLinks ? 'cursor-pointer' : 'cursor-default',
+                    ].join(' ')}
+                  >
+                    <p className="text-sm font-medium text-slate-700">Portfolio links</p>
 
-                  <p className="mt-0.5 text-xs text-slate-400">
-                    {hasPortfolioLinks
-                      ? `${portfolioLinks.length} link${
-                          portfolioLinks.length === 1 ? '' : 's'
-                        } added`
-                      : 'No portfolio links added'}
-                  </p>
+                    <p className="mt-0.5 text-xs text-slate-400">
+                      {hasPortfolioLinks
+                        ? `${portfolioLinks.length} link${
+                            portfolioLinks.length === 1 ? '' : 's'
+                          } added`
+                        : 'No portfolio links added'}
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate('/profile/portfolio')}
+                    className="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    Manage
+                  </button>
                 </div>
-
-                <span
-                  className={[
-                    'text-slate-300 transition-transform',
-                    isPortfolioOpen ? 'rotate-90' : '',
-                  ].join(' ')}
-                >
-                  ›
-                </span>
-              </button>
+              </div>
 
               {/* Existing portfolio functionality is preserved here */}
               {hasPortfolioLinks && isPortfolioOpen && (

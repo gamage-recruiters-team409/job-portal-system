@@ -5,6 +5,7 @@ import {
   updateApplicantStatus,
   shortlistApplicant,
   rejectApplicant,
+  getApplicantCv,
 } from '../services/applicant.service.js';
 
 /**
@@ -37,10 +38,10 @@ export async function listApplicantsController(req, res, next) {
 export async function getApplicantByIdController(req, res, next) {
   try {
     const { id } = req.validatedParams ?? req.params;
-    const { application } = await getApplicantById(id, req.user);
+    const { application, jobSeekerProfile } = await getApplicantById(id, req.user);
     return sendSuccess(res, {
       message: 'Applicant retrieved successfully.',
-      data: { application },
+      data: { application, jobSeekerProfile },
     });
   } catch (error) {
     return next(error);
@@ -92,6 +93,22 @@ export async function rejectApplicantController(req, res, next) {
     return sendSuccess(res, {
       message: 'Applicant rejected successfully.',
       data: { application },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * GET /api/v1/applicants/:id/cv
+ */
+export async function getApplicantCvController(req, res, next) {
+  try {
+    const { id } = req.validatedParams ?? req.params;
+    const cvData = await getApplicantCv(id, req.user);
+    return sendSuccess(res, {
+      message: 'Applicant CV download URL generated successfully.',
+      data: cvData,
     });
   } catch (error) {
     return next(error);

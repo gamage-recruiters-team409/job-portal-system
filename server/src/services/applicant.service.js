@@ -1,8 +1,10 @@
 import mongoose from 'mongoose';
 import Application from '../models/Application.js';
 import Job from '../models/Job.js';
+import JobSeekerProfile from '../models/JobSeekerProfile.js';
 import { ApiError } from '../utils/apiError.js';
 import { APPLICATION_STATUSES, USER_ROLES } from '../constants/statuses.js';
+import { generateJobSeekerCvDownloadUrl } from './jobSeekerProfileMedia.service.js';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -16,6 +18,23 @@ import { APPLICATION_STATUSES, USER_ROLES } from '../constants/statuses.js';
  */
 function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Calculates total years of experience by summing the date ranges in experience entries.
+ * Handles ongoing roles (isCurrentRole or missing endDate) using the current date.
+ */
+function calculateTotalExperienceYears(experience = []) {
+  if (!Array.isArray(experience) || experience.length === 0) return 0;
+  const totalMs = experience.reduce((acc, exp) => {
+    if (!exp.startDate) return acc;
+    const start = new Date(exp.startDate).getTime();
+    const end = exp.isCurrentRole || !exp.endDate ? Date.now() : new Date(exp.endDate).getTime();
+    const diff = end - start;
+    return acc + (diff > 0 ? diff : 0);
+  }, 0);
+  const years = totalMs / (1000 * 60 * 60 * 24 * 365.25);
+  return Number(years.toFixed(1));
 }
 
 /**
@@ -178,7 +197,10 @@ export async function listApplicants(query, reqUser) {
     },
   });
 
-  // Stages 5+: count total then paginate (facet keeps it to one round-trip)
+  // Stage 5: sort newest first so pagination is stable and predictable
+  pipeline.push({ $sort: { createdAt: -1 } });
+
+  // Stages 6+: count total then paginate (facet keeps it to one round-trip)
   pipeline.push({
     $facet: {
       data: [{ $skip: (page - 1) * limit }, { $limit: limit }],
@@ -211,12 +233,13 @@ export async function listApplicants(query, reqUser) {
 /**
  * GET /api/v1/applicants/:id
  *
- * Returns a single Application with jobSeeker (name, email) and job populated.
+ * Returns a single Application with jobSeeker (name, email) and job populated,
+ * plus the applicant's JobSeekerProfile details (or null if not created).
  * Ownership check is against the populated job's createdBy field.
  *
  * @param {string} applicationId - the :id route param
  * @param {object} reqUser       - req.user from protect middleware
- * @returns {Promise<{ application: import('mongoose').Document }>}
+ * @returns {Promise<{ application: import('mongoose').Document, jobSeekerProfile: object | null }>}
  */
 export async function getApplicantById(applicationId, reqUser) {
   const application = await Application.findById(applicationId)
@@ -230,7 +253,44 @@ export async function getApplicantById(applicationId, reqUser) {
   // job is now a populated Job document; pass its _id to assertJobOwnership
   await assertJobOwnership(application.job._id.toString(), reqUser);
 
-  return { application: sanitizeApplicationForResponse(application) };
+  // Query JobSeekerProfile read-only by applicant's user _id & resolve Skill IDs to names
+  const profile = await JobSeekerProfile.findOne({ user: application.jobSeeker._id }).populate({
+    path: 'skills',
+    select: 'skillName',
+  });
+
+  let jobSeekerProfile = null;
+  if (profile) {
+    jobSeekerProfile = {
+      location: profile.location || null,
+      careerSummary: profile.careerSummary || null,
+      currentPosition: profile.currentPosition || null,
+      totalExperienceYears: calculateTotalExperienceYears(profile.experience),
+      education: (profile.education || []).map((edu) => ({
+        institutionName: edu.institutionName,
+        qualification: edu.qualification,
+        fieldOfStudy: edu.fieldOfStudy || null,
+        startDate: edu.startDate,
+        endDate: edu.endDate || null,
+      })),
+      experience: (profile.experience || []).map((exp) => ({
+        organization: exp.organization,
+        rolePosition: exp.rolePosition,
+        startDate: exp.startDate,
+        endDate: exp.endDate || null,
+        isCurrentRole: Boolean(exp.isCurrentRole),
+      })),
+      skills: (profile.skills || []).map((skill) => ({
+        _id: skill._id,
+        name: skill.skillName || skill.name || '',
+      })),
+    };
+  }
+
+  return {
+    application: sanitizeApplicationForResponse(application),
+    jobSeekerProfile,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -328,4 +388,43 @@ export async function rejectApplicant(applicationId, body, reqUser) {
     { status: APPLICATION_STATUSES.REJECTED, note: body.note },
     reqUser
   );
+}
+
+// ---------------------------------------------------------------------------
+// 6. Get applicant CV download URL
+// ---------------------------------------------------------------------------
+
+/**
+ * GET /api/v1/applicants/:id/cv
+ *
+ * Generates a short-lived signed Cloudinary download URL for an applicant's CV.
+ * Checks job ownership before generating the URL.
+ *
+ * @param {string} applicationId - the :id route param
+ * @param {object} reqUser       - req.user from protect middleware
+ * @returns {Promise<{ downloadUrl: string, expiresAt: number, fileName?: string }>}
+ */
+export async function getApplicantCv(applicationId, reqUser) {
+  const application = await Application.findById(applicationId).populate('job');
+  if (!application) {
+    throw new ApiError(404, 'Application not found.');
+  }
+
+  await assertJobOwnership(application.job._id.toString(), reqUser);
+
+  if (application.status === APPLICATION_STATUSES.WITHDRAWN) {
+    throw new ApiError(403, 'CV access is not available for a withdrawn application.');
+  }
+
+  if (!application.resume?.publicId) {
+    throw new ApiError(404, 'No CV available for this applicant.');
+  }
+
+  const { downloadUrl, expiresAt } = generateJobSeekerCvDownloadUrl(application.resume.publicId);
+
+  return {
+    downloadUrl,
+    expiresAt,
+    fileName: application.resume.fileName,
+  };
 }

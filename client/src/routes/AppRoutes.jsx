@@ -13,6 +13,7 @@ import MyReportedJobs from '../features/reported-jobs/job-seeker/pages/MyReporte
 import ReportDetails from '../features/reported-jobs/job-seeker/pages/ReportDetails.jsx';
 import ApplicantList from '../features/applicant-management/pages/ApplicantList.jsx';
 import ApplicantDetails from '../features/applicant-management/pages/ApplicantDetails.jsx';
+import ApplicantCvView from '../features/applicant-management/pages/ApplicantCvView.jsx';
 import AboutPage from '../features/help-support/pages/AboutPage.jsx';
 import ContactPage from '../features/help-support/pages/ContactPage.jsx';
 import FAQPage from '../features/help-support/pages/FAQPage.jsx';
@@ -23,16 +24,23 @@ import JobDetailPage from '../features/public-jobs/pages/JobDetailPage.jsx';
 import AuthenticatedLayout from '../layouts/authenticated/AuthenticatedLayout.jsx';
 import ViewCompanyProfile from '../features/employer-profile/pages/ViewCompanyProfile.jsx';
 import CreateCompanyProfile from '../features/employer-profile/pages/CreateCompanyProfile.jsx';
+import NotificationCenterPage from '../features/notifications/pages/NotificationCenterPage.jsx';
 import EditCompanyProfile from '../features/employer-profile/pages/EditCompanyProfile.jsx';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
+import ManageJobsPage from '../features/job-management/pages/ManageJobsPage.jsx';
 import SavedJobsPage from '../features/saved-jobs/pages/SavedJobsPage.jsx';
-import DashboardStatisticsPage from '../features/notifications/pages/DashboardStatisticsPage.jsx';
+import EmployerDashboard from '../features/employer-profile/pages/EmployerDashboard.jsx';
 import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.jsx';
 import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
 import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileCompletionPage.jsx';
 import SkillsPage from '../features/job-seeker-profile/pages/SkillsPage.jsx';
+import EditJobPage from '../features/job-management/pages/EditJobPage.jsx';
 import EducationPage from '../features/job-seeker-profile/pages/EducationPage.jsx';
+import ExperiencePage from '../features/job-seeker-profile/pages/ExperiencePage.jsx';
+import PortfolioLinksPage from '../features/job-seeker-profile/pages/PortfolioLinksPage.jsx';
+import ApplicationHistoryPage from '../features/applications/pages/ApplicationHistoryPage.jsx';
+import ApplicationDetailsPage from '../features/applications/pages/ApplicationDetailsPage.jsx';
 
 function AppRoutes() {
   return (
@@ -80,6 +88,28 @@ function AppRoutes() {
         }
       />
 
+      <Route
+        path="/my-applications"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <ApplicationHistoryPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-applications/:id"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <ApplicationDetailsPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
       {/* Applicant Management - Employer ONLY (Admin removed) */}
       <Route
         path="/applicants"
@@ -103,6 +133,17 @@ function AppRoutes() {
         }
       />
 
+      <Route
+        path="/applicants/:id/cv"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <ApplicantCvView />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
       {/* Create Job - Employer only */}
       <Route
         path="/jobs/create"
@@ -115,6 +156,29 @@ function AppRoutes() {
         }
       />
 
+      <Route
+        path="/jobs/:jobId/edit"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <EditJobPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/jobs/manage"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <ManageJobsPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Dashboard Statistics - Employer */}
       {/* Saved Jobs - Job Seeker only */}
       <Route
         path="/saved-jobs"
@@ -127,13 +191,13 @@ function AppRoutes() {
         }
       />
 
-      {/* Dashboard Statistics - Employer */}
+      {/* Dashboard - Employer */}
       <Route
         path="/employer/dashboard"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
-              <DashboardStatisticsPage />
+              <EmployerDashboard />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
@@ -233,6 +297,42 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
             <AuthenticatedLayout>
               <EducationPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/experience"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <ExperiencePage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Notification Center - Shared across all authenticated roles */}
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute
+            allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER, USER_ROLES.ADMIN]}
+          >
+            <AuthenticatedLayout>
+              <NotificationCenterPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile/portfolio"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <PortfolioLinksPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
