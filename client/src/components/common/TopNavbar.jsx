@@ -14,6 +14,7 @@ export default function TopNavbar({
   onLogout = () => {},
   onNotificationsClick = () => {},
   onProfileClick = null,
+  notificationButtonRef = null,
 }) {
   const [searchValue, setSearchValue] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -187,6 +188,7 @@ export default function TopNavbar({
           </button>
 
           <button
+            ref={notificationButtonRef}
             type="button"
             onClick={onNotificationsClick}
             aria-label="Notifications"
