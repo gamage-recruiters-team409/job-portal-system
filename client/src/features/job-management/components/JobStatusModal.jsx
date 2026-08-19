@@ -23,11 +23,25 @@ const STATUS_DOT_COLORS = {
 const STATUS_HISTORY_LABELS = {
   [JOB_STATUSES.DRAFT]: 'Created as draft',
   [JOB_STATUSES.PENDING_REVIEW]: 'Submitted for review',
-  [JOB_STATUSES.PUBLISHED]: 'Approved, now active',
   [JOB_STATUSES.CLOSED]: 'Closed',
   [JOB_STATUSES.SUSPENDED]: 'Suspended by admin',
   [JOB_STATUSES.REJECTED]: 'Rejected by admin',
 };
+
+function getHistoryLabel(entry, index, history) {
+  if (entry.status !== JOB_STATUSES.PUBLISHED) {
+    return STATUS_HISTORY_LABELS[entry.status] || entry.status;
+  }
+
+  const previousEntry = history[index - 1];
+  if (previousEntry?.status === JOB_STATUSES.CLOSED) {
+    return 'Reopened, now active';
+  }
+  if (previousEntry?.status === JOB_STATUSES.PENDING_REVIEW) {
+    return 'Approved, now active';
+  }
+  return 'Published / Active';
+}
 
 const STATUS_BADGE_STYLES = {
   [JOB_STATUSES.DRAFT]: 'bg-[#F1F5F9] text-[#475569]',
@@ -46,10 +60,15 @@ function formatDateTime(dateString) {
   });
 }
 
-function getDaysRemaining(deadline) {
-  const diffMs = new Date(deadline).getTime() - Date.now();
+function getDeadlineInfo(job) {
+  const diffMs = new Date(job.deadline).getTime() - Date.now();
   const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-  return days > 0 ? days : 0;
+
+  if (job.status === JOB_STATUSES.PUBLISHED) {
+    return { label: 'Days Remaining', value: days > 0 ? days : 0 };
+  }
+
+  return { label: 'Days to Deadline', value: days > 0 ? days : 'Passed' };
 }
 
 export default function JobStatusModal({ job, onClose, onEdit, onClosePosting }) {
@@ -78,7 +97,7 @@ export default function JobStatusModal({ job, onClose, onEdit, onClosePosting })
 
   if (!job) return null;
 
-  const daysRemaining = getDaysRemaining(job.deadline);
+  const deadlineInfo = getDeadlineInfo(job);
   const history = job.statusHistory || [];
   const canEdit = job.status === JOB_STATUSES.DRAFT || job.status === JOB_STATUSES.REJECTED;
   const canClosePosting = job.status === JOB_STATUSES.PUBLISHED;
@@ -123,8 +142,8 @@ export default function JobStatusModal({ job, onClose, onEdit, onClosePosting })
             </p>
           </div>
           <div className="rounded-lg bg-[#F1F5F9] p-3 text-center">
-            <p className="text-xs text-[#64748B]">Days remaining</p>
-            <p className="mt-1 text-lg font-bold text-[#000000]">{daysRemaining}</p>
+            <p className="text-xs text-[#64748B]">{deadlineInfo.label}</p>
+            <p className="mt-1 text-lg font-bold text-[#000000]">{deadlineInfo.value}</p>
           </div>
           <div className="rounded-lg bg-[#F1F5F9] p-3 text-center">
             <p className="text-xs text-[#64748B]">Views</p>
@@ -143,7 +162,7 @@ export default function JobStatusModal({ job, onClose, onEdit, onClosePosting })
                 />
                 <div>
                   <p className="text-sm font-medium text-[#000000]">
-                    {STATUS_HISTORY_LABELS[entry.status] || entry.status}
+                    {getHistoryLabel(entry, index, history)}
                   </p>
                   <p className="text-xs text-[#64748B]">{formatDateTime(entry.changedAt)}</p>
                   {entry.note && <p className="text-xs text-[#64748B]">{entry.note}</p>}
