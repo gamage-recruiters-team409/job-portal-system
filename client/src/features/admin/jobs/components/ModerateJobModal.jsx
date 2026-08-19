@@ -42,7 +42,7 @@ const ACTION_CONFIG = {
   [JOB_STATUSES.REJECTED]: {
     title: 'Reject Job Listing',
     subtitle:
-      'This will mark the job as rejected and notify the employer of policy violations or errors.',
+      'This will mark the job as rejected due to policy violations or errors.',
     buttonText: 'Reject Job',
     buttonClass: 'bg-[#DC2626] hover:bg-red-700 focus:ring-red-500 text-white',
     icon: XCircle,
