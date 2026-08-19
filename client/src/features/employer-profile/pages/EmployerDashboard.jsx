@@ -622,7 +622,13 @@ export default function EmployerDashboard() {
                   <button
                     type="button"
                     onClick={() => navigate('/jobs/create')}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700"
+                    disabled={company.verificationStatus !== 'verified'}
+                    title={
+                      company.verificationStatus !== 'verified'
+                        ? 'Company verification is required to post jobs'
+                        : ''
+                    }
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus className="h-4 w-4" />
                     <span>Post a job</span>
