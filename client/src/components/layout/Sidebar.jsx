@@ -258,7 +258,6 @@ export const JOB_SEEKER_NAV_ITEMS = [
     label: 'Dashboard',
     icon: DashboardIcon,
     path: '/dashboard',
-    disabled: true,
   },
   {
     label: 'My Profile',
