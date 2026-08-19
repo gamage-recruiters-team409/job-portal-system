@@ -51,7 +51,7 @@ export async function getJobById(jobId) {
     .populate('companyId', 'companyName companyLogo verificationStatus industry companyLocation')
     .populate('createdBy', 'name email')
     .populate('category', 'name')
-    .populate('skills', 'name');
+    .populate('skills', 'skillName');
 
   if (!job || job.isDeleted) {
     throw new ApiError(404, 'Job not found.');
