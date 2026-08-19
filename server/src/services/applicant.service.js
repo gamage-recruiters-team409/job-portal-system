@@ -258,7 +258,7 @@ export async function listApplicants(query, reqUser) {
   if (minExperience !== undefined || maxExperience !== undefined) {
     const expMatch = {};
     if (minExperience !== undefined) expMatch.$gte = minExperience;
-    if (maxExperience !== undefined) expMatch.$lte = maxExperience;
+    if (maxExperience !== undefined) expMatch.$lt = maxExperience;
     pipeline.push({ $match: { totalExperienceYears: expMatch } });
   }
 
