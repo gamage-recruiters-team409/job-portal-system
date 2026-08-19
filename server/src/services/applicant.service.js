@@ -5,6 +5,7 @@ import JobSeekerProfile from '../models/JobSeekerProfile.js';
 import { ApiError } from '../utils/apiError.js';
 import { APPLICATION_STATUSES, USER_ROLES } from '../constants/statuses.js';
 import { generateJobSeekerCvDownloadUrl } from './jobSeekerProfileMedia.service.js';
+import { notifyApplicationStatusChange } from '../services/notification.service.js';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -410,10 +411,9 @@ export async function getApplicantById(applicationId, reqUser) {
 export async function updateApplicantStatus(applicationId, body, reqUser) {
   const { status, note } = body;
 
-  const application = await Application.findById(applicationId).populate(
-    'job',
-    'createdBy isDeleted'
-  );
+  const application = await Application.findById(applicationId)
+    .populate('job', 'createdBy isDeleted title')
+    .populate('jobSeeker', 'email');
   if (!application) {
     throw new ApiError(404, 'Application not found.');
   }
@@ -438,6 +438,21 @@ export async function updateApplicantStatus(applicationId, body, reqUser) {
 
   // .save() triggers the pre-save hook → statusHistory is updated automatically
   await application.save();
+
+  try {
+    await notifyApplicationStatusChange({
+      jobSeekerId: application.jobSeeker._id,
+      jobSeekerEmail: application.jobSeeker.email,
+      jobId: application.job._id,
+      jobTitle: application.job.title,
+      newStatus: status,
+    });
+  } catch (error) {
+    console.error(
+      `Failed to send status-change notification for application ${application._id}:`,
+      error.message
+    );
+  }
 
   return { application: sanitizeApplicationForResponse(application) };
 }
