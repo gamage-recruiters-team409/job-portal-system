@@ -180,19 +180,23 @@ export async function sendNewApplicationEmail(to, jobTitle, applicantName) {
  * @param {string} to recipient address
  * @param {string} jobTitle title of the job
  * @param {string} newStatus the new application status
+ * @param {string} [note] optional employer comment (user-generated — must be escaped for HTML)
  */
-export async function sendApplicationStatusChangeEmail(to, jobTitle, newStatus) {
+export async function sendApplicationStatusChangeEmail(to, jobTitle, newStatus, note) {
   const safeTitle = escapeHtml(jobTitle);
   const safeStatus = escapeHtml(newStatus);
+  const safeNote = note ? escapeHtml(note) : null;
 
   const text = [
     `Your application status for "${jobTitle}" has been updated to: ${newStatus}.`,
+    ...(note ? [`Employer note: ${note}`] : []),
     '',
     'Log in to your dashboard to view the full details.',
   ].join('\n');
 
   const html = [
     `Your application status for "${safeTitle}" has been updated to: ${safeStatus}.`,
+    ...(safeNote ? [`Employer note: ${safeNote}`] : []),
     '',
     'Log in to your dashboard to view the full details.',
   ].join('<br/>');
