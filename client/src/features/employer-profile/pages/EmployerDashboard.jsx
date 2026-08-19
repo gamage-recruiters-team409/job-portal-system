@@ -7,16 +7,12 @@ import {
   AlertCircle,
   Briefcase,
   Users,
-  FolderOpen,
-  PlusSquare,
   Pencil,
   Upload,
   Plus,
   ChevronRight,
-  Loader2,
   RefreshCw,
   FileText,
-  ExternalLink,
   ShieldCheck,
   Zap,
 } from 'lucide-react';
@@ -387,7 +383,7 @@ export default function EmployerDashboard() {
       )}
 
       {/* ── COMPANY HEADER CARD ── */}
-      <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+      <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
         {companyLoading ? (
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between animate-pulse">
             <div className="flex items-center gap-4">
@@ -476,7 +472,7 @@ export default function EmployerDashboard() {
           return (
             <div
               key={card.label}
-              className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-200"
+              className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#64748B]">{card.label}</span>
@@ -494,7 +490,7 @@ export default function EmployerDashboard() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* LEFT COLUMN: Recent Applications */}
         <div className="space-y-6 lg:col-span-2">
-          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
                 <FileText className="h-5 w-5 text-blue-600" />
@@ -593,7 +589,7 @@ export default function EmployerDashboard() {
         {/* RIGHT COLUMN: Quick Actions & Verification */}
         <div className="space-y-6 lg:col-span-1">
           {/* Quick Actions Card */}
-          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
             <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
               <Zap className="h-5 w-5 text-blue-600" />
               Quick actions
@@ -648,7 +644,7 @@ export default function EmployerDashboard() {
           </div>
 
           {/* Verification Card */}
-          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+          <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
             <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
               <ShieldCheck className="h-5 w-5 text-slate-500" />
               Verification

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, AlertTriangle, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import { AlertCircle, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CompanyProfileForm from '../components/CompanyProfileForm.jsx';
 import ConfirmDeleteCompanyModal from '../components/ConfirmDeleteCompanyModal.jsx';
@@ -8,6 +8,7 @@ import {
   getMyCompany,
   updateCompany,
   uploadCompanyLogo,
+  removeCompanyLogo,
   deleteCompany,
 } from '../../../services/companyService.js';
 
@@ -87,7 +88,7 @@ export default function EditCompanyProfile() {
     };
   }, []);
 
-  const handleSubmit = async (payload, logoFile) => {
+  const handleSubmit = async (payload, logoFile, logoRemoved) => {
     setSubmitting(true);
     setServerErrors({});
 
@@ -100,6 +101,14 @@ export default function EditCompanyProfile() {
         } catch {
           toast.error(
             'Profile updated, but the logo upload failed. You can try again from the profile page.'
+          );
+        }
+      } else if (logoRemoved) {
+        try {
+          await removeCompanyLogo();
+        } catch {
+          toast.error(
+            'Profile updated, but removing the logo failed. You can try again from the profile page.'
           );
         }
       }
@@ -221,7 +230,7 @@ export default function EditCompanyProfile() {
   }
 
   const dangerZone = (
-    <div className="rounded-xl border border-[#DC2626]/30 bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+    <div className="rounded-xl border border-[#DC2626]/30 bg-white p-6 shadow-xs">
       <h2 className="flex items-center gap-2 text-lg font-bold text-[#DC2626]">
         <AlertTriangle className="h-5 w-5 text-[#DC2626]" />
         Danger zone

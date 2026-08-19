@@ -183,7 +183,7 @@ function FieldError({ message }) {
  * Shared controlled form for creating/editing an employer's company profile.
  *
  * @param {object} initialValues - Prefill values (edit mode).
- * @param {(values: object, logoFile: File|null) => void} onSubmit
+ * @param {(values: object, logoFile: File|null, logoRemoved: boolean) => void} onSubmit
  * @param {boolean} submitting
  * @param {boolean} showReverifyWarning
  * @param {'create'|'edit'} mode
@@ -211,10 +211,11 @@ export default function CompanyProfileForm({
   const [errors, setErrors] = useState({});
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [logoRemoved, setLogoRemoved] = useState(false);
   const [logoError, setLogoError] = useState('');
   const fileInputRef = useRef(null);
 
-  const displayedLogo = logoPreview || currentLogoUrl;
+  const displayedLogo = logoPreview || (logoRemoved ? null : currentLogoUrl);
   // Server-side errors (e.g. 409 duplicate name/email) are merged in at
   // render time rather than copied into `errors` state via an effect.
   const fieldError = (name) => errors[name] || serverErrors[name];
@@ -262,6 +263,8 @@ export default function CompanyProfileForm({
       }
       setLogoFile(file);
       setLogoPreview(objectUrl);
+      // A freshly picked file supersedes any earlier "remove" intent.
+      setLogoRemoved(false);
     };
     img.onerror = () => {
       setLogoError('Could not read this image file. Please try another.');
@@ -271,8 +274,16 @@ export default function CompanyProfileForm({
   };
 
   const handleRemoveLogo = () => {
-    setLogoFile(null);
-    setLogoPreview(null);
+    if (logoFile) {
+      // A new file was picked but not saved yet — just cancel that pick and
+      // fall back to whatever logo is already persisted (if any).
+      setLogoFile(null);
+      setLogoPreview(null);
+      setLogoError('');
+      return;
+    }
+    // No pending pick — mark the persisted logo for removal on save.
+    setLogoRemoved(true);
     setLogoError('');
   };
 
@@ -306,7 +317,7 @@ export default function CompanyProfileForm({
       companyDescription: values.companyDescription.trim(),
     };
 
-    onSubmit(payload, logoFile);
+    onSubmit(payload, logoFile, logoRemoved);
   };
 
   return (
@@ -357,7 +368,7 @@ export default function CompanyProfileForm({
           )}
 
           {/* Company logo card */}
-          <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+          <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
             <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
               <ImageUp className="h-5 w-5 text-blue-600" />
               Company logo
@@ -383,15 +394,14 @@ export default function CompanyProfileForm({
                     className="inline-flex items-center gap-2 rounded-[10px] border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-semibold text-[#0F172A] shadow-xs transition-colors duration-150 hover:bg-slate-50"
                   >
                     <Upload className="h-4 w-4" />
-                    {mode === 'edit' || displayedLogo ? 'Replace logo' : 'Add logo'}
+                    {displayedLogo ? 'Replace logo' : 'Add logo'}
                   </button>
 
-                  {(mode === 'edit' || logoFile) && (
+                  {(logoFile || (currentLogoUrl && !logoRemoved)) && (
                     <button
                       type="button"
                       onClick={handleRemoveLogo}
-                      disabled={!logoFile}
-                      className="text-sm font-semibold text-[#DC2626] transition-colors duration-150 hover:underline disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:no-underline"
+                      className="text-sm font-semibold text-[#DC2626] transition-colors duration-150 hover:underline"
                     >
                       Remove
                     </button>
@@ -405,13 +415,18 @@ export default function CompanyProfileForm({
                   />
                 </div>
                 <p className="mt-2 text-xs text-[#64748B]">PNG or JPG, max 2MB, min 200x200px</p>
+                {logoRemoved && !logoFile && (
+                  <p className="mt-1 text-xs font-medium text-[#D97706]">
+                    Logo will be removed when you save changes.
+                  </p>
+                )}
                 {logoError && <FieldError message={logoError} />}
               </div>
             </div>
           </div>
 
           {/* Company details card */}
-          <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+          <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
             <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
               <Building2 className="h-5 w-5 text-blue-600" />
               Company details
@@ -548,7 +563,7 @@ export default function CompanyProfileForm({
           </div>
 
           {/* About card */}
-          <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+          <div className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
             <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
               <FileText className="h-5 w-5 text-blue-600" />
               About
