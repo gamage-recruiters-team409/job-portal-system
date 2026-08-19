@@ -17,10 +17,8 @@ export default function AuthenticatedLayout({ children, navItems }) {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsError, setNotificationsError] = useState(null);
+  const [actionError, setActionError] = useState(null);
   const notificationButtonRef = useRef(null);
-  // Tracks notification IDs with a markAsRead request currently in flight,
-  // so a rapid second click on the same item can't fire a duplicate PATCH
-  // and double-decrement the unread badge.
   const pendingMarkAsReadIds = useRef(new Set());
 
   const { user, logout } = useAuth();
@@ -30,11 +28,6 @@ export default function AuthenticatedLayout({ children, navItems }) {
   useEffect(() => {
     const fetchInitialNotifications = async () => {
       try {
-        // Fetch the 5 most recent notifications for the dropdown list,
-        // and the TRUE unread total separately — these are not the same thing.
-        // (getNotifications(1, 5) only returns 5 items, so deriving the badge
-        // count from that page would silently undercount/overcount whenever
-        // there are more than 5 notifications total.)
         const [data, unread] = await Promise.all([
           notificationService.getNotifications(1, 5),
           notificationService.getUnreadCount(),
@@ -71,10 +64,7 @@ export default function AuthenticatedLayout({ children, navItems }) {
     if (pendingMarkAsReadIds.current.has(id)) return;
     pendingMarkAsReadIds.current.add(id);
 
-    // Clear any previous error so a fresh attempt isn't stuck showing
-    // a stale failure — the dropdown renders the error state instead
-    // of the list whenever this is set, so it must reset on retry.
-    setNotificationsError(null);
+    setActionError(null);
 
     // Optimistic-safe: only touch state if the call actually succeeds,
     // so the UI never shows a "read" state that isn't true in the DB.
@@ -85,7 +75,7 @@ export default function AuthenticatedLayout({ children, navItems }) {
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
-      setNotificationsError('Unable to mark notification as read.');
+      setActionError('Unable to mark notification as read. Tap it again to retry.');
     } finally {
       pendingMarkAsReadIds.current.delete(id);
     }
@@ -93,7 +83,7 @@ export default function AuthenticatedLayout({ children, navItems }) {
 
   // --- Mark all notifications as read (real API call + state update) ---
   const handleMarkAllAsRead = async () => {
-    setNotificationsError(null);
+    setActionError(null);
 
     try {
       await notificationService.markAllAsRead();
@@ -102,7 +92,7 @@ export default function AuthenticatedLayout({ children, navItems }) {
       setUnreadCount(0);
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
-      setNotificationsError('Unable to mark all notifications as read.');
+      setActionError('Unable to mark all notifications as read. Try again.');
     }
   };
 
@@ -143,6 +133,7 @@ export default function AuthenticatedLayout({ children, navItems }) {
         onMarkAsRead={handleMarkAsRead}
         onMarkAllAsRead={handleMarkAllAsRead}
         triggerRef={notificationButtonRef}
+        actionError={actionError}
       />
 
       {/* Main Body */}

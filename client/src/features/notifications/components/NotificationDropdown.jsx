@@ -10,6 +10,7 @@ const NotificationDropdown = ({
   onMarkAsRead,
   onMarkAllAsRead,
   triggerRef,
+  actionError,
 }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -71,6 +72,15 @@ const NotificationDropdown = ({
         <div className="flex gap-4 px-4 pt-2 border-b border-[#E2E8F0] text-[13px] font-medium text-[#64748B]">
           <button className="pb-2 text-[#2563EB] border-b-2 border-[#2563EB]">All</button>
         </div>
+
+        {/* Action-error banner: shown ABOVE the list, never replaces it —
+        unlike the load-error state below, the list is still valid
+        here, only one action (mark read / mark all) failed. */}
+        {actionError && (
+          <div className="px-4 py-2 bg-red-50 border-b border-red-100 text-red-600 text-[12px] font-medium">
+            {actionError}
+          </div>
+        )}
 
         {/* 3. Body Container (Scrollable) */}
         <div className="max-h-[340px] overflow-y-auto bg-[#F8FAFC]">
