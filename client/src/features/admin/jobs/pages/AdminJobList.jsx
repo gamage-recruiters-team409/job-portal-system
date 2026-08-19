@@ -110,9 +110,15 @@ const AdminJobList = () => {
 
         if (isMounted) {
           const data = jobRes?.data || jobRes;
-          setJobs(data?.jobs || []);
-          setTotalPages(data?.totalPages || 1);
-          setTotalJobs(data?.total || 0);
+          const jobsList = data?.jobs || [];
+          
+          if (jobsList.length === 0 && page > 1) {
+            setPage((p) => p - 1);
+          } else {
+            setJobs(jobsList);
+            setTotalPages(data?.totalPages || 1);
+            setTotalJobs(data?.total || 0);
+          }
         }
       } catch (err) {
         if (isMounted) {
