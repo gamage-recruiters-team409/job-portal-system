@@ -353,38 +353,18 @@ export default function EmployerDashboard() {
       {companyLoading ? (
         <div className="h-16 w-full animate-pulse rounded-xl bg-slate-200" />
       ) : noCompany ? (
-        <div className="animate-fade-in flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-xs">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
-            <p className="text-sm font-medium">
-              You have not created a company profile yet. Create your company profile to start posting jobs.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate('/employer/company/create')}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-blue-700"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Create Profile</span>
-          </button>
+        <div className="animate-fade-in flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-xs">
+          <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+          <p className="text-sm font-medium">
+            You have not created a company profile yet. Create your company profile to start posting jobs.
+          </p>
         </div>
       ) : company?.verificationStatus === 'verified' ? (
-        <div className="animate-fade-in flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 shadow-xs">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-            <p className="text-sm font-medium">
-              Your company is verified. You can now post jobs and reach candidates.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate('/jobs/create')}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#16A34A] px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors duration-150 hover:bg-emerald-700"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Post a job</span>
-          </button>
+        <div className="animate-fade-in flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 shadow-xs">
+          <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+          <p className="text-sm font-medium">
+            Your company is verified. You can now post jobs and reach candidates.
+          </p>
         </div>
       ) : company?.verificationStatus === 'rejected' ? (
         <div className="animate-fade-in flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 shadow-xs">

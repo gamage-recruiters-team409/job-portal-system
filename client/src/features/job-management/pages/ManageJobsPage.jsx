@@ -9,6 +9,7 @@ import {
 } from '../../../services/jobService.js';
 import { JOB_STATUSES } from '../../../constants/statuses.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import JobStatusModal from '../components/JobStatusModal.jsx';
 
 const STATUS_BADGES = {
   [JOB_STATUSES.DRAFT]: { label: 'Draft', className: 'bg-[#D0D0D0] text-[#000000]' },
@@ -46,6 +47,7 @@ export default function ManageJobsPage() {
   const [actionError, setActionError] = useState('');
   const [actionMessage, setActionMessage] = useState('');
   const [busyJobId, setBusyJobId] = useState(null);
+  const [statusModalJob, setStatusModalJob] = useState(null);
 
   const loadJobs = async () => {
     try {
@@ -148,7 +150,17 @@ export default function ManageJobsPage() {
 
   const renderActions = (job) => {
     const disabled = busyJobId === job._id;
-    const actions = [];
+    const actions = [
+      <button
+        key="status"
+        type="button"
+        className={linkClass}
+        onClick={() => setStatusModalJob(job)}
+        disabled={disabled}
+      >
+        Status
+      </button>,
+    ];
 
     if (job.status === JOB_STATUSES.PUBLISHED) {
       actions.push(
@@ -352,6 +364,21 @@ export default function ManageJobsPage() {
           </table>
         )}
       </div>
+
+      {statusModalJob && (
+        <JobStatusModal
+          job={statusModalJob}
+          onClose={() => setStatusModalJob(null)}
+          onEdit={() => {
+            setStatusModalJob(null);
+            navigate(`/jobs/${statusModalJob._id}/edit`);
+          }}
+          onClosePosting={() => {
+            setStatusModalJob(null);
+            handleClose(statusModalJob._id);
+          }}
+        />
+      )}
     </div>
   );
 }
