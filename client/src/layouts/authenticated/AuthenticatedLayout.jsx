@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import TopNavbar from '../../components/common/TopNavbar.jsx';
 import Sidebar, {
@@ -11,27 +11,32 @@ import NotificationDropdown from '../../features/notifications/components/Notifi
 
 export default function AuthenticatedLayout({ children, navItems }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
-  // --- NEW: Notification State ---
+
+  // --- Notification State ---
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsError, setNotificationsError] = useState(null);
+  const notificationButtonRef = useRef(null);
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // --- NEW: Fetch Notifications safely on mount using IIFE pattern ---
+  // --- Fetch Notifications + real unread count safely on mount ---
   useEffect(() => {
     const fetchInitialNotifications = async () => {
       try {
-        const data = await notificationService.getNotifications(1, 5);
-        const fetchedNotifications = data.notifications || [];
-        
-        setNotifications(fetchedNotifications);
-        
-        // Calculate exact unread count from the real API data
-        const unread = fetchedNotifications.filter(n => n.status === 'Unread').length;
+        // Fetch the 5 most recent notifications for the dropdown list,
+        // and the TRUE unread total separately — these are not the same thing.
+        // (getNotifications(1, 5) only returns 5 items, so deriving the badge
+        // count from that page would silently undercount/overcount whenever
+        // there are more than 5 notifications total.)
+        const [data, unread] = await Promise.all([
+          notificationService.getNotifications(1, 5),
+          notificationService.getUnreadCount(),
+        ]);
+
+        setNotifications(data.notifications || []);
         setUnreadCount(unread);
       } catch (error) {
         console.error('Failed to load notifications:', error);
@@ -49,9 +54,37 @@ export default function AuthenticatedLayout({ children, navItems }) {
     navigate('/login');
   };
 
-  // --- NEW: Toggle Dropdown ---
+  // --- Toggle Dropdown ---
   const handleNotificationsClick = () => {
-    setIsDropdownOpen(prev => !prev);
+    setIsDropdownOpen((prev) => !prev);
+  };
+
+  // --- Mark a single notification as read (real API call + state update) ---
+  const handleMarkAsRead = async (id) => {
+    // Optimistic-safe: only touch state if the call actually succeeds,
+    // so the UI never shows a "read" state that isn't true in the DB.
+    try {
+      await notificationService.markAsRead(id);
+
+      setNotifications((prev) => prev.map((n) => (n._id === id ? { ...n, status: 'Read' } : n)));
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+      setNotificationsError('Unable to mark notification as read.');
+    }
+  };
+
+  // --- Mark all notifications as read (real API call + state update) ---
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+
+      setNotifications((prev) => prev.map((n) => ({ ...n, status: 'Read' })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+      setNotificationsError('Unable to mark all notifications as read.');
+    }
   };
 
   const isEmployer = user?.role === 'employer';
@@ -77,17 +110,20 @@ export default function AuthenticatedLayout({ children, navItems }) {
         onLogout={handleLogout}
         profilePath={profilePath}
         profileDisabled={isProfileDisabled}
-        // --- NEW: Props passed to TopNavbar ---
         notificationCount={unreadCount}
         onNotificationsClick={handleNotificationsClick}
+        notificationButtonRef={notificationButtonRef}
       />
 
-      {/* --- NEW: Render the dropdown below the navbar --- */}
-      <NotificationDropdown 
+      {/* Render the dropdown below the navbar */}
+      <NotificationDropdown
         isOpen={isDropdownOpen}
         notifications={notifications}
         error={notificationsError}
         onClose={() => setIsDropdownOpen(false)}
+        onMarkAsRead={handleMarkAsRead}
+        onMarkAllAsRead={handleMarkAllAsRead}
+        triggerRef={notificationButtonRef}
       />
 
       {/* Main Body */}
@@ -101,11 +137,6 @@ export default function AuthenticatedLayout({ children, navItems }) {
         />
 
         {/* Content View Area */}
-        {/* min-w-0 overrides the flex item's default min-width:auto — without
-            it, wide content anywhere on a page can stretch main past the
-            viewport instead of wrapping/scrolling within it (the classic
-            "flex child won't shrink below its content" bug), which the
-            overflow-hidden row above then clips instead of exposing. */}
         <main className="min-w-0 flex-1 overflow-y-auto">{children || <Outlet />}</main>
       </div>
     </div>
