@@ -17,15 +17,20 @@ export default function PublicLayout() {
   const { user, isAuthenticated } = useAuth();
   const location = useLocation();
 
+  const isAdmin = user?.role === USER_ROLES.ADMIN;
   const isEmployer = user?.role === USER_ROLES.EMPLOYER;
   const isJobSeeker = user?.role === USER_ROLES.JOB_SEEKER;
-  // isAdmin: no approved Admin dashboard route exists yet; Admin profile link
-  // is intentionally omitted until that route is available.
 
   // Resolved profile/dashboard destinations per role.
-  // Admin is intentionally excluded: no approved Admin dashboard route exists yet.
-  // Do NOT fall back to /jobs (a public page) for Admin — omit the link instead.
-  const profilePath = isJobSeeker ? '/profile' : isEmployer ? '/employer/company' : null;
+  // Admin routes to the Admin Console (/admin, routing owned by Bimsara).
+  // Never fall back to /jobs (a public page) for Admin — omit the link instead.
+  const profilePath = isAdmin
+    ? '/admin'
+    : isJobSeeker
+      ? '/profile'
+      : isEmployer
+        ? '/employer/company'
+        : null;
   const displayName =
     user?.fullName || user?.name || (user?.email ? user.email.split('@')[0] : 'User');
 
