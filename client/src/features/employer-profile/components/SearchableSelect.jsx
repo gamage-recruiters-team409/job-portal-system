@@ -81,7 +81,7 @@ export default function SearchableSelect({
           type="button"
           onClick={handleToggle}
           disabled={disabled}
-          className={`flex h-11 w-full items-center justify-between rounded-[10px] border bg-white px-3 text-sm outline-none transition disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 ${
+          className={`flex h-11 w-full items-center justify-between rounded-[10px] border bg-slate-50 px-3 text-sm outline-none transition disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 ${
             error
               ? 'border-[#DC2626]'
               : isOpen
@@ -89,9 +89,7 @@ export default function SearchableSelect({
                 : 'border-[#E2E8F0]'
           }`}
         >
-          <span
-            className={`min-w-0 truncate text-left ${hasValue ? 'text-[#0F172A]' : 'text-[#64748B]'}`}
-          >
+          <span className="min-w-0 truncate text-left text-[#64748B]">
             {hasValue ? displayLabel : placeholder}
           </span>
           <ChevronDown className="h-4 w-4 flex-shrink-0 text-[#64748B]" />

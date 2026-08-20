@@ -7,6 +7,7 @@ import {
   getCompanyById as getCompanyByIdService,
   updateCompany as updateCompanyService,
   updateLogo as updateLogoService,
+  removeLogo as removeLogoService,
   deleteCompany as deleteCompanyService,
 } from '../services/company.service.js';
 
@@ -110,6 +111,22 @@ export async function uploadLogo(req, res, next) {
 }
 
 /**
+ * DELETE /companies/me/logo — Remove company logo for the authenticated employer.
+ */
+export async function removeLogo(req, res, next) {
+  try {
+    const company = await removeLogoService(req.user.id);
+    return sendSuccess(res, {
+      statusCode: 200,
+      message: 'Company logo removed successfully.',
+      data: { company },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
  * DELETE /companies/me — Delete the authenticated employer's company profile.
  * Company is a shared model referenced by Jobs (see the NOTE in
  * company.service.js) — deleteCompanyService refuses with 409 if ANY job post
@@ -136,5 +153,6 @@ export {
   getCompanyById as getCompanyByIdController,
   updateCompany as updateCompanyController,
   uploadLogo as updateLogoController,
+  removeLogo as removeLogoController,
   deleteCompany as deleteCompanyController,
 };
