@@ -129,7 +129,7 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
           onClick={() => onDelete(notification._id)}
           aria-label="Delete notification"
           title="Delete notification"
-          className="rounded-[6px] p-1.5 text-[#64748B] opacity-0 transition-opacity hover:bg-red-50 hover:text-[#DC2626] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] group-hover:opacity-100"
+          className="rounded-[6px] p-1.5 text-[#64748B] opacity-100 transition-opacity hover:bg-red-50 hover:text-[#DC2626] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] sm:opacity-0 sm:group-hover:opacity-100"
         >
           <Trash2 className="h-4 w-4" />
         </button>

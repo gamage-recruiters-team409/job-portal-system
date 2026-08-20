@@ -33,6 +33,7 @@ export default function NotificationCenterPage() {
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   const refreshUnreadCount = useCallback(async () => {
     try {
@@ -114,6 +115,7 @@ export default function NotificationCenterPage() {
 
   const handleDelete = async () => {
     try {
+      setDeleteError(null);
       setDeleting(true);
       if (deleteConfirmation.type === 'all') {
         await notificationService.deleteAllNotifications();
@@ -125,8 +127,21 @@ export default function NotificationCenterPage() {
       await Promise.all([fetchNotifications(pagination.page), refreshUnreadCount()]);
     } catch (err) {
       console.error('Failed to delete notification(s):', err);
+      setDeleteError(err.message || 'Failed to delete notification. Please try again.');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const openDeleteConfirmation = (confirmation) => {
+    setDeleteError(null);
+    setDeleteConfirmation(confirmation);
+  };
+
+  const closeDeleteConfirmation = () => {
+    if (!deleting) {
+      setDeleteError(null);
+      setDeleteConfirmation(null);
     }
   };
 
@@ -206,7 +221,7 @@ export default function NotificationCenterPage() {
           {pagination.total > 0 && (
             <button
               type="button"
-              onClick={() => setDeleteConfirmation({ type: 'all' })}
+              onClick={() => openDeleteConfirmation({ type: 'all' })}
               className="inline-flex items-center gap-2 rounded-[8px] border border-red-200 bg-white px-4 py-2 text-[13px] font-medium text-[#B91C1C] shadow-sm transition-colors hover:bg-red-50"
             >
               Delete all
@@ -251,7 +266,7 @@ export default function NotificationCenterPage() {
               key={notification._id}
               notification={notification}
               onMarkAsRead={handleMarkAsRead}
-              onDelete={(id) => setDeleteConfirmation({ type: 'single', id })}
+              onDelete={(id) => openDeleteConfirmation({ type: 'single', id })}
             />
           ))}
         </div>
@@ -290,15 +305,16 @@ export default function NotificationCenterPage() {
 
       <ConfirmationModal
         isOpen={Boolean(deleteConfirmation)}
-        onClose={() => !deleting && setDeleteConfirmation(null)}
+        onClose={closeDeleteConfirmation}
         onConfirm={handleDelete}
         title={
           deleteConfirmation?.type === 'all' ? 'Delete all notifications?' : 'Delete notification?'
         }
         description={
-          deleteConfirmation?.type === 'all'
+          deleteError ||
+          (deleteConfirmation?.type === 'all'
             ? 'This will permanently remove all of your notifications.'
-            : 'This notification will be permanently removed.'
+            : 'This notification will be permanently removed.')
         }
         confirmText="Delete"
         isLoading={deleting}
