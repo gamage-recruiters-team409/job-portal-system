@@ -1,6 +1,6 @@
 import Job from '../models/Job.js';
 import { ApiError } from '../utils/apiError.js';
-import { JOB_STATUSES } from '../constants/statuses.js';
+import { JOB_STATUSES, EMPLOYER_VERIFICATION_STATUSES } from '../constants/statuses.js';
 
 const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -51,7 +51,7 @@ export async function getJobById(jobId) {
     .populate('companyId', 'companyName companyLogo verificationStatus industry companyLocation')
     .populate('createdBy', 'name email')
     .populate('category', 'name')
-    .populate('skills', 'name');
+    .populate('skills', 'skillName');
 
   if (!job || job.isDeleted) {
     throw new ApiError(404, 'Job not found.');
@@ -74,7 +74,7 @@ const VALID_ADMIN_TRANSITIONS = Object.freeze({
  * Enforces valid source → target status transitions.
  */
 export async function moderateJob(jobId, adminUserId, status, reviewNote) {
-  const job = await Job.findById(jobId);
+  const job = await Job.findById(jobId).populate('companyId', 'verificationStatus');
 
   if (!job || job.isDeleted) {
     throw new ApiError(404, 'Job not found.');
@@ -96,6 +96,11 @@ export async function moderateJob(jobId, adminUserId, status, reviewNote) {
   // Prevent publishing jobs with expired deadlines
   if (status === JOB_STATUSES.PUBLISHED && job.deadline && new Date(job.deadline) < new Date()) {
     throw new ApiError(400, 'Cannot publish a job with an expired deadline.');
+  }
+
+  // Prevent publishing jobs if the parent company is not verified
+  if (status === JOB_STATUSES.PUBLISHED && job.companyId?.verificationStatus !== EMPLOYER_VERIFICATION_STATUSES.VERIFIED) {
+    throw new ApiError(400, 'Cannot publish job: The associated Company is not verified.');
   }
 
   job.status = status;
