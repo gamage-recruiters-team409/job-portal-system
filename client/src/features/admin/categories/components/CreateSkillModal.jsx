@@ -17,8 +17,6 @@ const CreateSkillModal = ({ isOpen, categories = [], defaultCategoryId = '', onC
 
   if (!isOpen) return null;
 
-  const currentCategoryId = categoryId || defaultCategoryId || (categories.length > 0 ? categories[0]._id : '');
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!skillName.trim()) {
@@ -32,7 +30,7 @@ const CreateSkillModal = ({ isOpen, categories = [], defaultCategoryId = '', onC
 
       const payload = {
         skillName: skillName.trim(),
-        categoryId: currentCategoryId || undefined,
+        categoryId: categoryId || null,
       };
 
       await createSkill(payload);
@@ -122,7 +120,7 @@ const CreateSkillModal = ({ isOpen, categories = [], defaultCategoryId = '', onC
               Assigned Category
             </label>
             <select
-              value={currentCategoryId}
+              value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               disabled={loading}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-800 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 disabled:bg-slate-100"

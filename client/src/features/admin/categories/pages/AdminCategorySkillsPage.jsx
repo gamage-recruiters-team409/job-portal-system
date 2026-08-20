@@ -611,6 +611,7 @@ const AdminCategorySkillsPage = () => {
       />
 
       <CreateSkillModal
+        key={`${isCreateSkillOpen}-${createSkillDefaultCategoryId}`}
         isOpen={isCreateSkillOpen}
         categories={categories}
         defaultCategoryId={createSkillDefaultCategoryId}
