@@ -5,7 +5,9 @@
  * @module Admin/Layout
  */
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { LogOut, Settings as SettingsLucide } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext.jsx';
 import {
   DashboardIcon as LayoutGrid,
   UsersIcon as Users,
@@ -13,8 +15,6 @@ import {
   JobsIcon as Briefcase,
   CategoriesIcon as Shapes,
   VerificationIcon as FileCheck,
-  ModerationIcon as Shield,
-  ImageIcon,
   ReportedIcon as AlertTriangle,
   NotificationIcon as Bell,
   StatisticsIcon as BarChart2,
@@ -22,6 +22,14 @@ import {
 } from '../../components/common/AdminIcons.jsx';
 
 const AdminSidebar = ({ isOpen, setIsOpen }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   const sections = [
     {
       title: 'GENERAL',
@@ -35,16 +43,15 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
       title: 'JOB BOARD',
       items: [
         { name: 'Manage Job Posts', path: '/admin/jobs', icon: Briefcase },
-        { name: 'Categories & Skills', path: '/admin/categories', icon: Shapes },
-        { name: 'Employer Verification', path: '/admin/verifications', icon: FileCheck },
+        { name: 'Employer Verification', path: '/admin/employers?status=pending', icon: FileCheck },
         { name: 'Reported Jobs', path: '/admin/reported-jobs', icon: AlertTriangle },
       ],
     },
     {
       title: 'SYSTEM',
       items: [
-        { name: 'Moderation Logs', path: '/admin/moderation-logs', icon: Shield },
-        { name: 'Notifications', path: '/admin/notifications', icon: Bell },
+        { name: 'Settings', path: '/admin/settings', icon: SettingsLucide },
+        { name: 'Notifications', path: '/notifications', icon: Bell },
         { name: 'Statistics', path: '/admin/statistics', icon: BarChart2 },
       ],
     },
@@ -104,7 +111,7 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
                             'flex items-center gap-3 rounded-lg px-3 py-2.5',
                             'text-[14px] font-medium transition-colors',
                             isActive
-                              ? 'bg-blue-50 text-blue-600'
+                              ? 'bg-blue-50 text-blue-600 font-semibold'
                               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
                           ].join(' ')
                         }
@@ -120,21 +127,30 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
           ))}
         </nav>
 
-        {/* User Profile */}
-        <div className="shrink-0 p-5">
-          <div className="flex items-center gap-3">
-            <div
-              className={[
-                'flex h-[42px] w-[42px] items-center justify-center overflow-hidden',
-                'rounded-full border-2 border-slate-200 bg-slate-100 text-slate-400',
-              ].join(' ')}
+        {/* User Profile & Logout */}
+        <div className="shrink-0 p-4 border-t border-slate-200 bg-white">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 font-bold text-sm">
+                {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-bold text-slate-900 truncate">
+                  {user?.name || user?.email || 'Admin User'}
+                </span>
+                <span className="text-xs font-medium text-slate-500">
+                  {user?.role === 'admin' ? 'System Admin' : 'Admin'}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              title="Log Out"
+              aria-label="Log Out"
+              className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
             >
-              <ImageIcon className="h-5 w-5" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[14px] font-bold leading-tight text-slate-900">Admin User</span>
-              <span className="text-[12px] font-medium text-slate-500">System Admin</span>
-            </div>
+              <LogOut className="h-5 w-5" />
+            </button>
           </div>
         </div>
       </aside>
