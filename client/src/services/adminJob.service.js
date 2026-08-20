@@ -41,3 +41,11 @@ export const moderateAdminJob = async (jobId, moderationData) => {
   const { data } = await apiClient.patch(`/admin/jobs/${jobId}/moderation`, moderationData);
   return data;
 };
+
+/**
+ * Get job statistics for Admin dashboard cards.
+ */
+export const getAdminJobStats = async () => {
+  const { data } = await apiClient.get('/admin/jobs/stats');
+  return data;
+};

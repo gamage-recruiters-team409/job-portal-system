@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   Building2,
   ShieldAlert,
@@ -17,7 +17,7 @@ import {
   Search,
   ArrowRight,
 } from 'lucide-react';
-import { getAdminReports } from '../../../../services/adminReport.service';
+import { getAdminReports, getAdminReportStats } from '../../../../services/adminReport.service';
 import AdminReportDetails from './AdminReportDetails';
 
 /* ─── AdminReportList ──────────────────────────────────────────────────────── */
@@ -28,14 +28,21 @@ const AdminReportList = () => {
   const [error, setError] = useState(null);
 
   // Pagination and Filtering State
+  const [searchParams, setSearchParams] = useSearchParams();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [totalPages, setTotalPages] = useState(1);
   const [totalReports, setTotalReports] = useState(0);
   const [selectedReportId, setSelectedReportId] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const [stats, setStats] = useState({
+    totalReports: 0,
+    pendingReports: 0,
+    resolvedReports: 0,
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -70,14 +77,42 @@ const AdminReportList = () => {
     };
   }, [page, limit, statusFilter, searchQuery, refreshTrigger]);
 
+  // Fetch Stats
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStats = async () => {
+      try {
+        const statsData = await getAdminReportStats();
+        if (isMounted && statsData?.data?.stats) {
+          setStats(statsData.data.stats);
+        }
+      } catch (err) {
+        console.error('Failed to load report stats:', err);
+      }
+    };
+    fetchStats();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshTrigger]);
+
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
     setPage(1); // Reset to first page on search
   };
 
   const handleStatusChange = (e) => {
-    setStatusFilter(e.target.value);
+    const newStatus = e.target.value;
+    setStatusFilter(newStatus);
     setPage(1); // Reset to first page on filter change
+    
+    // Sync with URL
+    if (newStatus) {
+      searchParams.set('status', newStatus);
+    } else {
+      searchParams.delete('status');
+    }
+    setSearchParams(searchParams);
   };
 
   const getStatusBadge = (status) => {
@@ -155,21 +190,29 @@ const AdminReportList = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div
-          className={
-            'bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex ' + 'flex-col gap-2 '
-          }
-        >
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+        <div className="bg-white p-6 rounded-2xl shadow-2xs border border-slate-200 flex flex-col gap-2 transition-transform hover:-translate-y-1">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wider">
-              Total Reports
-            </h3>
-            <span className="bg-blue-50 p-2 rounded-lg text-blue-600">
-              <AlertOctagon size={24} />
-            </span>
+            <h3 className="text-sm font-semibold text-slate-600">Total reports</h3>
+            <span className="bg-blue-50 p-2 rounded-xl text-blue-600 shadow-2xs"><AlertOctagon size={20} /></span>
           </div>
-          <span className="text-3xl font-bold text-slate-900">{totalReports}</span>
+          <span className="text-3xl font-bold text-slate-900">{stats.totalReports}</span>
+        </div>
+        
+        <div className="bg-white p-6 rounded-2xl shadow-2xs border border-slate-200 flex flex-col gap-2 transition-transform hover:-translate-y-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-600">Pending review</h3>
+            <span className="bg-amber-50 p-2 rounded-xl text-amber-600 shadow-2xs"><ShieldAlert size={20} /></span>
+          </div>
+          <span className="text-3xl font-bold text-slate-900">{stats.pendingReports}</span>
+        </div>
+        
+        <div className="bg-white p-6 rounded-2xl shadow-2xs border border-slate-200 flex flex-col gap-2 transition-transform hover:-translate-y-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-600">Resolved</h3>
+            <span className="bg-green-50 p-2 rounded-xl text-green-600 shadow-2xs"><CheckCircle size={20} /></span>
+          </div>
+          <span className="text-3xl font-bold text-slate-900">{stats.resolvedReports}</span>
         </div>
       </div>
 

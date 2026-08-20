@@ -47,3 +47,16 @@ export async function moderateJob(req, res, next) {
     return next(error);
   }
 }
+
+export async function getJobStats(req, res, next) {
+  try {
+    const stats = await adminJobService.getJobStats();
+
+    return sendSuccess(res, {
+      message: 'Job statistics retrieved successfully',
+      data: { stats },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}

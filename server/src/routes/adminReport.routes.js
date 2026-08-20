@@ -16,6 +16,9 @@ router.get(
   adminReportController.getReports
 );
 
+router.get('/stats', adminReportController.getReportStats);
+
+
 router.get(
   '/:reportId',
   validate(adminReportValidation.reportIdParamSchema, 'params'),

@@ -23,7 +23,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getAdminJobs, moderateAdminJob } from '../../../../services/adminJob.service';
+import { getAdminJobs, moderateAdminJob, getAdminJobStats } from '../../../../services/adminJob.service';
 import { JOB_STATUSES } from '../../../../constants/statuses';
 import ModerateJobModal from '../components/ModerateJobModal';
 
@@ -75,6 +75,14 @@ const AdminJobList = () => {
   const [limit] = useState(9); // 9 cards for 3x3 layout
   const [totalPages, setTotalPages] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
+
+  const [stats, setStats] = useState({
+    totalJobs: 0,
+    publishedJobs: 0,
+    pendingJobs: 0,
+    rejectedJobs: 0,
+    suspendedJobs: 0,
+  });
 
   // Moderation Modal state
   const [modalState, setModalState] = useState({
@@ -137,6 +145,25 @@ const AdminJobList = () => {
       isMounted = false;
     };
   }, [selectedTab, debouncedSearch, page, limit, refreshTrigger]);
+
+  // Fetch Stats
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStats = async () => {
+      try {
+        const statsData = await getAdminJobStats();
+        if (isMounted && statsData?.data?.stats) {
+          setStats(statsData.data.stats);
+        }
+      } catch (err) {
+        console.error('Failed to load job stats:', err);
+      }
+    };
+    fetchStats();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshTrigger]);
 
   /* ─── Render Helpers ─────────────────────────────────────────────────────── */
 
@@ -235,12 +262,36 @@ const AdminJobList = () => {
         </div>
       </div>
 
-      {/* ─── Top Statistics KPI Cards (Empty Placeholders) ─────────────────────── */}
+      {/* ─── Top Statistics KPI Cards ─────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-full min-w-0">
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs min-h-[145px]"></div>
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs min-h-[145px]"></div>
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs min-h-[145px]"></div>
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs min-h-[145px]"></div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col gap-2 transition-transform hover:-translate-y-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-600">Total jobs</h3>
+            <span className="bg-blue-50 p-2 rounded-lg text-blue-600"><Briefcase size={20} /></span>
+          </div>
+          <span className="text-3xl font-bold text-slate-900">{stats.totalJobs}</span>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col gap-2 transition-transform hover:-translate-y-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-600">Published</h3>
+            <span className="bg-green-50 p-2 rounded-lg text-green-600"><CheckCircle2 size={20} /></span>
+          </div>
+          <span className="text-3xl font-bold text-slate-900">{stats.publishedJobs}</span>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col gap-2 transition-transform hover:-translate-y-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-600">Pending review</h3>
+            <span className="bg-amber-50 p-2 rounded-lg text-amber-600"><History size={20} /></span>
+          </div>
+          <span className="text-3xl font-bold text-slate-900">{stats.pendingJobs}</span>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col gap-2 transition-transform hover:-translate-y-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-600">Rejected / suspended</h3>
+            <span className="bg-red-50 p-2 rounded-lg text-red-600"><XCircle size={20} /></span>
+          </div>
+          <span className="text-3xl font-bold text-slate-900">{stats.rejectedJobs + stats.suspendedJobs}</span>
+        </div>
       </div>
 
       {/* ─── Main Content Box ────────────────────────────────────────────────── */}

@@ -53,3 +53,16 @@ export async function reviewReport(req, res, next) {
     return next(error);
   }
 }
+
+export async function getReportStats(req, res, next) {
+  try {
+    const stats = await adminReportService.getReportStats();
+
+    return sendSuccess(res, {
+      message: 'Report statistics retrieved successfully',
+      data: { stats },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}

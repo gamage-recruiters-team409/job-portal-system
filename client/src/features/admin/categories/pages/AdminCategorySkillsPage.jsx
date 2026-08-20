@@ -172,6 +172,21 @@ const AdminCategorySkillsPage = () => {
     });
   }, [categories, searchQuery, statusFilter, skillsByCategory]);
 
+  // Calculate Stats
+  const stats = useMemo(() => {
+    const totalCategories = categories.length;
+    const totalSkills = skills.length;
+    const uncategorized = skillsByCategory.uncategorized.length;
+    const activeSkillsCount = skills.filter((s) => s.isActive).length;
+
+    return {
+      totalCategories,
+      totalSkills,
+      uncategorized,
+      activeSkillsCount,
+    };
+  }, [categories, skills, skillsByCategory]);
+
   // Filter Uncategorized Skills
   const filteredUncategorizedSkills = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -230,9 +245,9 @@ const AdminCategorySkillsPage = () => {
         </div>
       </div>
 
-      {/* ─── Top 4 KPI Statistics Cards (Empty Placeholders for Danaja's API) ─── */}
+      {/* ─── Top 4 KPI Statistics Cards ─── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-2xs border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
+        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-2xs border border-slate-200 flex flex-col gap-2 relative overflow-hidden transition-transform hover:-translate-y-1">
           <div className="flex items-center justify-between">
             <h3 className="text-xs md:text-sm font-semibold text-slate-600">
               Total Categories
@@ -242,11 +257,11 @@ const AdminCategorySkillsPage = () => {
             </div>
           </div>
           <span className="text-2xl md:text-3xl font-bold text-slate-900 mt-1">
-            —
+            {stats.totalCategories}
           </span>
         </div>
 
-        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-2xs border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
+        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-2xs border border-slate-200 flex flex-col gap-2 relative overflow-hidden transition-transform hover:-translate-y-1">
           <div className="flex items-center justify-between">
             <h3 className="text-xs md:text-sm font-semibold text-slate-600">
               Total Skills
@@ -256,11 +271,11 @@ const AdminCategorySkillsPage = () => {
             </div>
           </div>
           <span className="text-2xl md:text-3xl font-bold text-slate-900 mt-1">
-            —
+            {stats.totalSkills}
           </span>
         </div>
 
-        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-2xs border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
+        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-2xs border border-slate-200 flex flex-col gap-2 relative overflow-hidden transition-transform hover:-translate-y-1">
           <div className="flex items-center justify-between">
             <h3 className="text-xs md:text-sm font-semibold text-slate-600">
               Uncategorized
@@ -270,21 +285,21 @@ const AdminCategorySkillsPage = () => {
             </div>
           </div>
           <span className="text-2xl md:text-3xl font-bold text-slate-900 mt-1">
-            —
+            {stats.uncategorized}
           </span>
         </div>
 
-        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-2xs border border-slate-200 flex flex-col gap-2 relative overflow-hidden">
+        <div className="bg-white p-5 md:p-6 rounded-2xl shadow-2xs border border-slate-200 flex flex-col gap-2 relative overflow-hidden transition-transform hover:-translate-y-1">
           <div className="flex items-center justify-between">
             <h3 className="text-xs md:text-sm font-semibold text-slate-600">
-              Active Growth
+              Active Skills
             </h3>
             <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-2xs">
               <TrendingUp size={18} />
             </div>
           </div>
           <span className="text-2xl md:text-3xl font-bold text-slate-900 mt-1">
-            —
+            {stats.activeSkillsCount}
           </span>
         </div>
       </div>

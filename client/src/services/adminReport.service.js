@@ -42,3 +42,11 @@ export const reviewAdminReport = async (reportId, reviewData) => {
   const { data } = await apiClient.patch(`/admin/reports/${reportId}/review`, reviewData);
   return data;
 };
+
+/**
+ * Get report statistics for Admin dashboard cards.
+ */
+export const getAdminReportStats = async () => {
+  const { data } = await apiClient.get('/admin/reports/stats');
+  return data;
+};

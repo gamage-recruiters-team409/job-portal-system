@@ -16,6 +16,9 @@ router.get(
   adminJobController.getJobs
 );
 
+router.get('/stats', adminJobController.getJobStats);
+
+
 router.get(
   '/:jobId',
   validate(adminJobValidation.jobIdParamSchema, 'params'),

@@ -123,3 +123,24 @@ export async function reviewReport(reportId, adminUserId, status, reviewNote, jo
 
   return { report, updatedJob };
 }
+
+/**
+ * Get report statistics for Admin Report List cards.
+ */
+export async function getReportStats() {
+  const [totalReports, pendingReports, underReviewReports, resolvedReports, dismissedReports] = await Promise.all([
+    Report.countDocuments(),
+    Report.countDocuments({ status: REPORT_STATUSES.PENDING }),
+    Report.countDocuments({ status: REPORT_STATUSES.UNDER_REVIEW }),
+    Report.countDocuments({ status: REPORT_STATUSES.RESOLVED }),
+    Report.countDocuments({ status: REPORT_STATUSES.DISMISSED }),
+  ]);
+
+  return {
+    totalReports,
+    pendingReports,
+    underReviewReports,
+    resolvedReports,
+    dismissedReports,
+  };
+}

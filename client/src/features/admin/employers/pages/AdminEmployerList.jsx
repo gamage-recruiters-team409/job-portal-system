@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   Search,
   Eye,
@@ -52,9 +52,10 @@ const AdminEmployerList = () => {
   const [error, setError] = useState(null);
 
   // Pagination and Filtering State
+  const [searchParams, setSearchParams] = useSearchParams();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [totalPages, setTotalPages] = useState(1);
   const [totalEmployers, setTotalEmployers] = useState(0);
@@ -129,6 +130,14 @@ const AdminEmployerList = () => {
   const handleStatusChange = (status) => {
     setStatusFilter(status);
     setPage(1);
+    
+    // Sync with URL
+    if (status) {
+      searchParams.set('status', status);
+    } else {
+      searchParams.delete('status');
+    }
+    setSearchParams(searchParams);
   };
 
   const handlePageChange = (newPage) => {
@@ -251,7 +260,7 @@ const AdminEmployerList = () => {
             <span className="text-slate-300">/</span>
             <span className="text-blue-600 font-medium">Employers</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Manage Employers</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Employer Verification</h1>
           <p className="text-sm text-slate-500 mt-1">Review and verify company profiles.</p>
         </div>
       </div>

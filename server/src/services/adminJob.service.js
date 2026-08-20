@@ -117,3 +117,24 @@ export async function moderateJob(jobId, adminUserId, status, reviewNote) {
   await job.save();
   return job;
 }
+
+/**
+ * Get job statistics for Admin Job List cards.
+ */
+export async function getJobStats() {
+  const [totalJobs, publishedJobs, pendingJobs, rejectedJobs, suspendedJobs] = await Promise.all([
+    Job.countDocuments({ isDeleted: false }),
+    Job.countDocuments({ status: JOB_STATUSES.PUBLISHED, isDeleted: false }),
+    Job.countDocuments({ status: JOB_STATUSES.PENDING_REVIEW, isDeleted: false }),
+    Job.countDocuments({ status: JOB_STATUSES.REJECTED, isDeleted: false }),
+    Job.countDocuments({ status: JOB_STATUSES.SUSPENDED, isDeleted: false }),
+  ]);
+
+  return {
+    totalJobs,
+    publishedJobs,
+    pendingJobs,
+    rejectedJobs,
+    suspendedJobs,
+  };
+}
