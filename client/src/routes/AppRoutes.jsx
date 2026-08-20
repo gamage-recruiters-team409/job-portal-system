@@ -129,7 +129,7 @@ function AppRoutes() {
         path="/applicants"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
-            <AuthenticatedLayout>
+            <AuthenticatedLayout showFooter>
               <ApplicantList />
             </AuthenticatedLayout>
           </ProtectedRoute>
@@ -140,7 +140,7 @@ function AppRoutes() {
         path="/applicants/:id"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
-            <AuthenticatedLayout>
+            <AuthenticatedLayout showFooter>
               <ApplicantDetails />
             </AuthenticatedLayout>
           </ProtectedRoute>
@@ -151,7 +151,7 @@ function AppRoutes() {
         path="/applicants/:id/cv"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
-            <AuthenticatedLayout>
+            <AuthenticatedLayout showFooter>
               <ApplicantCvView />
             </AuthenticatedLayout>
           </ProtectedRoute>
