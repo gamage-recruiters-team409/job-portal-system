@@ -54,6 +54,7 @@ import AdminEmployerList from '../features/admin/employers/pages/AdminEmployerLi
 import AdminEmployerDetails from '../features/admin/employers/pages/AdminEmployerDetails.jsx';
 import AdminJobList from '../features/admin/jobs/pages/AdminJobList.jsx';
 import AdminJobDetails from '../features/admin/jobs/pages/AdminJobDetails.jsx';
+import AdminCategorySkillsPage from '../features/admin/categories/pages/AdminCategorySkillsPage.jsx';
 import AdminPlaceholderPage from '../pages/AdminPlaceholderPage.jsx';
 
 function AppRoutes() {
@@ -405,6 +406,7 @@ function AppRoutes() {
         <Route path="employers/:companyId" element={<AdminEmployerDetails />} />
         <Route path="jobs" element={<AdminJobList />} />
         <Route path="jobs/:id" element={<AdminJobDetails />} />
+        <Route path="categories" element={<AdminCategorySkillsPage />} />
         <Route path="reported-jobs" element={<AdminReportList />} />
         <Route path="reported-jobs/:id" element={<AdminReportDetails />} />
         <Route path="*" element={<AdminPlaceholderPage />} />
