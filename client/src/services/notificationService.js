@@ -66,6 +66,40 @@ export const notificationService = {
     }
   },
 
+  async deleteNotification(notificationId) {
+    if (!notificationId) {
+      throw new Error('Notification ID is required.');
+    }
+
+    try {
+      const response = await apiClient.delete(`/notifications/${notificationId}`);
+
+      if (response.data && response.data.success) {
+        return response.data.data;
+      }
+
+      throw new Error('Failed to delete notification.');
+    } catch (error) {
+      console.error(`API Error [deleteNotification - ID: ${notificationId}]:`, error);
+      throw new Error('Failed to delete notification. Please try again.', { cause: error });
+    }
+  },
+
+  async deleteAllNotifications() {
+    try {
+      const response = await apiClient.delete('/notifications/delete-all');
+
+      if (response.data && response.data.success) {
+        return response.data.data;
+      }
+
+      throw new Error('Failed to delete all notifications.');
+    } catch (error) {
+      console.error('API Error [deleteAllNotifications]:', error);
+      throw new Error('Failed to delete all notifications. Please try again.', { cause: error });
+    }
+  },
+
   async getUnreadCount() {
     try {
       const response = await apiClient.get('/notifications/unread-count');
