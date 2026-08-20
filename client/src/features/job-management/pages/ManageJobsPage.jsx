@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getEmployerJobs,
@@ -14,6 +14,7 @@ import DeleteJobModal from '../components/DeleteJobModal.jsx';
 import ReopenJobModal from '../components/ReopenJobModal.jsx';
 import SubmitForReviewModal from '../components/SubmitForReviewModal.jsx';
 import JobStatusModal from '../components/JobStatusModal.jsx';
+import LoadingState from '../../../components/jobs/LoadingState.jsx';
 
 const STATUS_BADGES = {
   [JOB_STATUSES.DRAFT]: { label: 'Draft', className: 'bg-[#D0D0D0] text-[#000000]' },
@@ -54,14 +55,27 @@ export default function ManageJobsPage() {
   const [activeModal, setActiveModal] = useState(null); // { type: 'close'|'delete'|'reopen'|'submit', job }
   const [modalError, setModalError] = useState('');
   const [statusModalJob, setStatusModalJob] = useState(null);
+  const messageTimeoutRef = useRef(null);
+  const loadRequestIdRef = useRef(0);
+
+  const showTemporaryMessage = (setter, text, duration = 4000) => {
+    if (messageTimeoutRef.current) {
+      clearTimeout(messageTimeoutRef.current);
+    }
+    setter(text);
+    messageTimeoutRef.current = setTimeout(() => setter(''), duration);
+  };
 
   const loadJobs = async () => {
+    const requestId = ++loadRequestIdRef.current;
     try {
       const { data } = await getEmployerJobs();
+      if (requestId !== loadRequestIdRef.current) return;
       setJobs(data.jobs || []);
+      setIsLoading(false);
     } catch (error) {
+      if (requestId !== loadRequestIdRef.current) return;
       setActionError(error.response?.data?.message || 'Failed to load jobs.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -87,8 +101,8 @@ export default function ManageJobsPage() {
     setBusyJobId(jobId);
     try {
       await actionFn(jobId);
-      setActionMessage(successText);
-      await loadJobs();
+      showTemporaryMessage(setActionMessage, successText);
+      loadJobs();
       return true;
     } catch (error) {
       setModalError(error.response?.data?.message || 'Action failed.');
@@ -127,8 +141,8 @@ export default function ManageJobsPage() {
     try {
       const deadlineIso = newDeadlineInput ? new Date(newDeadlineInput).toISOString() : undefined;
       await reopenJob(jobId, deadlineIso);
-      setActionMessage('Job reopened.');
-      await loadJobs();
+      showTemporaryMessage(setActionMessage, 'Job reopened.');
+      loadJobs();
       closeModal();
     } catch (error) {
       setModalError(error.response?.data?.message || 'Failed to reopen job.');
@@ -165,21 +179,16 @@ export default function ManageJobsPage() {
       >
         Status
       </button>,
+      <button
+        key="preview"
+        type="button"
+        className={linkClass}
+        onClick={() => window.open(`/jobs/${job._id}/preview`, '_blank')}
+        disabled={disabled}
+      >
+        Preview
+      </button>,
     ];
-
-    if (job.status === JOB_STATUSES.PUBLISHED) {
-      actions.push(
-        <button
-          key="preview"
-          type="button"
-          className={linkClass}
-          onClick={() => window.open(`/jobs/${job._id}`, '_blank')}
-          disabled={disabled}
-        >
-          Preview
-        </button>
-      );
-    }
 
     if (job.status === JOB_STATUSES.DRAFT || job.status === JOB_STATUSES.REJECTED) {
       actions.push(
@@ -332,8 +341,8 @@ export default function ManageJobsPage() {
 
       <div className="mt-4 sm:mt-6 overflow-x-auto rounded-xl border border-[#E2E8F0] bg-white">
         {isLoading ? (
-          <p className="p-6 text-sm text-[#64748B]">Loading jobs...</p>
-        ) : filteredJobs.length === 0 ? (
+          <LoadingState label="Loading jobs..." />
+        ) : actionError ? null : filteredJobs.length === 0 ? (
           <p className="p-6 text-sm text-[#64748B]">No jobs found.</p>
         ) : (
           <table className="w-full text-left text-sm">
@@ -364,7 +373,9 @@ export default function ManageJobsPage() {
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-[#475569]">
                       {formatDate(job.deadline)}
                     </td>
-                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-[#475569]">—</td>
+                    <td className="px-3 py-2 sm:px-4 sm:py-3 text-[#475569]">
+                      {job.applicationsCount ?? '—'}
+                    </td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3">{renderActions(job)}</td>
                   </tr>
                 );

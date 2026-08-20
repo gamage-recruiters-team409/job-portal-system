@@ -78,6 +78,32 @@ export async function markAllNotificationsAsRead(userId) {
 }
 
 /**
+ * Deletes a single notification.
+ * Only the owning user may delete their own notification.
+ */
+export async function deleteNotification(notificationId, userId) {
+  const notification = await Notification.findOneAndDelete({
+    _id: notificationId,
+    user: userId,
+  });
+
+  if (!notification) {
+    throw new ApiError(404, 'Notification not found.');
+  }
+
+  return { notification };
+}
+
+/**
+ * Deletes all notifications belonging to the given user.
+ */
+export async function deleteAllNotifications(userId) {
+  const result = await Notification.deleteMany({ user: userId });
+
+  return { deletedCount: result.deletedCount };
+}
+
+/**
  * Returns the total count of unread notifications for the given user,
  * across ALL pages — used for the notification bell badge.
  */
@@ -182,17 +208,22 @@ export async function notifyApplicationStatusChange({
   jobId,
   jobTitle,
   newStatus,
+  note,
 }) {
+  const message = note
+    ? `Your application for "${jobTitle}" is now: ${newStatus}. Employer note: ${note}`
+    : `Your application for "${jobTitle}" is now: ${newStatus}.`;
+
   const { notification } = await createNotification({
     user: jobSeekerId,
     type: 'application_status_changed',
-    message: `Your application for "${jobTitle}" is now: ${newStatus}.`,
+    message,
     relatedJob: jobId,
   });
 
   let emailSent = true;
   try {
-    await sendApplicationStatusChangeEmail(jobSeekerEmail, jobTitle, newStatus);
+    await sendApplicationStatusChangeEmail(jobSeekerEmail, jobTitle, newStatus, note);
   } catch (error) {
     emailSent = false;
     console.error('Failed to send application-status-change email:', error.message);

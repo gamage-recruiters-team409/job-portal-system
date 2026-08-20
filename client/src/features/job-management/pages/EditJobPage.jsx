@@ -14,6 +14,7 @@ import {
 } from '../../../constants/jobOptions.js';
 import { JOB_STATUSES } from '../../../constants/statuses.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
+import LoadingState from '../../../components/jobs/LoadingState.jsx';
 
 const editJobFormSchema = z
   .object({
@@ -182,7 +183,7 @@ export default function EditJobPage() {
   };
 
   if (isLoading) {
-    return <div className="p-10 text-sm text-[#64748B]">Loading job...</div>;
+    return <LoadingState label="Loading job..." />;
   }
 
   if (loadError) {
@@ -220,6 +221,13 @@ export default function EditJobPage() {
   return (
     <div ref={topRef} className="mx-0 max-w-7xl p-4 sm:p-6 md:p-10">
       <Breadcrumb items={[{ label: 'Jobs', path: '/jobs/manage' }, { label: 'Edit job' }]} />
+      <button
+        type="button"
+        onClick={() => navigate('/jobs/manage')}
+        className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-[#2563EB] hover:text-[#1E40AF]"
+      >
+        ← Back to Manage Jobs
+      </button>
       <h1 className="mt-3 text-xl sm:text-2xl md:text-4xl font-bold text-[#000000]">Edit job</h1>
 
       {serverError && (
