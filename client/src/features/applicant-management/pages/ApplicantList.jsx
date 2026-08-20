@@ -287,6 +287,11 @@ export default function ApplicantList() {
       setDraftSearch(urlSearch);
       setAppliedFilters((prev) => ({ ...prev, search: urlSearch }));
       setCurrentPage(1);
+    } else {
+      // When the param is removed, reset the search state
+      setDraftSearch('');
+      setAppliedFilters((prev) => ({ ...prev, search: '' }));
+      setCurrentPage(1);
     }
   }, [searchParams]);
 
