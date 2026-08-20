@@ -455,6 +455,13 @@ export async function updateApplicantStatus(applicationId, body, reqUser) {
     );
   }
 
+  // Restore jobSeeker to its original unpopulated ObjectId form before
+  // building the response — it was only populated above to obtain the
+  // recipient's email for the notification side effect, and this
+  // endpoint's existing response contract must not change (jobSeeker
+  // stays an ObjectId, not a populated object), per TL review.
+  application.depopulate('jobSeeker');
+
   return { application: sanitizeApplicationForResponse(application) };
 }
 
