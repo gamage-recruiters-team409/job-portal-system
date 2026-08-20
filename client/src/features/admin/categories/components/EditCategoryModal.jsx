@@ -135,8 +135,8 @@ const EditCategoryModal = ({ isOpen, category, onClose, onSuccess }) => {
                 <span className="text-xs font-semibold text-slate-800 block">Status Availability</span>
                 <span className="text-2xs text-slate-500 mt-0.5 block">
                   {isActive
-                    ? 'Active — Category and its skills are visible across the platform.'
-                    : 'Inactive — Hidden from employers and job seekers.'}
+                    ? 'Active — Category is visible across platform category listings.'
+                    : 'Inactive — Category is hidden from public category selections.'}
                 </span>
               </div>
               <button
