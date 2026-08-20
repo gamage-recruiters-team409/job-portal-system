@@ -8,8 +8,9 @@ import Sidebar, {
 import { useAuth } from '../../context/AuthContext.jsx';
 import notificationService from '../../services/notificationService.js';
 import NotificationDropdown from '../../features/notifications/components/NotificationDropdown.jsx';
+import PublicFooter from '../public/PublicFooter.jsx';
 
-export default function AuthenticatedLayout({ children, navItems }) {
+export default function AuthenticatedLayout({ children, navItems, showFooter = false }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // --- Notification State ---
@@ -147,7 +148,10 @@ export default function AuthenticatedLayout({ children, navItems }) {
         />
 
         {/* Content View Area */}
-        <main className="min-w-0 flex-1 overflow-y-auto">{children || <Outlet />}</main>
+        <main className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+          <div className="flex-1">{children || <Outlet />}</div>
+          {showFooter && <PublicFooter />}
+        </main>
       </div>
     </div>
   );
