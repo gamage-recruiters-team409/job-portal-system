@@ -179,9 +179,7 @@ function StatusTimeline({ application }) {
 
       <div className="rounded-xl border border-slate-200 p-6">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900">
-            Status Timeline
-          </h2>
+          <h2 className="text-lg font-bold text-slate-900">Status Timeline</h2>
 
           <span className="text-sm font-medium text-slate-500">
             {STATUS_LABELS[status] ?? status}
@@ -211,9 +209,7 @@ function StatusTimeline({ application }) {
                     className={`status-timeline-circle flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 ${style.className}`}
                     style={{
                       backgroundColor: style.bg,
-                      boxShadow: isCurrent
-                        ? '0 0 0 4px rgba(34,197,94,.12)'
-                        : undefined,
+                      boxShadow: isCurrent ? '0 0 0 4px rgba(34,197,94,.12)' : undefined,
                       animationDelay: `${i * 0.25}s`,
                     }}
                   >
@@ -226,9 +222,7 @@ function StatusTimeline({ application }) {
                     {STATUS_LABELS[entry.status] ?? entry.status}
                   </p>
 
-                  <p className="mt-1 text-xs text-slate-400">
-                    {formatDate(entry.changedAt)}
-                  </p>
+                  <p className="mt-1 text-xs text-slate-400">{formatDate(entry.changedAt)}</p>
                 </div>
 
                 {/* CONNECTING LINE */}
@@ -327,7 +321,8 @@ export default function ApplicationDetailsPage() {
         {getBannerMessage(application)}
       </div>
 
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row">
+        {' '}
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900">
             {job?.title ?? 'Job unavailable'}

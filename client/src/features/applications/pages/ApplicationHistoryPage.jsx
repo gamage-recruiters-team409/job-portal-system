@@ -75,14 +75,14 @@ export default function ApplicationHistoryPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Application History</h1>
+        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Application History</h1>{' '}
         <p className="mt-2 text-sm text-slate-500">
           Track every job you've applied to and its current status.
         </p>
       </div>
 
       <div className="mb-6 flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[240px]">
+        <div className="relative w-full flex-1 sm:min-w-[240px] sm:w-auto">
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             width="16"
@@ -107,7 +107,7 @@ export default function ApplicationHistoryPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:w-auto"
         >
           <option value="all">Status: All</option>
           <option value="applied">Applied</option>
