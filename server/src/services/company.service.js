@@ -283,6 +283,46 @@ export async function updateLogo(userId, secureUrl, publicId) {
   return company;
 }
 
+/**
+ * Remove the logged-in employer's company logo, leaving the profile without one.
+ * Same save-before-cleanup ordering as updateLogo: the database is cleared
+ * first, then the old Cloudinary asset is deleted best-effort, so a failed
+ * save never leaves the database out of sync while the image is already gone.
+ * companyLogo is a re-verification field (see REVERIFICATION_FIELDS comment
+ * above updateCompany), so verificationStatus resets to pending here too.
+ *
+ * @param {string} userId - ID of the authenticated employer user
+ * @returns {Promise<import('mongoose').Document>}
+ */
+export async function removeLogo(userId) {
+  const company = await Company.findOne({ employerUserId: userId });
+  if (!company) {
+    throw new ApiError(404, 'Company profile not found.');
+  }
+
+  if (!company.companyLogo) {
+    throw new ApiError(400, 'This company profile has no logo to remove.');
+  }
+
+  const oldPublicId = company.companyLogoPublicId;
+
+  company.companyLogo = null;
+  company.companyLogoPublicId = null;
+  company.verificationStatus = EMPLOYER_VERIFICATION_STATUSES.PENDING;
+
+  await company.save();
+
+  if (oldPublicId) {
+    try {
+      await deleteFromCloudinary(oldPublicId);
+    } catch (error) {
+      console.error('Failed to delete company logo from Cloudinary:', error);
+    }
+  }
+
+  return company;
+}
+
 // NOTE (Company <-> Job integrity guard): Company is a shared model — Jobs
 // (Disura's module) reference it via Job.companyId, required + indexed. If a
 // company is deleted while jobs still point at it, every one of those jobs

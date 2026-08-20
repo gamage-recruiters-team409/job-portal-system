@@ -31,3 +31,8 @@ export const uploadCompanyLogo = async (file) => {
   });
   return data;
 };
+
+export const removeCompanyLogo = async () => {
+  const { data } = await apiClient.delete('/companies/me/logo');
+  return data;
+};

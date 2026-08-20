@@ -3,12 +3,14 @@ import Application from '../models/Application.js';
 import Company from '../models/company.model.js';
 import SavedJob from '../models/SavedJob.js';
 import User from '../models/User.js';
+import Report from '../models/Report.js';
 import { ApiError } from '../utils/apiError.js';
 import {
   JOB_STATUSES,
   APPLICATION_STATUSES,
   USER_ROLES,
   EMPLOYER_VERIFICATION_STATUSES,
+  REPORT_STATUSES,
 } from '../constants/statuses.js';
 
 /**
@@ -75,23 +77,22 @@ export async function getJobSeekerStatistics(jobSeekerId) {
 
 /**
  * Returns platform-wide counts for the admin dashboard.
- * Note: "pending reports" is not yet included — the Report model
- * (owned by Anuruddhika) does not exist in develop yet. Will be added
- * once that model is merged.
  */
 export async function getAdminStatistics() {
-  const [totalUsers, totalEmployers, verifiedEmployers, publishedJobs] = await Promise.all([
-    User.countDocuments({}),
-    User.countDocuments({ role: USER_ROLES.EMPLOYER }),
-    Company.countDocuments({ verificationStatus: EMPLOYER_VERIFICATION_STATUSES.VERIFIED }),
-    Job.countDocuments({ status: JOB_STATUSES.PUBLISHED, isDeleted: false }),
-  ]);
+  const [totalUsers, totalEmployers, verifiedEmployers, publishedJobs, pendingReports] =
+    await Promise.all([
+      User.countDocuments({}),
+      User.countDocuments({ role: USER_ROLES.EMPLOYER }),
+      Company.countDocuments({ verificationStatus: EMPLOYER_VERIFICATION_STATUSES.VERIFIED }),
+      Job.countDocuments({ status: JOB_STATUSES.PUBLISHED, isDeleted: false }),
+      Report.countDocuments({ status: REPORT_STATUSES.PENDING }),
+    ]);
 
   return {
     totalUsers,
     totalEmployers,
     verifiedEmployers,
     publishedJobs,
-    // pendingReports intentionally omitted — Report model not yet available
+    pendingReports,
   };
 }
