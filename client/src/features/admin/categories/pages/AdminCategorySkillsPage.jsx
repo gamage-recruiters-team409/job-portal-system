@@ -172,6 +172,24 @@ const AdminCategorySkillsPage = () => {
     });
   }, [categories, searchQuery, statusFilter, skillsByCategory]);
 
+  // Filter Uncategorized Skills
+  const filteredUncategorizedSkills = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return skillsByCategory.uncategorized.filter((skill) => {
+      // Status filter
+      if (statusFilter === 'ACTIVE' && !skill.isActive) return false;
+      if (statusFilter === 'INACTIVE' && skill.isActive) return false;
+
+      // Search query filter
+      if (!query) return true;
+      return skill.skillName.toLowerCase().includes(query);
+    });
+  }, [skillsByCategory.uncategorized, searchQuery, statusFilter]);
+
+  const hasResults =
+    filteredCategories.length > 0 || filteredUncategorizedSkills.length > 0;
+
   return (
     <div className="flex flex-col gap-6 w-full pb-16">
       {/* ─── Header ──────────────────────────────────────────────────────────── */}
@@ -378,32 +396,41 @@ const AdminCategorySkillsPage = () => {
         </div>
       )}
 
-      {!loading && !error && filteredCategories.length === 0 && (
+      {!loading && !error && !hasResults && (
         <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-2xs">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 mb-4">
             <Layers className="h-7 w-7" />
           </div>
           <h3 className="text-base font-bold text-slate-900">
-            No Categories Found
+            No Categories or Skills Found
           </h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
             {searchQuery
               ? `No categories or skills matched "${searchQuery}". Try a different search keyword.`
-              : 'Get started by creating your first platform job category.'}
+              : 'Get started by creating your first platform job category or skill.'}
           </p>
-          <div className="mt-5">
-            <button
-              onClick={() => setIsCreateCategoryOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add First Category</span>
-            </button>
+          <div className="mt-5 flex items-center justify-center gap-3">
+            {searchQuery ? (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors"
+              >
+                <span>Clear Search</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsCreateCategoryOpen(true)}
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add First Category</span>
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {!loading && !error && filteredCategories.length > 0 && (
+      {!loading && !error && hasResults && (
         <div className="space-y-4">
           {filteredCategories.map((category) => {
             const isExpanded = expandedCategories.has(category._id);
@@ -531,7 +558,7 @@ const AdminCategorySkillsPage = () => {
           })}
 
           {/* ── Uncategorized Skills Section (if any exist) ── */}
-          {skillsByCategory.uncategorized.length > 0 && (
+          {filteredUncategorizedSkills.length > 0 && (
             <div className="overflow-hidden rounded-2xl border border-amber-200/80 bg-amber-50/20 shadow-2xs">
               <div
                 className="flex items-center justify-between p-5 md:p-6 cursor-pointer hover:bg-amber-50/50 transition-colors"
@@ -546,7 +573,9 @@ const AdminCategorySkillsPage = () => {
                       Uncategorized Skills
                     </h2>
                     <p className="text-xs font-medium text-slate-500 mt-0.5">
-                      {skillsByCategory.uncategorized.length} skills without an assigned category
+                      {filteredUncategorizedSkills.length}{' '}
+                      {filteredUncategorizedSkills.length === 1 ? 'skill' : 'skills'}{' '}
+                      without an assigned category
                     </p>
                   </div>
                 </div>
@@ -563,7 +592,7 @@ const AdminCategorySkillsPage = () => {
               {expandedCategories.has('uncategorized') && (
                 <div className="border-t border-amber-100 bg-white/60 p-5 md:p-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                    {skillsByCategory.uncategorized.map((skill) => (
+                    {filteredUncategorizedSkills.map((skill) => (
                       <div
                         key={skill._id}
                         className="group relative flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs hover:border-amber-300 transition-all"
