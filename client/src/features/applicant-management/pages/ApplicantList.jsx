@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { APPLICATION_STATUSES } from '../../../constants/statuses.js';
 import {
   getApplicants,
@@ -236,6 +236,7 @@ function PageBtn({ label, onClick, active, disabled }) {
 
 export default function ApplicantList() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // ── Filter state (draft — only applied on "Apply Filters" click) ──
   const [draftSearch, setDraftSearch] = useState('');
@@ -278,6 +279,16 @@ export default function ApplicantList() {
 
   // Abort controller ref so changing filters cancels in-flight requests
   const abortRef = useRef(null);
+
+  // ── Sync URL 'search' query param to filter state ──
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    if (urlSearch !== null) {
+      setDraftSearch(urlSearch);
+      setAppliedFilters((prev) => ({ ...prev, search: urlSearch }));
+      setCurrentPage(1);
+    }
+  }, [searchParams]);
 
   // ── Load employer's job list once on mount ──
   useEffect(() => {

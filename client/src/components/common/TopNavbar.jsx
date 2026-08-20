@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export default function TopNavbar({
   userName = 'User',
@@ -10,7 +10,6 @@ export default function TopNavbar({
   profilePath = '/profile',
   profileDisabled = false,
   onMenuClick = () => {},
-  onSearch = () => {},
   onLogout = () => {},
   onNotificationsClick = () => {},
   onProfileClick = null,
@@ -21,6 +20,7 @@ export default function TopNavbar({
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Normalize role
   const normalizedRole = userRole?.toLowerCase().trim();
@@ -64,7 +64,6 @@ export default function TopNavbar({
     { keywords: ['applications', 'my applications', 'applied jobs', 'application history', 'status'], route: '/my-applications' },
     { keywords: ['reported jobs', 'reports', 'my reports', 'job reports'], route: '/my-reported-jobs' },
     { keywords: ['notifications', 'alerts', 'updates', 'notification center', 'bell'], route: '/notifications' },
-    { keywords: ['messages', 'inbox', 'chat', 'conversations', 'messaging'], route: '/messages' },
   ];
 
   // ─── Search handler ──────────────────────────────────────
@@ -75,12 +74,30 @@ export default function TopNavbar({
 
     const words = trimmedQuery.split(/\s+/);
 
+    const isContiguousMatch = (kwWords, queryWords) => {
+      if (kwWords.length > queryWords.length) return false;
+      for (let i = 0; i <= queryWords.length - kwWords.length; i++) {
+        let match = true;
+        for (let j = 0; j < kwWords.length; j++) {
+          if (queryWords[i + j] !== kwWords[j]) {
+            match = false;
+            break;
+          }
+        }
+        if (match) return true;
+      }
+      return false;
+    };
+
     const findRoute = (keywordMap) => {
       // 1. Check multi‑word phrases first (e.g., "create job")
       for (const entry of keywordMap) {
         for (const keyword of entry.keywords) {
-          if (keyword.includes(' ') && trimmedQuery.includes(keyword)) {
-            return entry.route;
+          if (keyword.includes(' ')) {
+            const kwWords = keyword.split(/\s+/);
+            if (isContiguousMatch(kwWords, words)) {
+              return entry.route;
+            }
           }
         }
       }
@@ -111,17 +128,17 @@ export default function TopNavbar({
     if (normalizedRole === 'employer') {
       navigate(`/applicants?search=${encodeURIComponent(trimmedQuery)}`);
     } else if (normalizedRole === 'job_seeker' || normalizedRole === 'job seeker') {
-      navigate(`/jobs?search=${encodeURIComponent(trimmedQuery)}`);
+      navigate(`/jobs?q=${encodeURIComponent(trimmedQuery)}`);
     }
     // If guest, do nothing
   }
 
   function clearSearch() {
     setSearchValue('');
-    if (normalizedRole === 'employer') {
-      navigate('/employer/dashboard');
-    } else if (normalizedRole === 'job_seeker' || normalizedRole === 'job seeker') {
-      navigate('/dashboard');
+    if (location.pathname === '/applicants') {
+      navigate('/applicants', { replace: true });
+    } else if (location.pathname === '/jobs') {
+      navigate('/jobs', { replace: true });
     }
   }
 
