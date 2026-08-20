@@ -165,21 +165,16 @@ export default function ManageJobsPage() {
       >
         Status
       </button>,
+      <button
+        key="preview"
+        type="button"
+        className={linkClass}
+        onClick={() => window.open(`/jobs/${job._id}/preview`, '_blank')}
+        disabled={disabled}
+      >
+        Preview
+      </button>,
     ];
-
-    if (job.status === JOB_STATUSES.PUBLISHED) {
-      actions.push(
-        <button
-          key="preview"
-          type="button"
-          className={linkClass}
-          onClick={() => window.open(`/jobs/${job._id}`, '_blank')}
-          disabled={disabled}
-        >
-          Preview
-        </button>
-      );
-    }
 
     if (job.status === JOB_STATUSES.DRAFT || job.status === JOB_STATUSES.REJECTED) {
       actions.push(
