@@ -14,7 +14,6 @@ import DeleteJobModal from '../components/DeleteJobModal.jsx';
 import ReopenJobModal from '../components/ReopenJobModal.jsx';
 import SubmitForReviewModal from '../components/SubmitForReviewModal.jsx';
 import JobStatusModal from '../components/JobStatusModal.jsx';
-import { getApplicants } from '../../../services/applicantService.js';
 import LoadingState from '../../../components/jobs/LoadingState.jsx';
 
 const STATUS_BADGES = {
@@ -56,8 +55,8 @@ export default function ManageJobsPage() {
   const [activeModal, setActiveModal] = useState(null); // { type: 'close'|'delete'|'reopen'|'submit', job }
   const [modalError, setModalError] = useState('');
   const [statusModalJob, setStatusModalJob] = useState(null);
-  const [applicationCounts, setApplicationCounts] = useState({});
   const messageTimeoutRef = useRef(null);
+  const loadRequestIdRef = useRef(0);
 
   const showTemporaryMessage = (setter, text, duration = 4000) => {
     if (messageTimeoutRef.current) {
@@ -68,21 +67,14 @@ export default function ManageJobsPage() {
   };
 
   const loadJobs = async () => {
+    const requestId = ++loadRequestIdRef.current;
     try {
       const { data } = await getEmployerJobs();
-      const jobList = data.jobs || [];
-      setJobs(jobList);
+      if (requestId !== loadRequestIdRef.current) return;
+      setJobs(data.jobs || []);
       setIsLoading(false);
-
-      const counts = await Promise.all(
-        jobList.map((job) =>
-          getApplicants({ jobId: job._id, limit: 1 })
-            .then((response) => [job._id, response.data.pagination?.total ?? 0])
-            .catch(() => [job._id, null])
-        )
-      );
-      setApplicationCounts(Object.fromEntries(counts));
     } catch (error) {
+      if (requestId !== loadRequestIdRef.current) return;
       setActionError(error.response?.data?.message || 'Failed to load jobs.');
       setIsLoading(false);
     }
@@ -378,7 +370,7 @@ export default function ManageJobsPage() {
                     </td>
                     <td className="px-4 py-3 text-[#475569]">{formatDate(job.deadline)}</td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3 text-[#475569]">
-                      {applicationCounts[job._id] ?? '—'}
+                      {job.applicationsCount ?? '—'}
                     </td>
                     <td className="px-4 py-3">{renderActions(job)}</td>
                   </tr>
