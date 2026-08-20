@@ -21,6 +21,7 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
   const [actionError, setActionError] = useState(null);
   const notificationButtonRef = useRef(null);
   const pendingMarkAsReadIds = useRef(new Set());
+  const pendingClearIds = useRef(new Set());
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -97,6 +98,40 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
     }
   };
 
+  const handleClear = async (id) => {
+    if (pendingClearIds.current.has(id)) return;
+    pendingClearIds.current.add(id);
+    setActionError(null);
+
+    const notification = notifications.find((item) => item._id === id);
+
+    try {
+      await notificationService.deleteNotification(id);
+      setNotifications((prev) => prev.filter((item) => item._id !== id));
+      if (notification?.status === 'Unread') {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Failed to clear notification:', error);
+      setActionError('Unable to clear this notification. Try again.');
+    } finally {
+      pendingClearIds.current.delete(id);
+    }
+  };
+
+  const handleClearAll = async () => {
+    setActionError(null);
+
+    try {
+      await notificationService.deleteAllNotifications();
+      setNotifications([]);
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to clear all notifications:', error);
+      setActionError('Unable to clear all notifications. Try again.');
+    }
+  };
+
   const isEmployer = user?.role === 'employer';
   const selectedNavItems = navItems || (isEmployer ? EMPLOYER_NAV_ITEMS : JOB_SEEKER_NAV_ITEMS);
 
@@ -133,6 +168,8 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
         onClose={() => setIsDropdownOpen(false)}
         onMarkAsRead={handleMarkAsRead}
         onMarkAllAsRead={handleMarkAllAsRead}
+        onClear={handleClear}
+        onClearAll={handleClearAll}
         triggerRef={notificationButtonRef}
         actionError={actionError}
       />

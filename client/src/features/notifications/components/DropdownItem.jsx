@@ -1,4 +1,5 @@
 import React from 'react';
+import { X } from 'lucide-react';
 
 // Helper to format the real API ISO timestamp into "5 minutes ago", etc.
 const getRelativeTime = (dateString) => {
@@ -68,7 +69,7 @@ const DEFAULT_CONFIG = {
   ),
 };
 
-const DropdownItem = ({ notification, onMarkAsRead }) => {
+const DropdownItem = ({ notification, onMarkAsRead, onClear }) => {
   const isUnread = notification.status === 'Unread';
   const {
     bg: bgColorClass,
@@ -111,6 +112,19 @@ const DropdownItem = ({ notification, onMarkAsRead }) => {
           {getRelativeTime(notification.createdAt)}
         </p>
       </div>
+
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onClear(notification._id);
+        }}
+        aria-label="Clear notification"
+        title="Clear notification"
+        className="shrink-0 rounded-[6px] p-1 text-[#64748B] hover:bg-slate-100 hover:text-[#0F172A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+      >
+        <X className="h-4 w-4" />
+      </button>
     </div>
   );
 };

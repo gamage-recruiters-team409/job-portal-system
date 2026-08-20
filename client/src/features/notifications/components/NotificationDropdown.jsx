@@ -9,6 +9,8 @@ const NotificationDropdown = ({
   onClose,
   onMarkAsRead,
   onMarkAllAsRead,
+  onClear,
+  onClearAll,
   triggerRef,
   actionError,
 }) => {
@@ -57,14 +59,26 @@ const NotificationDropdown = ({
         {/* 1. Header */}
         <div className="px-4 py-3 flex justify-between items-center border-b border-[#E2E8F0]">
           <h3 className="font-bold text-[16px] text-[#0F172A]">Notifications</h3>
-          {hasUnread && (
-            <button
-              onClick={onMarkAllAsRead}
-              className="text-[13px] text-[#2563EB] hover:underline font-medium"
-            >
-              Mark all as read
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {hasUnread && (
+              <button
+                type="button"
+                onClick={onMarkAllAsRead}
+                className="text-[13px] text-[#2563EB] hover:underline font-medium"
+              >
+                Mark all as read
+              </button>
+            )}
+            {notifications.length > 0 && (
+              <button
+                type="button"
+                onClick={onClearAll}
+                className="text-[13px] text-[#64748B] hover:text-[#0F172A] hover:underline font-medium"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 2. Tabs — only "All" is functional; Applications/Jobs/System removed
@@ -97,7 +111,12 @@ const NotificationDropdown = ({
             // List Container
             <div className="flex flex-col">
               {notifications.map((notif) => (
-                <DropdownItem key={notif._id} notification={notif} onMarkAsRead={onMarkAsRead} />
+                <DropdownItem
+                  key={notif._id}
+                  notification={notif}
+                  onMarkAsRead={onMarkAsRead}
+                  onClear={onClear}
+                />
               ))}
             </div>
           )}
