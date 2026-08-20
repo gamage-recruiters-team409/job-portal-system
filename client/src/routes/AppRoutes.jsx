@@ -31,6 +31,7 @@ import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
 import ManageJobsPage from '../features/job-management/pages/ManageJobsPage.jsx';
 import SavedJobsPage from '../features/saved-jobs/pages/SavedJobsPage.jsx';
 import EmployerDashboard from '../features/employer-profile/pages/EmployerDashboard.jsx';
+import JobSeekerDashboard from '../features/job-seeker-profile/pages/JobSeekerDashboard.jsx';
 import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.jsx';
 import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
 import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileCompletionPage.jsx';
@@ -271,6 +272,17 @@ function AppRoutes() {
       />
 
       {/* Job Seeker Profile - Job Seeker only */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <JobSeekerDashboard />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/profile"
         element={
