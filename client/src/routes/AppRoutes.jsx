@@ -349,12 +349,12 @@ function AppRoutes() {
         }
       />
 
-      {/* Notification Center - Shared across all authenticated roles */}
+      {/* Notification Center - Job Seeker & Employer */}
       <Route
         path="/notifications"
         element={
           <ProtectedRoute
-            allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER, USER_ROLES.ADMIN]}
+            allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER]}
           >
             <AuthenticatedLayout>
               <NotificationCenterPage />

@@ -11,12 +11,10 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import {
   DashboardIcon as LayoutGrid,
   UsersIcon as Users,
-  EmployersIcon as Building2,
   JobsIcon as Briefcase,
   CategoriesIcon as Shapes,
   VerificationIcon as FileCheck,
   ReportedIcon as AlertTriangle,
-  NotificationIcon as Bell,
   StatisticsIcon as BarChart2,
   LogoIcon,
 } from '../../components/common/AdminIcons.jsx';
@@ -36,7 +34,6 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
       items: [
         { name: 'Dashboard', path: '/admin', icon: LayoutGrid },
         { name: 'User Management', path: '/admin/users', icon: Users },
-        { name: 'Manage Employers', path: '/admin/employers', icon: Building2 },
       ],
     },
     {
@@ -51,7 +48,6 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
       title: 'SYSTEM',
       items: [
         { name: 'Settings', path: '/admin/settings', icon: SettingsLucide },
-        { name: 'Notifications', path: '/notifications', icon: Bell },
         { name: 'Statistics', path: '/admin/statistics', icon: BarChart2 },
       ],
     },
