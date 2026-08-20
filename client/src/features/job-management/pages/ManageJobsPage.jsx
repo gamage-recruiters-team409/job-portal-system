@@ -269,32 +269,36 @@ export default function ManageJobsPage() {
   return (
     <div className="mx-0 max-w-7xl p-4 sm:p-6 md:p-10">
       <Breadcrumb items={[{ label: 'Jobs' }]} />
-      <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+
+      {/* Row 1: Title + Post button, always side by side */}
+      <div className="mt-3 sm:mt-4 flex items-center justify-between gap-3">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#000000]">Manage jobs</h1>
         <button
           type="button"
           onClick={() => navigate('/jobs/create')}
-          className="w-full sm:w-auto rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8]"
+          className="whitespace-nowrap rounded-lg bg-[#2563EB] px-3 py-2 text-xs sm:px-4 sm:text-sm font-medium text-white hover:bg-[#1D4ED8]"
         >
           + Post new job
         </button>
       </div>
 
+      {/* Row 2: Messages */}
       {actionError && (
-        <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm text-[#DC2626]">
+        <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#DC2626]">
           {actionError}
         </div>
       )}
       {actionMessage && (
-        <div className="mt-4 rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-4 py-3 text-sm text-[#15803D]">
+        <div className="mt-4 rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#15803D]">
           {actionMessage}
         </div>
       )}
 
-      <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
+      {/* Row 3: Search + status filter together */}
+      <div className="mt-4 flex gap-3">
         <div className="relative flex-1">
           <svg
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]"
+            className="pointer-events-none absolute left-2.5 sm:left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94A3B8]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -311,13 +315,13 @@ export default function ManageJobsPage() {
             placeholder="Search postings"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-[#94A3B8] py-2 pl-10 pr-9 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+            className="h-9 sm:h-10 w-full rounded-lg border border-[#94A3B8] pl-9 pr-8 text-sm sm:pl-10 sm:pr-9 focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#000000]"
+              className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#000000]"
               aria-label="Clear search"
             >
               ×
@@ -327,7 +331,7 @@ export default function ManageJobsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className={selectClass}
+          className={`${selectClass} h-9 sm:h-10 w-32 sm:w-44`}
           style={selectArrowStyle}
         >
           <option value="">All statuses</option>
@@ -348,7 +352,9 @@ export default function ManageJobsPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-[#94A3B8] text-xs uppercase text-[#000000]">
               <tr>
-                <th className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">Job title</th>
+                <th className="sticky left-0 z-10 bg-[#94A3B8] px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">
+                  Job title
+                </th>
                 <th className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">Status</th>
                 <th className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">Deadline</th>
                 <th className="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">Applications</th>
@@ -360,7 +366,7 @@ export default function ManageJobsPage() {
                 const badge = getBadge(job);
                 return (
                   <tr key={job._id} className="border-t border-[#E2E8F0]">
-                    <td className="px-3 py-2 sm:px-4 sm:py-3 font-medium text-[#0F172A]">
+                    <td className="sticky left-0 z-10 bg-white px-3 py-2 sm:px-4 sm:py-3 font-medium text-[#0F172A]">
                       {job.title}
                     </td>
                     <td className="px-3 py-2 sm:px-4 sm:py-3">

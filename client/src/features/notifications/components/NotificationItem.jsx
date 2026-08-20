@@ -1,4 +1,5 @@
 import React from 'react';
+import { Trash2 } from 'lucide-react';
 
 const getRelativeTime = (dateString) => {
   const date = new Date(dateString);
@@ -73,7 +74,7 @@ const DEFAULT_CONFIG = {
 
 const getIconConfig = (type) => TYPE_CONFIG[type] || DEFAULT_CONFIG;
 
-const NotificationItem = ({ notification, onMarkAsRead }) => {
+const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
   const isUnread = notification.status === 'Unread';
   const iconConfig = getIconConfig(notification.type);
   const timeString = getRelativeTime(notification.createdAt);
@@ -123,6 +124,15 @@ const NotificationItem = ({ notification, onMarkAsRead }) => {
 
       <div className="flex items-center gap-4 flex-shrink-0 pt-0.5">
         <span className="text-[12px] text-[#64748B] whitespace-nowrap">{timeString}</span>
+        <button
+          type="button"
+          onClick={() => onDelete(notification._id)}
+          aria-label="Delete notification"
+          title="Delete notification"
+          className="rounded-[6px] p-1.5 text-[#64748B] opacity-100 transition-opacity hover:bg-red-50 hover:text-[#DC2626] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] sm:opacity-0 sm:group-hover:opacity-100"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );
