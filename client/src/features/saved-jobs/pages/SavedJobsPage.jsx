@@ -64,7 +64,7 @@ export default function SavedJobsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
           Saved Jobs
         </h1>
 
