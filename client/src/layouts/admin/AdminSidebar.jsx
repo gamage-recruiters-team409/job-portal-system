@@ -6,29 +6,27 @@
  */
 
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext.jsx';
 import {
   DashboardIcon as LayoutGrid,
   UsersIcon as Users,
-  EmployersIcon as Building2,
   JobsIcon as Briefcase,
   CategoriesIcon as Shapes,
   VerificationIcon as FileCheck,
-  ModerationIcon as Shield,
   ImageIcon,
   ReportedIcon as AlertTriangle,
-  NotificationIcon as Bell,
-  StatisticsIcon as BarChart2,
   LogoIcon,
 } from '../../components/common/AdminIcons.jsx';
 
 const AdminSidebar = ({ isOpen, setIsOpen }) => {
+  const { user } = useAuth();
+
   const sections = [
     {
       title: 'GENERAL',
       items: [
         { name: 'Dashboard', path: '/admin', icon: LayoutGrid },
         { name: 'User Management', path: '/admin/users', icon: Users },
-        { name: 'Manage Employers', path: '/admin/employers', icon: Building2 },
       ],
     },
     {
@@ -36,16 +34,8 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
       items: [
         { name: 'Manage Job Posts', path: '/admin/jobs', icon: Briefcase },
         { name: 'Categories & Skills', path: '/admin/categories', icon: Shapes },
-        { name: 'Employer Verification', path: '/admin/verifications', icon: FileCheck },
+        { name: 'Employer Verification', path: '/admin/employers', icon: FileCheck },
         { name: 'Reported Jobs', path: '/admin/reported-jobs', icon: AlertTriangle },
-      ],
-    },
-    {
-      title: 'SYSTEM',
-      items: [
-        { name: 'Moderation Logs', path: '/admin/moderation-logs', icon: Shield },
-        { name: 'Notifications', path: '/admin/notifications', icon: Bell },
-        { name: 'Statistics', path: '/admin/statistics', icon: BarChart2 },
       ],
     },
   ];
@@ -132,7 +122,9 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
               <ImageIcon className="h-5 w-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[14px] font-bold leading-tight text-slate-900">Admin User</span>
+              <span className="text-[14px] font-bold leading-tight text-slate-900">
+                {user?.name || user?.email || 'Admin User'}
+              </span>
               <span className="text-[12px] font-medium text-slate-500">System Admin</span>
             </div>
           </div>
@@ -143,3 +135,4 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
 };
 
 export default AdminSidebar;
+
