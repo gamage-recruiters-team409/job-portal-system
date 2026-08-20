@@ -43,6 +43,7 @@ import PortfolioLinksPage from '../features/job-seeker-profile/pages/PortfolioLi
 import CVPage from '../features/job-seeker-profile/pages/CVPage.jsx';
 import ApplicationHistoryPage from '../features/applications/pages/ApplicationHistoryPage.jsx';
 import ApplicationDetailsPage from '../features/applications/pages/ApplicationDetailsPage.jsx';
+import JobPreviewPage from '../features/job-management/pages/JobPreviewPage.jsx';
 import AdminLayout from '../layouts/admin/AdminLayout.jsx';
 import AdminDashboard from '../features/admin/dashboard/AdminDashboard.jsx';
 import AdminReportList from '../features/admin/reports/pages/AdminReportList.jsx';
@@ -187,6 +188,17 @@ function AppRoutes() {
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
             <AuthenticatedLayout>
               <ManageJobsPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/jobs/:jobId/preview"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <JobPreviewPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }
