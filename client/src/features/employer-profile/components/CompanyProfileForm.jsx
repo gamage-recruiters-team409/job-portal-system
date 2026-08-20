@@ -156,7 +156,7 @@ function pickFormFields(source) {
 }
 
 const inputCls = (hasError) =>
-  `h-11 w-full rounded-[10px] border bg-white px-3 text-sm text-[#0F172A] outline-none transition placeholder:text-[#64748B] focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] ${
+  `h-11 w-full rounded-[10px] border bg-slate-50 px-3 text-sm text-[#64748B] outline-none transition placeholder:text-[#64748B] focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] ${
     hasError ? 'border-[#DC2626]' : 'border-[#E2E8F0]'
   }`;
 
@@ -358,9 +358,9 @@ export default function CompanyProfileForm({
             — do not narrow the warning back down to just name/email without
             updating the backend rule first. */}
           {showReverifyWarning && (
-            <div className="animate-fade-in mt-6 flex items-start gap-3 rounded-xl border border-[#FDE68A] bg-[#FEF3C7] p-4">
-              <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#D97706]" />
-              <p className="min-w-0 text-sm font-medium text-[#D97706]">
+            <div className="animate-fade-in mt-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-xs">
+              <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
+              <p className="min-w-0 text-sm font-medium">
                 Changing any company detail below — except the description — will send your profile
                 back for re-verification.
               </p>
