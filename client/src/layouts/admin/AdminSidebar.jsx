@@ -42,6 +42,7 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
         { name: 'Manage Job Posts', path: '/admin/jobs', icon: Briefcase },
         { name: 'Employer Verification', path: '/admin/employers?status=pending', icon: FileCheck },
         { name: 'Reported Jobs', path: '/admin/reported-jobs', icon: AlertTriangle },
+        { name: 'Categories & Skills', path: '/admin/categories', icon: Shapes },
       ],
     },
     {
