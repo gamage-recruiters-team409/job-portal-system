@@ -144,7 +144,6 @@ export default function NotificationCenterPage() {
       setDeleteConfirmation(null);
     }
   };
-
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
     fetchNotifications(newPage);
