@@ -116,6 +116,12 @@ export default function EditJobPage() {
     })();
   }, [jobId, reset]);
 
+  useEffect(() => {
+    if (!isLoading) {
+      topRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
+  }, [isLoading]);
+
   const buildPayload = (formValues) => ({
     ...formValues,
     skills: selectedSkillIds,
@@ -183,7 +189,7 @@ export default function EditJobPage() {
 
   if (loadError) {
     return (
-      <div className="mx-0 max-w-7xl p-4 sm:p-6 md:p-10">
+      <div ref={topRef} className="mx-0 max-w-7xl p-4 sm:p-6 md:p-10">
         <Breadcrumb items={[{ label: 'Jobs', path: '/jobs/manage' }, { label: 'Edit job' }]} />
         <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#DC2626]">
           {loadError}
