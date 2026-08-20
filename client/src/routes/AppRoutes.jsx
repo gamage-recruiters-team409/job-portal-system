@@ -31,6 +31,7 @@ import CreateJobPage from '../features/job-management/pages/CreateJobPage.jsx';
 import ManageJobsPage from '../features/job-management/pages/ManageJobsPage.jsx';
 import SavedJobsPage from '../features/saved-jobs/pages/SavedJobsPage.jsx';
 import EmployerDashboard from '../features/employer-profile/pages/EmployerDashboard.jsx';
+import JobSeekerDashboard from '../features/job-seeker-profile/pages/JobSeekerDashboard.jsx';
 import MyProfilePage from '../features/job-seeker-profile/pages/MyProfilePage.jsx';
 import EditProfilePage from '../features/job-seeker-profile/pages/EditProfilePage.jsx';
 import ProfileCompletionPage from '../features/job-seeker-profile/pages/ProfileCompletionPage.jsx';
@@ -42,6 +43,7 @@ import PortfolioLinksPage from '../features/job-seeker-profile/pages/PortfolioLi
 import CVPage from '../features/job-seeker-profile/pages/CVPage.jsx';
 import ApplicationHistoryPage from '../features/applications/pages/ApplicationHistoryPage.jsx';
 import ApplicationDetailsPage from '../features/applications/pages/ApplicationDetailsPage.jsx';
+import JobPreviewPage from '../features/job-management/pages/JobPreviewPage.jsx';
 import AdminLayout from '../layouts/admin/AdminLayout.jsx';
 import AdminDashboard from '../features/admin/dashboard/AdminDashboard.jsx';
 import AdminReportList from '../features/admin/reports/pages/AdminReportList.jsx';
@@ -50,6 +52,8 @@ import AdminUserList from '../features/admin/users/pages/AdminUserList.jsx';
 import AdminUserDetails from '../features/admin/users/pages/AdminUserDetails.jsx';
 import AdminEmployerList from '../features/admin/employers/pages/AdminEmployerList.jsx';
 import AdminEmployerDetails from '../features/admin/employers/pages/AdminEmployerDetails.jsx';
+import AdminJobList from '../features/admin/jobs/pages/AdminJobList.jsx';
+import AdminJobDetails from '../features/admin/jobs/pages/AdminJobDetails.jsx';
 import AdminPlaceholderPage from '../pages/AdminPlaceholderPage.jsx';
 
 function AppRoutes() {
@@ -188,6 +192,17 @@ function AppRoutes() {
         }
       />
 
+      <Route
+        path="/jobs/:jobId/preview"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
+            <AuthenticatedLayout>
+              <JobPreviewPage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
       {/* Dashboard Statistics - Employer */}
       {/* Saved Jobs - Job Seeker only */}
       <Route
@@ -257,6 +272,17 @@ function AppRoutes() {
       />
 
       {/* Job Seeker Profile - Job Seeker only */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={[USER_ROLES.JOB_SEEKER]}>
+            <AuthenticatedLayout>
+              <JobSeekerDashboard />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/profile"
         element={
@@ -377,6 +403,8 @@ function AppRoutes() {
         <Route path="users/:userId" element={<AdminUserDetails />} />
         <Route path="employers" element={<AdminEmployerList />} />
         <Route path="employers/:companyId" element={<AdminEmployerDetails />} />
+        <Route path="jobs" element={<AdminJobList />} />
+        <Route path="jobs/:id" element={<AdminJobDetails />} />
         <Route path="reported-jobs" element={<AdminReportList />} />
         <Route path="reported-jobs/:id" element={<AdminReportDetails />} />
         <Route path="*" element={<AdminPlaceholderPage />} />

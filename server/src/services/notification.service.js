@@ -182,17 +182,22 @@ export async function notifyApplicationStatusChange({
   jobId,
   jobTitle,
   newStatus,
+  note,
 }) {
+  const message = note
+    ? `Your application for "${jobTitle}" is now: ${newStatus}. Employer note: ${note}`
+    : `Your application for "${jobTitle}" is now: ${newStatus}.`;
+
   const { notification } = await createNotification({
     user: jobSeekerId,
     type: 'application_status_changed',
-    message: `Your application for "${jobTitle}" is now: ${newStatus}.`,
+    message,
     relatedJob: jobId,
   });
 
   let emailSent = true;
   try {
-    await sendApplicationStatusChangeEmail(jobSeekerEmail, jobTitle, newStatus);
+    await sendApplicationStatusChangeEmail(jobSeekerEmail, jobTitle, newStatus, note);
   } catch (error) {
     emailSent = false;
     console.error('Failed to send application-status-change email:', error.message);

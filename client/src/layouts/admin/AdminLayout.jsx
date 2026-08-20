@@ -16,9 +16,9 @@ const AdminLayout = () => {
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
       <AdminSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      <div className="flex flex-col flex-1 overflow-hidden w-full relative">
+      <div className="flex flex-col flex-1 overflow-hidden w-full min-w-0 relative">
         <AdminTopbar onMenuClick={() => setIsSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 min-w-0 max-w-full">
           <Outlet />
         </main>
       </div>
