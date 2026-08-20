@@ -204,7 +204,6 @@ function AppRoutes() {
         }
       />
 
-      {/* Dashboard Statistics - Employer */}
       {/* Saved Jobs - Job Seeker only */}
       <Route
         path="/saved-jobs"

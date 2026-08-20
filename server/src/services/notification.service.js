@@ -78,6 +78,32 @@ export async function markAllNotificationsAsRead(userId) {
 }
 
 /**
+ * Deletes a single notification.
+ * Only the owning user may delete their own notification.
+ */
+export async function deleteNotification(notificationId, userId) {
+  const notification = await Notification.findOneAndDelete({
+    _id: notificationId,
+    user: userId,
+  });
+
+  if (!notification) {
+    throw new ApiError(404, 'Notification not found.');
+  }
+
+  return { notification };
+}
+
+/**
+ * Deletes all notifications belonging to the given user.
+ */
+export async function deleteAllNotifications(userId) {
+  const result = await Notification.deleteMany({ user: userId });
+
+  return { deletedCount: result.deletedCount };
+}
+
+/**
  * Returns the total count of unread notifications for the given user,
  * across ALL pages — used for the notification bell badge.
  */
