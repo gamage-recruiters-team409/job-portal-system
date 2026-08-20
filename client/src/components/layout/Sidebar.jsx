@@ -86,7 +86,7 @@ function BriefcaseIcon(props) {
   );
 }
 
-function MessagesIcon(props) {
+function FlagIcon(props) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -100,8 +100,7 @@ function MessagesIcon(props) {
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-      <polyline points="22,6 12,13 2,6" />
+      <path d="M4 22V4a1 1 0 0 1 1-1h13.28a1 1 0 0 1 .78 1.63L14.6 10l4.46 5.37a1 1 0 0 1-.78 1.63H5a1 1 0 0 0-1 1z" />
     </svg>
   );
 }
@@ -196,7 +195,10 @@ function BuildingIcon(props) {
   );
 }
 
-function SettingsIcon(props) {
+// Added for Notifications module (Danaja) — bell icon for the new
+// "Notifications" sidebar link, following the same SVG icon pattern
+// used by all other sidebar icons above.
+function BellIcon(props) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -210,8 +212,8 @@ function SettingsIcon(props) {
       strokeLinejoin="round"
       {...props}
     >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </svg>
   );
 }
@@ -245,11 +247,12 @@ export const EMPLOYER_NAV_ITEMS = [
     path: '/employer/company',
     altPaths: ['/company/profile'],
   },
+  // Added for Notifications module (Danaja) — links to the new
+  // /notifications page, already registered and live in AppRoutes.jsx.
   {
-    label: 'Settings',
-    icon: SettingsIcon,
-    path: '/settings',
-    disabled: true,
+    label: 'Notifications',
+    icon: BellIcon,
+    path: '/notifications',
   },
 ];
 
@@ -258,7 +261,6 @@ export const JOB_SEEKER_NAV_ITEMS = [
     label: 'Dashboard',
     icon: DashboardIcon,
     path: '/dashboard',
-    disabled: true,
   },
   {
     label: 'My Profile',
@@ -271,16 +273,9 @@ export const JOB_SEEKER_NAV_ITEMS = [
     path: '/jobs',
   },
   {
-    label: 'Messages',
-    icon: MessagesIcon,
-    path: '/messages',
-    disabled: true,
-  },
-  {
     label: 'Saved Jobs',
     icon: BookmarkIcon,
     path: '/saved-jobs',
-    
   },
   {
     label: 'My Applications',
@@ -289,14 +284,15 @@ export const JOB_SEEKER_NAV_ITEMS = [
   },
   {
     label: 'My reported jobs',
-    icon: CheckSquareIcon,
+    icon: FlagIcon,
     path: '/my-reported-jobs',
   },
+  // Added for Notifications module (Danaja) — links to the new
+  // /notifications page, already registered and live in AppRoutes.jsx.
   {
-    label: 'Settings',
-    icon: SettingsIcon,
-    path: '/settings',
-    disabled: true,
+    label: 'Notifications',
+    icon: BellIcon,
+    path: '/notifications',
   },
 ];
 

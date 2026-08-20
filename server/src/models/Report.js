@@ -49,6 +49,7 @@ const reportSchema = new Schema(
       enum: Object.values(REPORT_STATUSES),
       default: REPORT_STATUSES.PENDING,
     },
+
     reviewedBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -67,6 +68,24 @@ const reportSchema = new Schema(
     timestamps: true,
   }
 );
+
+
+// Prevent duplicate active reports for the same job by the same user
+reportSchema.index(
+  { jobId: 1, reportedBy: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: {
+        $in: [
+          REPORT_STATUSES.PENDING,
+          REPORT_STATUSES.UNDER_REVIEW,
+        ],
+      },
+    },
+  }
+);
+
 
 const Report = model('Report', reportSchema);
 

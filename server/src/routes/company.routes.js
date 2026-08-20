@@ -5,6 +5,7 @@ import {
   getCompanyById,
   updateCompany,
   uploadLogo,
+  removeLogo,
   deleteCompany,
 } from '../controllers/company.controller.js';
 import { companySchema, updateCompanySchema } from '../validations/company.validation.js';
@@ -56,6 +57,8 @@ companyRouter.put(
   uploadCompanyLogo,
   uploadLogo
 );
+
+companyRouter.delete('/me/logo', protect, requireRole(USER_ROLES.EMPLOYER), removeLogo);
 
 // Public route to view company profile by ID
 companyRouter.get('/:id', getCompanyById);
