@@ -446,6 +446,7 @@ export async function updateApplicantStatus(applicationId, body, reqUser) {
       jobId: application.job._id,
       jobTitle: application.job.title,
       newStatus: status,
+      note: note,
     });
   } catch (error) {
     console.error(
