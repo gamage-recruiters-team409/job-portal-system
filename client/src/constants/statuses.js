@@ -2,6 +2,7 @@ export const USER_ROLES = Object.freeze({
   JOB_SEEKER: 'job_seeker',
   EMPLOYER: 'employer',
   ADMIN: 'admin',
+  SUPERADMIN: 'superadmin',
 });
 
 export const ACCOUNT_STATUSES = Object.freeze({

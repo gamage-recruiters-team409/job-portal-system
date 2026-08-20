@@ -8,6 +8,7 @@ import { USER_ROLES } from '../../../constants/statuses.js';
 export function roleHome(role) {
   switch (role) {
     case USER_ROLES.ADMIN:
+    case USER_ROLES.SUPERADMIN:
       return '/admin';
     case USER_ROLES.EMPLOYER:
     case USER_ROLES.JOB_SEEKER:

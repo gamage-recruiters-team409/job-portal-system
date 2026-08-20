@@ -4,7 +4,7 @@ import { USER_ROLES, ACCOUNT_STATUSES } from '../constants/statuses.js';
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
 const objectId = z.string().regex(objectIdRegex, 'Invalid user ID format.');
 
-const MANAGEABLE_ROLES = [USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER];
+const MANAGEABLE_ROLES = [USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER, USER_ROLES.ADMIN];
 
 export const userIdParamSchema = z.object({
   userId: objectId,

@@ -16,6 +16,6 @@ statisticsRouter.get(
   requireRole(USER_ROLES.JOB_SEEKER),
   jobSeekerStatistics
 );
-statisticsRouter.get('/admin', protect, requireRole(USER_ROLES.ADMIN), adminStatistics);
+statisticsRouter.get('/admin', protect, requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN), adminStatistics);
 
 export default statisticsRouter;

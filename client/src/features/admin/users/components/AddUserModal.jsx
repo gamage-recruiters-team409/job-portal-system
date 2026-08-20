@@ -4,7 +4,7 @@
  * @module Admin/Users/Components
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,20 +12,25 @@ import { X, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { createAdminUser } from '../../../../services/adminUser.service';
 import { USER_ROLES } from '../../../../constants/statuses';
+import { useAuth } from '../../../../context/AuthContext';
 
-// Validation Schema based on backend requirements
-const addUserSchema = z.object({
+const getAddUserSchema = (isSuperAdmin) => z.object({
   name: z.string().trim().min(1, 'Name is required').max(100, 'Name cannot exceed 100 characters'),
   email: z.string().trim().min(1, 'Email is required').email('Please provide a valid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters').max(72, 'Password cannot exceed 72 characters'),
-  role: z.enum([USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER], {
+  role: z.enum(isSuperAdmin ? [USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER, USER_ROLES.ADMIN] : [USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER], {
     required_error: 'Please select a role',
   }),
 });
 
 const AddUserModal = ({ onClose, onSuccess }) => {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === USER_ROLES.SUPERADMIN;
+
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState(null);
+
+  const schema = useMemo(() => getAddUserSchema(isSuperAdmin), [isSuperAdmin]);
 
   const {
     register,
@@ -33,7 +38,7 @@ const AddUserModal = ({ onClose, onSuccess }) => {
     watch,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(addUserSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: '',
       email: '',
@@ -212,6 +217,34 @@ const AddUserModal = ({ onClose, onSuccess }) => {
                     </span>
                   </div>
                 </label>
+
+                {/* Admin Role (Superadmin Only) */}
+                {isSuperAdmin && (
+                  <label
+                    className={`flex items-start p-4 border rounded-xl cursor-pointer transition-colors ${
+                      selectedRole === USER_ROLES.ADMIN
+                        ? 'border-blue-600 bg-blue-50/50'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center h-5">
+                      <input
+                        type="radio"
+                        value={USER_ROLES.ADMIN}
+                        {...register('role')}
+                        className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
+                      />
+                    </div>
+                    <div className="ml-3 flex flex-col">
+                      <span className={`text-sm font-medium ${selectedRole === USER_ROLES.ADMIN ? 'text-blue-900' : 'text-slate-900'}`}>
+                        Admin
+                      </span>
+                      <span className="text-xs text-slate-500 mt-0.5">
+                        Administrator account with full system access.
+                      </span>
+                    </div>
+                  </label>
+                )}
               </div>
               {errors.role && <p className="mt-1 text-xs text-red-600">{errors.role.message}</p>}
             </div>

@@ -19,7 +19,7 @@ const router = Router();
 router.get(
   '/',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(getEmployersQuerySchema, 'query'),
   getEmployers
 );
@@ -28,7 +28,7 @@ router.get(
 router.get(
   '/:companyId',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(companyIdParamSchema, 'params'),
   getEmployerById
 );
@@ -37,7 +37,7 @@ router.get(
 router.patch(
   '/:companyId/verification',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(companyIdParamSchema, 'params'),
   validate(verifyEmployerSchema, 'body'),
   updateVerificationStatus

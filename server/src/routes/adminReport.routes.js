@@ -8,7 +8,7 @@ import { USER_ROLES } from '../constants/statuses.js';
 const router = Router();
 
 // Protect all admin report routes
-router.use(protect, requireRole(USER_ROLES.ADMIN));
+router.use(protect, requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN));
 
 router.get(
   '/',

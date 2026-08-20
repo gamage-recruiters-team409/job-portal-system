@@ -23,18 +23,18 @@ const router = Router();
 router.get('/', validate(getSkillsQuerySchema, 'query'), getSkills);
 
 // Admin only routes
-router.get('/all', protect, requireRole(USER_ROLES.ADMIN), getAllSkillsAdmin);
+router.get('/all', protect, requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN), getAllSkillsAdmin);
 router.post(
   '/',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(createSkillSchema, 'body'),
   createSkill
 );
 router.patch(
   '/:id',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(skillIdSchema, 'params'),
   validate(updateSkillSchema, 'body'),
   updateSkill

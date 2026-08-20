@@ -22,18 +22,18 @@ const router = Router();
 router.get('/', getCategories);
 
 // Admin only routes
-router.get('/all', protect, requireRole(USER_ROLES.ADMIN), getAllCategoriesAdmin);
+router.get('/all', protect, requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN), getAllCategoriesAdmin);
 router.post(
   '/',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(createCategorySchema, 'body'),
   createCategory
 );
 router.patch(
   '/:id',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(categoryIdSchema, 'params'),
   validate(updateCategorySchema, 'body'),
   updateCategory

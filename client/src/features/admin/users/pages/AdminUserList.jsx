@@ -24,6 +24,8 @@ import {
 import { getAdminUsers, getAdminUserStats } from '../../../../services/adminUser.service';
 import AddUserModal from '../components/AddUserModal';
 import EditUserModal from '../components/EditUserModal';
+import { useAuth } from '../../../../context/AuthContext';
+import { USER_ROLES } from '../../../../constants/statuses';
 
 /* ─── Helper Functions ─────────────────────────────────────────────────────── */
 
@@ -48,6 +50,9 @@ const getInitials = (name) => {
 /* ─── AdminUserList Component ──────────────────────────────────────────────── */
 
 const AdminUserList = () => {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === USER_ROLES.SUPERADMIN;
+
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState({ totalRegistered: 0, activeNow: 0, reportsPending: 0 });
   const [loading, setLoading] = useState(true);
@@ -385,6 +390,7 @@ const AdminUserList = () => {
               <option value="">All Roles</option>
               <option value="job_seeker">Job Seeker</option>
               <option value="employer">Employer</option>
+              {isSuperAdmin && <option value="admin">Admin</option>}
             </select>
           </div>
 

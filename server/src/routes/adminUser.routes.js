@@ -24,19 +24,19 @@ const router = Router();
 router.get(
   '/',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(getUsersQuerySchema, 'query'),
   getUsers
 );
 
 // GET /api/v1/admin/users/stats — dashboard statistics
-router.get('/stats', protect, requireRole(USER_ROLES.ADMIN), getUserStats);
+router.get('/stats', protect, requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN), getUserStats);
 
 // POST /api/v1/admin/users — admin creates a new user
 router.post(
   '/',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(createUserSchema, 'body'),
   createUser
 );
@@ -45,7 +45,7 @@ router.post(
 router.get(
   '/:userId',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(userIdParamSchema, 'params'),
   getUserById
 );
@@ -54,7 +54,7 @@ router.get(
 router.patch(
   '/:userId',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(userIdParamSchema, 'params'),
   validate(updateUserSchema, 'body'),
   updateUser
@@ -64,7 +64,7 @@ router.patch(
 router.patch(
   '/:userId/status',
   protect,
-  requireRole(USER_ROLES.ADMIN),
+  requireRole(USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN),
   validate(userIdParamSchema, 'params'),
   validate(updateUserStatusSchema, 'body'),
   updateUserStatus

@@ -8,9 +8,14 @@ const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /**
  * Get paginated, searchable, filterable list of users for Admin.
  */
-export async function getUsers({ search, status, role, page = 1, limit = 10 }) {
-  // Base filter: NEVER return admin users through this API
-  const filter = { role: { $ne: USER_ROLES.ADMIN } };
+export async function getUsers({ search, status, role, page = 1, limit = 10 }, actingUser) {
+  // Base filter: NEVER return superadmin users through this API
+  // Admins can only see job seekers and employers. Superadmins can see admins too.
+  const filter = {
+    role: actingUser?.role === USER_ROLES.SUPERADMIN
+      ? { $ne: USER_ROLES.SUPERADMIN }
+      : { $nin: [USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN] }
+  };
 
   // Search by name or email (case-insensitive, regex-safe)
   if (search) {
@@ -50,13 +55,17 @@ export async function getUsers({ search, status, role, page = 1, limit = 10 }) {
 /**
  * Get a single user by ID for Admin view.
  */
-export async function getUserById(userId) {
+export async function getUserById(userId, actingUser) {
   const user = await User.findById(userId);
   if (!user) {
     throw new ApiError(404, 'User not found.');
   }
 
-  if (user.role === USER_ROLES.ADMIN) {
+  if (user.role === USER_ROLES.SUPERADMIN) {
+    throw new ApiError(403, 'You cannot manage superadmin accounts.');
+  }
+
+  if (user.role === USER_ROLES.ADMIN && actingUser?.role !== USER_ROLES.SUPERADMIN) {
     throw new ApiError(403, 'You cannot manage other admin accounts.');
   }
 
@@ -66,7 +75,11 @@ export async function getUserById(userId) {
 /**
  * Admin creates a new user (auto-verified, no email verification required).
  */
-export async function createUser({ name, email, password, role }) {
+export async function createUser({ name, email, password, role }, actingUser) {
+  if (role === USER_ROLES.ADMIN && actingUser?.role !== USER_ROLES.SUPERADMIN) {
+    throw new ApiError(403, 'Only a superadmin can create admin accounts.');
+  }
+
   // Check for duplicate email (case-insensitive)
   const existingUser = await User.findOne({
     email: { $regex: new RegExp(`^${escapeRegex(email)}$`, 'i') },
@@ -91,14 +104,22 @@ export async function createUser({ name, email, password, role }) {
 /**
  * Admin updates basic user fields (name, email, role).
  */
-export async function updateUser(userId, { name, email, role }) {
+export async function updateUser(userId, { name, email, role }, actingUser) {
   const user = await User.findById(userId);
   if (!user) {
     throw new ApiError(404, 'User not found.');
   }
 
-  if (user.role === USER_ROLES.ADMIN) {
+  if (user.role === USER_ROLES.SUPERADMIN) {
+    throw new ApiError(403, 'You cannot manage superadmin accounts.');
+  }
+
+  if (user.role === USER_ROLES.ADMIN && actingUser?.role !== USER_ROLES.SUPERADMIN) {
     throw new ApiError(403, 'You cannot manage other admin accounts.');
+  }
+  
+  if (role === USER_ROLES.ADMIN && actingUser?.role !== USER_ROLES.SUPERADMIN) {
+    throw new ApiError(403, 'Only a superadmin can grant admin roles.');
   }
 
   // If email is being changed, check for duplicates
@@ -124,9 +145,9 @@ export async function updateUser(userId, { name, email, role }) {
  * Admin changes a user's account status (suspend / reactivate / ban).
  * Prevents the admin from changing their own status.
  */
-export async function updateUserStatus(userId, newStatus, adminUserId) {
+export async function updateUserStatus(userId, newStatus, actingUser) {
   // Prevent admin from suspending/banning themselves
-  if (userId === adminUserId.toString()) {
+  if (userId === actingUser?._id?.toString()) {
     throw new ApiError(400, 'You cannot change your own account status.');
   }
 
@@ -135,7 +156,11 @@ export async function updateUserStatus(userId, newStatus, adminUserId) {
     throw new ApiError(404, 'User not found.');
   }
 
-  if (user.role === USER_ROLES.ADMIN) {
+  if (user.role === USER_ROLES.SUPERADMIN) {
+    throw new ApiError(403, 'You cannot manage superadmin accounts.');
+  }
+
+  if (user.role === USER_ROLES.ADMIN && actingUser?.role !== USER_ROLES.SUPERADMIN) {
     throw new ApiError(403, 'You cannot manage other admin accounts.');
   }
 

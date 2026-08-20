@@ -367,7 +367,7 @@ function AppRoutes() {
         path="/notifications"
         element={
           <ProtectedRoute
-            allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER, USER_ROLES.ADMIN]}
+            allowedRoles={[USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER, USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN]}
           >
             <AuthenticatedLayout>
               <NotificationCenterPage />
@@ -395,7 +395,7 @@ function AppRoutes() {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+          <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN]}>
             <AdminLayout />
           </ProtectedRoute>
         }

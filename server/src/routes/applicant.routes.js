@@ -22,7 +22,7 @@ import { USER_ROLES } from '../constants/statuses.js';
 const applicantRouter = Router();
 
 // All routes in this module require a valid session and an employer or admin role.
-applicantRouter.use(protect, requireRole(USER_ROLES.EMPLOYER, USER_ROLES.ADMIN));
+applicantRouter.use(protect, requireRole(USER_ROLES.EMPLOYER, USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN));
 
 // GET /api/v1/applicants?jobId=&status=&search=&page=&limit=
 applicantRouter.get('/', validate(listApplicantsQuerySchema, 'query'), listApplicantsController);

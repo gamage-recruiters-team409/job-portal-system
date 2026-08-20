@@ -4,7 +4,7 @@
  * @module Admin/Users/Components
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,19 +12,25 @@ import { X, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { updateAdminUser, updateAdminUserStatus } from '../../../../services/adminUser.service';
 import { USER_ROLES, ACCOUNT_STATUSES } from '../../../../constants/statuses';
+import { useAuth } from '../../../../context/AuthContext';
 
 // Validation Schema
-const editUserSchema = z.object({
+const getEditUserSchema = (isSuperAdmin) => z.object({
   name: z.string().trim().min(1, 'Name is required').max(100, 'Name cannot exceed 100 characters'),
   email: z.string().trim().min(1, 'Email is required').email('Please provide a valid email address'),
-  role: z.enum([USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER], {
+  role: z.enum(isSuperAdmin ? [USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER, USER_ROLES.ADMIN] : [USER_ROLES.JOB_SEEKER, USER_ROLES.EMPLOYER], {
     required_error: 'Please select a role',
   }),
   accountStatus: z.enum([ACCOUNT_STATUSES.ACTIVE, ACCOUNT_STATUSES.SUSPENDED, ACCOUNT_STATUSES.INACTIVE]),
 });
 
-const EditUserModal = ({ user, onClose, onSuccess }) => {
+const EditUserModal = ({ user: editingUser, onClose, onSuccess }) => {
+  const { user: currentUser } = useAuth();
+  const isSuperAdmin = currentUser?.role === USER_ROLES.SUPERADMIN;
+  
   const [apiError, setApiError] = useState(null);
+
+  const schema = useMemo(() => getEditUserSchema(isSuperAdmin), [isSuperAdmin]);
 
   const {
     register,
@@ -33,45 +39,52 @@ const EditUserModal = ({ user, onClose, onSuccess }) => {
     reset,
     formState: { errors, isSubmitting, isDirty },
   } = useForm({
-    resolver: zodResolver(editUserSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
-      name: user?.name || '',
-      email: user?.email || '',
-      role: user?.role || USER_ROLES.JOB_SEEKER,
-      accountStatus: user?.accountStatus || ACCOUNT_STATUSES.ACTIVE,
+      name: editingUser?.name || '',
+      email: editingUser?.email || '',
+      role: editingUser?.role || USER_ROLES.JOB_SEEKER,
+      accountStatus: editingUser?.accountStatus || ACCOUNT_STATUSES.ACTIVE,
     },
   });
 
   const selectedRole = watch('role');
 
   useEffect(() => {
-    if (user) {
+    if (editingUser) {
       reset({
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        accountStatus: user.accountStatus,
+        name: editingUser.name,
+        email: editingUser.email,
+        role: editingUser.role,
+        accountStatus: editingUser.accountStatus,
       });
     }
-  }, [user, reset]);
+  }, [editingUser, reset]);
 
   const onSubmit = async (data) => {
     try {
       setApiError(null);
+      const updatePromises = [];
       
       // Update basic fields if they changed
-      if (data.name !== user.name || data.email !== user.email || data.role !== user.role) {
-        await updateAdminUser(user._id, {
-          name: data.name,
-          email: data.email,
-          role: data.role,
-        });
+      if (data.role !== editingUser.role || data.name !== editingUser.name || data.email !== editingUser.email) {
+        updatePromises.push(
+          updateAdminUser(editingUser._id, {
+            name: data.name,
+            email: data.email,
+            role: data.role,
+          })
+        );
       }
 
       // Update status if it changed
-      if (data.accountStatus !== user.accountStatus) {
-        await updateAdminUserStatus(user._id, data.accountStatus);
+      if (data.accountStatus !== editingUser.accountStatus) {
+        updatePromises.push(
+          updateAdminUserStatus(editingUser._id, data.accountStatus)
+        );
       }
+      
+      await Promise.all(updatePromises);
 
       toast.success('User updated successfully!');
       onSuccess();
@@ -210,6 +223,33 @@ const EditUserModal = ({ user, onClose, onSuccess }) => {
                     </span>
                   </div>
                 </label>
+                {/* Admin Role (Superadmin Only) */}
+                {isSuperAdmin && (
+                  <label
+                    className={`flex items-start p-4 border rounded-xl cursor-pointer transition-colors ${
+                      selectedRole === USER_ROLES.ADMIN
+                        ? 'border-blue-600 bg-blue-50/50'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center h-5">
+                      <input
+                        type="radio"
+                        value={USER_ROLES.ADMIN}
+                        {...register('role')}
+                        className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-600"
+                      />
+                    </div>
+                    <div className="ml-3 flex flex-col">
+                      <span className={`text-sm font-medium ${selectedRole === USER_ROLES.ADMIN ? 'text-blue-900' : 'text-slate-900'}`}>
+                        Admin
+                      </span>
+                      <span className="text-xs text-slate-500 mt-0.5">
+                        Administrator account with full system access.
+                      </span>
+                    </div>
+                  </label>
+                )}
               </div>
               {errors.role && <p className="mt-1 text-xs text-red-600">{errors.role.message}</p>}
             </div>

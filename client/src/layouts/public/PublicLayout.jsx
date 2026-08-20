@@ -17,7 +17,7 @@ export default function PublicLayout() {
   const { user, isAuthenticated } = useAuth();
   const location = useLocation();
 
-  const isAdmin = user?.role === USER_ROLES.ADMIN;
+  const isAdmin = user?.role === USER_ROLES.ADMIN || user?.role === USER_ROLES.SUPERADMIN;
   const isEmployer = user?.role === USER_ROLES.EMPLOYER;
   const isJobSeeker = user?.role === USER_ROLES.JOB_SEEKER;
 
