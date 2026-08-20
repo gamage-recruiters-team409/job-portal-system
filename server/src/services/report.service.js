@@ -39,6 +39,7 @@ if (existingReport) {
   );
 }
 
+try {
   const report = await Report.create({
     jobId: job._id,
     jobTitle: job.title,
@@ -50,6 +51,19 @@ if (existingReport) {
   });
 
   return report;
+
+} catch (error) {
+
+  // Handle MongoDB duplicate key error from unique index
+  if (error.code === 11000) {
+    throw new ApiError(
+      400,
+      'You have already reported this job. Please wait until the previous report is reviewed.'
+    );
+  }
+
+  throw error;
+}
 };
 
 export const getMyReports = async (userId) => {
