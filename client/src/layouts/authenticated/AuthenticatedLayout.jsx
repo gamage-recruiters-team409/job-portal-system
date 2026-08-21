@@ -102,6 +102,8 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
     if (pendingClearIds.current.has(id)) return;
     pendingClearIds.current.add(id);
     setActionError(null);
+    const wasUnread =
+      notifications.find((notification) => notification._id === id)?.status === 'Unread';
 
     try {
       try {
@@ -113,15 +115,21 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
       }
 
       try {
-        const [data, unread] = await Promise.all([
-          notificationService.getNotifications(1, 5),
-          notificationService.getUnreadCount(),
-        ]);
+        const data = await notificationService.getNotifications(1, 5);
         setNotifications(data.notifications || []);
+      } catch (error) {
+        console.error('Failed to refresh notification list after clear:', error);
+        setNotifications((prev) => prev.filter((item) => item._id !== id));
+      }
+
+      try {
+        const unread = await notificationService.getUnreadCount();
         setUnreadCount(unread);
       } catch (error) {
-        console.error('Failed to refresh notifications after clear:', error);
-        setNotifications((prev) => prev.filter((item) => item._id !== id));
+        console.error('Failed to refresh unread count after clear:', error);
+        if (wasUnread) {
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+        }
       }
     } finally {
       pendingClearIds.current.delete(id);
