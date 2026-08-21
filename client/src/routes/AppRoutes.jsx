@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { USER_ROLES } from '../constants/statuses.js';
 import PublicLayout from '../layouts/public/PublicLayout.jsx';
+import AdaptiveJobsLayout from '../layouts/public/AdaptiveJobsLayout.jsx';
 import FoundationPage from '../pages/FoundationPage.jsx';
 import NotFoundPage from '../pages/NotFoundPage.jsx';
 import UnauthorizedPage from '../pages/UnauthorizedPage.jsx';
@@ -69,11 +70,16 @@ function AppRoutes() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-      {/* Public pages — wrapped in PublicLayout so PublicFooter appears on all of them */}
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<FoundationPage />} />
+      {/* Public Job Discovery — uses AdaptiveJobsLayout so authenticated users (Job Seekers/Employers)
+          retain their portal sidebar and top navbar with PublicFooter, while guests see PublicLayout */}
+      <Route element={<AdaptiveJobsLayout />}>
         <Route path="/jobs" element={<JobsPage />} />
         <Route path="/jobs/:id" element={<JobDetailPage />} />
+      </Route>
+
+      {/* Public informational pages — wrapped in PublicLayout so PublicFooter appears on all of them */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<FoundationPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/faq" element={<FAQPage />} />
@@ -165,7 +171,7 @@ function AppRoutes() {
         path="/jobs/create"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
-            <AuthenticatedLayout>
+            <AuthenticatedLayout showFooter>
               <CreateJobPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
@@ -176,7 +182,7 @@ function AppRoutes() {
         path="/jobs/:jobId/edit"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
-            <AuthenticatedLayout>
+            <AuthenticatedLayout showFooter>
               <EditJobPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
@@ -187,7 +193,7 @@ function AppRoutes() {
         path="/jobs/manage"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
-            <AuthenticatedLayout>
+            <AuthenticatedLayout showFooter>
               <ManageJobsPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
@@ -198,7 +204,7 @@ function AppRoutes() {
         path="/jobs/:jobId/preview"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
-            <AuthenticatedLayout>
+            <AuthenticatedLayout showFooter>
               <JobPreviewPage />
             </AuthenticatedLayout>
           </ProtectedRoute>

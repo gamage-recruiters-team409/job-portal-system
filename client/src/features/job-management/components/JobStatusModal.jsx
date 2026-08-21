@@ -108,13 +108,13 @@ export default function JobStatusModal({ job, onClose, onEdit, onClosePosting })
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[600px] rounded-xl bg-white shadow-lg"
+        className="w-full max-w-[600px] rounded-xl bg-white shadow-lg text-sm sm:text-base"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header — fixed, never scrolls */}
-        <div className="flex items-start justify-between p-6 pb-0">
+        <div className="flex items-start justify-between p-4 sm:p-6 pb-0">
           <div>
-            <h2 className="text-xl font-bold text-[#000000]">{job.title}</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-[#000000]">{job.title}</h2>
             <span
               className={`mt-1 inline-block rounded-full px-2 py-1 text-xs font-medium ${STATUS_BADGE_STYLES[job.status] || 'bg-[#F1F5F9] text-[#475569]'}`}
             >
@@ -134,25 +134,29 @@ export default function JobStatusModal({ job, onClose, onEdit, onClosePosting })
         </div>
 
         {/* Stat cards — fixed, never scrolls */}
-        <div className="grid grid-cols-3 gap-3 p-6 pb-0">
-          <div className="rounded-lg bg-[#F1F5F9] p-3 text-center">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 p-4 sm:p-6 pb-0">
+          <div className="rounded-lg bg-[#F1F5F9] p-2 sm:p-3 text-center">
             <p className="text-xs text-[#64748B]">Applicants</p>
-            <p className="mt-1 text-lg font-bold text-[#000000]">
+            <p className="mt-1 text-base sm:text-lg font-bold text-[#000000]">
               {applicantCount === null ? '—' : applicantCount}
             </p>
           </div>
-          <div className="rounded-lg bg-[#F1F5F9] p-3 text-center">
+          <div className="rounded-lg bg-[#F1F5F9] p-2 sm:p-3 text-center">
             <p className="text-xs text-[#64748B]">{deadlineInfo.label}</p>
-            <p className="mt-1 text-lg font-bold text-[#000000]">{deadlineInfo.value}</p>
+            <p className="mt-1 text-base sm:text-lg font-bold text-[#000000]">
+              {deadlineInfo.value}
+            </p>
           </div>
-          <div className="rounded-lg bg-[#F1F5F9] p-3 text-center">
+          <div className="rounded-lg bg-[#F1F5F9] p-2 sm:p-3 text-center">
             <p className="text-xs text-[#64748B]">Views</p>
-            <p className="mt-1 text-lg font-bold text-[#000000]">{job.viewsCount ?? 0}</p>
+            <p className="mt-1 text-base sm:text-lg font-bold text-[#000000]">
+              {job.viewsCount ?? 0}
+            </p>
           </div>
         </div>
 
         {/* Status history — only this section scrolls */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <p className="mb-2 text-sm font-semibold text-[#000000]">Status history</p>
           <div className="max-h-48 space-y-3 overflow-y-auto pr-1">
             {history.map((entry, index) => (
@@ -173,12 +177,12 @@ export default function JobStatusModal({ job, onClose, onEdit, onClosePosting })
         </div>
 
         {/* Footer — fixed, never scrolls */}
-        <div className="flex justify-end gap-3 border-t border-[#E2E8F0] p-6 pt-4">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 border-t border-[#E2E8F0] p-4 sm:p-6 pt-3 sm:pt-4">
           {canEdit && (
             <button
               type="button"
               onClick={onEdit}
-              className="rounded-lg border border-[#94A3B8] px-4 py-2 text-sm font-medium text-[#000000] hover:bg-[#94A3B8]"
+              className="rounded-lg border border-[#94A3B8] w-full sm:w-auto px-4 py-2 text-sm font-medium text-[#000000] hover:bg-[#94A3B8]"
             >
               Edit
             </button>
@@ -187,7 +191,7 @@ export default function JobStatusModal({ job, onClose, onEdit, onClosePosting })
             <button
               type="button"
               onClick={onClosePosting}
-              className="rounded-lg bg-[#DC2626] px-4 py-2 text-sm font-medium text-white hover:bg-[#B91C1C]"
+              className="rounded-lg bg-[#DC2626] w-full sm:w-auto px-4 py-2 text-sm font-medium text-white hover:bg-[#B91C1C]"
             >
               Close posting
             </button>

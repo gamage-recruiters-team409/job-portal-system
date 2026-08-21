@@ -88,8 +88,8 @@ export default function JobPreviewPage() {
   const salaryText = formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      <div className="mb-6">
+    <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-8">
+      <div className="mb-4 sm:mb-6">
         <button
           type="button"
           onClick={() => navigate('/jobs/manage')}
@@ -99,29 +99,33 @@ export default function JobPreviewPage() {
         </button>
       </div>
 
-      <div className="mb-6 rounded-xl border border-[#93C5FD] bg-[#EFF6FF] px-4 py-3 text-center text-sm font-medium text-[#1E40AF]">
+      <div className="mb-4 sm:mb-6 rounded-xl border border-[#93C5FD] bg-[#EFF6FF] px-3 py-2 sm:px-4 sm:py-3 text-center text-xs sm:text-sm font-medium text-[#1E40AF]">
         Preview — this is how job seekers will see this posting once it's published.
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="space-y-8 lg:col-span-2">
-          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-sm sm:p-8">
-            <div className="flex items-start gap-4">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3 lg:gap-8">
+        <div className="space-y-4 sm:space-y-6 lg:col-span-2 lg:space-y-8">
+          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm sm:p-6 md:p-8">
+            <div className="flex items-start gap-3 sm:gap-4">
               {company?.companyLogo ? (
                 <img
                   src={company.companyLogo}
                   alt={companyName}
-                  className="h-16 w-16 shrink-0 rounded-xl object-cover"
+                  className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded-xl object-cover"
                 />
               ) : (
-                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[#DBEAFE] text-xl font-bold text-[#1D4ED8]">
+                <span className="flex h-12 w-12 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-xl bg-[#DBEAFE] text-lg sm:text-xl font-bold text-[#1D4ED8]">
                   {companyName.charAt(0)}
                 </span>
               )}
               <div>
-                <h1 className="text-2xl font-bold text-[#0F172A] sm:text-3xl">{job.title}</h1>
-                <p className="mt-1 text-base font-medium text-[#475569]">{companyName}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-[#0F172A]">
+                  {job.title}
+                </h1>
+                <p className="mt-1 text-sm sm:text-base font-medium text-[#475569]">
+                  {companyName}
+                </p>
+                <div className="mt-2 sm:mt-3 flex flex-wrap gap-2">
                   <span className="inline-flex items-center gap-1 rounded-md bg-[#F1F5F9] px-2.5 py-1 text-xs font-semibold text-[#334155]">
                     📍 {job.location}
                   </span>
@@ -136,33 +140,37 @@ export default function JobPreviewPage() {
             </div>
           </div>
 
-          <div className="space-y-6 rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-sm sm:p-8">
+          <div className="space-y-4 sm:space-y-6 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm sm:p-6 md:p-8">
             <div>
-              <h3 className="text-lg font-bold text-[#0F172A]">Job Description</h3>
-              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-[#475569]">
+              <h3 className="text-base sm:text-lg font-bold text-[#0F172A]">Job Description</h3>
+              <p className="mt-2 sm:mt-3 whitespace-pre-line text-sm leading-relaxed text-[#475569]">
                 {job.description}
               </p>
             </div>
             {job.responsibilities && (
               <div className="border-t border-[#F1F5F9] pt-6">
-                <h3 className="text-lg font-bold text-[#0F172A]">Key Responsibilities</h3>
-                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-[#475569]">
+                <h3 className="text-base sm:text-lg font-bold text-[#0F172A]">
+                  Key Responsibilities
+                </h3>
+                <p className="mt-2 sm:mt-3 whitespace-pre-line text-sm leading-relaxed text-[#475569]">
                   {job.responsibilities}
                 </p>
               </div>
             )}
             {job.requirements && (
               <div className="border-t border-[#F1F5F9] pt-6">
-                <h3 className="text-lg font-bold text-[#0F172A]">Requirements & Qualifications</h3>
-                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-[#475569]">
+                <h3 className="text-base sm:text-lg font-bold text-[#0F172A]">
+                  Requirements & Qualifications
+                </h3>
+                <p className="mt-2 sm:mt-3 whitespace-pre-line text-sm leading-relaxed text-[#475569]">
                   {job.requirements}
                 </p>
               </div>
             )}
             {job.benefits && (
               <div className="border-t border-[#F1F5F9] pt-6">
-                <h3 className="text-lg font-bold text-[#0F172A]">Benefits & Perks</h3>
-                <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-[#475569]">
+                <h3 className="text-base sm:text-lg font-bold text-[#0F172A]">Benefits & Perks</h3>
+                <p className="mt-2 sm:mt-3 whitespace-pre-line text-sm leading-relaxed text-[#475569]">
                   {job.benefits}
                 </p>
               </div>
@@ -185,23 +193,23 @@ export default function JobPreviewPage() {
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-sm">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-4 sm:p-6 shadow-sm">
             <h3 className="text-base font-bold text-[#0F172A]">Job Summary</h3>
-            <dl className="mt-4 divide-y divide-[#F1F5F9] text-sm">
-              <div className="flex justify-between py-3">
+            <dl className="mt-3 sm:mt-4 divide-y divide-[#F1F5F9] text-sm">
+              <div className="flex justify-between py-2 sm:py-3">
                 <dt className="text-[#64748B]">Offered Salary</dt>
                 <dd className="font-semibold text-[#0F172A]">{salaryText}</dd>
               </div>
-              <div className="flex justify-between py-3">
+              <div className="flex justify-between py-2 sm:py-3">
                 <dt className="text-[#64748B]">Experience</dt>
                 <dd className="font-semibold text-[#0F172A]">{job.experienceYears} years</dd>
               </div>
-              <div className="flex justify-between py-3">
+              <div className="flex justify-between py-2 sm:py-3">
                 <dt className="text-[#64748B]">Job Category</dt>
                 <dd className="font-semibold text-[#0F172A]">{categoryName}</dd>
               </div>
-              <div className="flex justify-between py-3">
+              <div className="flex justify-between py-2 sm:py-3">
                 <dt className="text-[#64748B]">Application Deadline</dt>
                 <dd className="font-semibold text-[#0F172A]">
                   {new Date(job.deadline).toLocaleDateString('en-US', {
@@ -214,9 +222,9 @@ export default function JobPreviewPage() {
             </dl>
           </div>
 
-          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-4 sm:p-6 shadow-sm">
             <h3 className="text-base font-bold text-[#0F172A]">About the Employer</h3>
-            <div className="mt-4 flex items-center gap-3">
+            <div className="mt-3 sm:mt-4 flex items-center gap-3">
               {company?.companyLogo ? (
                 <img
                   src={company.companyLogo}
