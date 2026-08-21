@@ -5,24 +5,28 @@
  * @module Common/Components
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Ban, Check, Lock, EyeOff } from 'lucide-react';
 
 /* ─── ConfirmationModal ─────────────────────────────────────────────────────── */
 
-const ConfirmationModal = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  description,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
-  requireCheckbox = false,
-  checkboxLabel = 'I understand the administrative implications of this action.',
-  isLoading = false,
-  consequences = [], // Array of { icon: ReactNode, title: string, description: string }
-}) => {
+const ConfirmationModal = forwardRef(function ConfirmationModal(
+  {
+    isOpen,
+    onClose,
+    onConfirm,
+    title,
+    description,
+    confirmText = 'Confirm',
+    cancelText = 'Cancel',
+    requireCheckbox = false,
+    checkboxLabel = 'I understand the administrative implications of this action.',
+    isLoading = false,
+    consequences = [], // Array of { icon: ReactNode, title: string, description: string }
+  },
+  ref
+) {
   const [isChecked, setIsChecked] = useState(false);
 
   // Reset checkbox when modal opens/closes
@@ -39,8 +43,11 @@ const ConfirmationModal = ({
     onConfirm();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150">
+  return createPortal(
+    <div
+      ref={ref}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150"
+    >
       <div
         className="bg-white rounded-3xl shadow-2xl w-full max-w-[490px] border border-slate-100 overflow-hidden relative animate-in zoom-in-95 duration-150 bg-gradient-to-b from-red-50/50 via-white to-white"
         onClick={(e) => e.stopPropagation()}
@@ -56,9 +63,7 @@ const ConfirmationModal = ({
 
           {/* Heading and Description */}
           <div>
-            <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
-              {title}
-            </h3>
+            <h3 className="text-2xl font-bold text-slate-900 tracking-tight">{title}</h3>
             {description && (
               <p className="text-sm text-slate-500 mt-1.5 leading-relaxed max-w-sm mx-auto">
                 {description}
@@ -147,8 +152,9 @@ const ConfirmationModal = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
-};
+});
 
 export default ConfirmationModal;

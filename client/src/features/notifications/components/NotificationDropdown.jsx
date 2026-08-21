@@ -17,6 +17,7 @@ const NotificationDropdown = ({
 }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const modalRef = useRef(null);
   const [clearAllConfirmation, setClearAllConfirmation] = useState(false);
   const [clearingAll, setClearingAll] = useState(false);
 
@@ -27,11 +28,12 @@ const NotificationDropdown = ({
     const handleClickOutside = (event) => {
       const clickedInsideDropdown = dropdownRef.current?.contains(event.target);
       const clickedTrigger = triggerRef?.current?.contains(event.target);
+      const clickedInsideModal = modalRef.current?.contains(event.target);
 
       // Ignore clicks on the bell itself — its own onClick already
       // handles toggling open/closed, so closing here too would race
       // with that toggle and cause an open->close->reopen flicker.
-      if (!clickedInsideDropdown && !clickedTrigger) {
+      if (!clickedInsideDropdown && !clickedTrigger && !clickedInsideModal) {
         onClose();
       }
     };
@@ -39,6 +41,12 @@ const NotificationDropdown = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onClose, triggerRef]);
+
+  // Reset portaled modal state whenever the dropdown closes.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!isOpen) setClearAllConfirmation(false);
+  }, [isOpen]);
 
   // If the dropdown isn't open, render nothing
   if (!isOpen) return null;
@@ -152,6 +160,7 @@ const NotificationDropdown = ({
           if (!clearingAll) setClearAllConfirmation(false);
         }}
         onConfirm={handleClearAll}
+        ref={modalRef}
         title="Clear all notifications?"
         description="This will permanently remove ALL of your notifications, not just the notifications currently visible in this dropdown."
         confirmText="Clear All"
