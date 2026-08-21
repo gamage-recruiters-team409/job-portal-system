@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getSavedJobs, removeSavedJob } from '../../../services/savedJobService.js';
+import {
+  getSavedJobs,
+  removeSavedJob,
+} from '../../../services/savedJobService.js';
 import SavedJobCard from '../../../components/jobs/SavedJobCard.jsx';
 import SavedJobListItem from '../../../components/jobs/SavedJobListItem.jsx';
 import LoadingState from '../../../components/jobs/LoadingState.jsx';
@@ -30,7 +33,10 @@ export default function SavedJobsPage() {
       setItems(data ?? []);
     } catch (err) {
       console.error('Error fetching saved jobs:', err);
-      setError(err?.response?.data?.message || 'Failed to load saved jobs. Please try again.');
+      setError(
+        err?.response?.data?.message ||
+          'Failed to load saved jobs. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -42,10 +48,18 @@ export default function SavedJobsPage() {
     try {
       await removeSavedJob(jobId);
 
-      setItems((prev) => prev.filter((item) => (item.jobId ?? item.job?._id) !== jobId));
+      setItems((prev) =>
+        prev.filter(
+          (item) =>
+            (item.jobId ?? item.job?._id) !== jobId
+        )
+      );
     } catch (err) {
       console.error('Error removing saved job:', err);
-      setError(err?.response?.data?.message || 'Failed to remove saved job.');
+      setError(
+        err?.response?.data?.message ||
+          'Failed to remove saved job.'
+      );
     }
   }
 
@@ -54,17 +68,22 @@ export default function SavedJobsPage() {
   const filteredItems = items.filter((item) => {
     if (!normalizedSearch) return true;
 
-    const title = item.job?.title?.toLowerCase() ?? '';
+    const title =
+      item.job?.title?.toLowerCase() ?? '';
 
-    const company = item.job?.companyId?.companyName?.toLowerCase() ?? '';
+    const company =
+      item.job?.companyId?.companyName?.toLowerCase() ?? '';
 
-    return title.includes(normalizedSearch) || company.includes(normalizedSearch);
+    return (
+      title.includes(normalizedSearch) ||
+      company.includes(normalizedSearch)
+    );
   });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
           Saved Jobs
         </h1>
 
@@ -75,7 +94,7 @@ export default function SavedJobsPage() {
 
       {/* Search + View Toggle */}
       <div className="mb-6 flex flex-wrap items-center gap-4">
-        <div className="relative w-full flex-1 sm:min-w-[240px] sm:w-auto">
+        <div className="relative min-w-[240px] flex-1">
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             width="16"
@@ -103,7 +122,9 @@ export default function SavedJobsPage() {
             type="button"
             onClick={() => setView('card')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              view === 'card' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+              view === 'card'
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             Card
@@ -113,7 +134,9 @@ export default function SavedJobsPage() {
             type="button"
             onClick={() => setView('list')}
             className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              view === 'list' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+              view === 'list'
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             List
@@ -129,7 +152,11 @@ export default function SavedJobsPage() {
         </div>
       ) : filteredItems.length === 0 ? (
         <EmptyState
-          title={normalizedSearch ? 'No saved jobs found' : 'No Saved jobs yet'}
+          title={
+            normalizedSearch
+              ? 'No saved jobs found'
+              : 'No Saved jobs yet'
+          }
           message={
             normalizedSearch
               ? `No saved jobs match "${search.trim()}".`
@@ -137,16 +164,23 @@ export default function SavedJobsPage() {
           }
         />
       ) : view === 'card' ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {' '}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
           {filteredItems.map((item) => (
-            <SavedJobCard key={item._id} item={item} onRemove={handleRemove} />
+            <SavedJobCard
+              key={item._id}
+              item={item}
+              onRemove={handleRemove}
+            />
           ))}
         </div>
       ) : (
         <div className="flex flex-col gap-3">
           {filteredItems.map((item) => (
-            <SavedJobListItem key={item._id} item={item} onRemove={handleRemove} />
+            <SavedJobListItem
+              key={item._id}
+              item={item}
+              onRemove={handleRemove}
+            />
           ))}
         </div>
       )}
