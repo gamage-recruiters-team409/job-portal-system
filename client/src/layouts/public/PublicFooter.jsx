@@ -10,9 +10,9 @@ import { USER_ROLES } from '../../constants/statuses.js';
  * adapted to the Gamage Recruiters brand and routing.
  *
  * Also reused (via AuthenticatedLayout's showFooter prop) on authenticated
- * Employer pages — the "For Employers" links are swapped to the signed-in
- * destinations there so an already-authenticated Employer isn't sent back
- * through /register or /login.
+ * Employer and Job Seeker pages — the "For Employers" and "For Job Seekers"
+ * links are swapped to signed-in destinations so an already-authenticated
+ * user isn't sent back through /register or /login.
  * @module Layouts/Public
  */
 
@@ -21,6 +21,7 @@ const LINK_COLOR = 'text-slate-500 transition-colors hover:text-blue-600';
 export default function PublicFooter() {
   const { user, isAuthenticated } = useAuth();
   const isAuthenticatedEmployer = isAuthenticated && user?.role === USER_ROLES.EMPLOYER;
+  const isAuthenticatedJobSeeker = isAuthenticated && user?.role === USER_ROLES.JOB_SEEKER;
 
   return (
     <footer className="border-t border-slate-200 bg-white">
@@ -45,14 +46,26 @@ export default function PublicFooter() {
               </Link>
             </li>
             <li>
-              <Link className={LINK_COLOR} to="/register">
-                Create an account
-              </Link>
+              {isAuthenticatedJobSeeker ? (
+                <Link className={LINK_COLOR} to="/my-applications">
+                  My applications
+                </Link>
+              ) : (
+                <Link className={LINK_COLOR} to="/register">
+                  Create an account
+                </Link>
+              )}
             </li>
             <li>
-              <Link className={LINK_COLOR} to="/login">
-                Sign in
-              </Link>
+              {isAuthenticatedJobSeeker ? (
+                <Link className={LINK_COLOR} to="/dashboard">
+                  Job seeker dashboard
+                </Link>
+              ) : (
+                <Link className={LINK_COLOR} to="/login">
+                  Sign in
+                </Link>
+              )}
             </li>
           </ul>
         </div>
