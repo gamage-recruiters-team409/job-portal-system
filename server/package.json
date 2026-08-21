@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "seed:superadmin": "node src/scripts/seedSuperadmin.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
