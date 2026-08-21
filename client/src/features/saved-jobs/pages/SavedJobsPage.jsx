@@ -94,7 +94,7 @@ export default function SavedJobsPage() {
 
       {/* Search + View Toggle */}
       <div className="mb-6 flex flex-wrap items-center gap-4">
-        <div className="relative min-w-[240px] flex-1">
+        <div className="relative w-full flex-1 sm:min-w-[240px] sm:w-auto">
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             width="16"
@@ -164,7 +164,7 @@ export default function SavedJobsPage() {
           }
         />
       ) : view === 'card' ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredItems.map((item) => (
             <SavedJobCard
               key={item._id}
