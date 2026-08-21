@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ConfirmationModal from '../../../components/common/ConfirmationModal.jsx';
 import DropdownItem from './DropdownItem.jsx';
 
 const NotificationDropdown = ({
@@ -16,6 +17,8 @@ const NotificationDropdown = ({
 }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const [clearAllConfirmation, setClearAllConfirmation] = useState(false);
+  const [clearingAll, setClearingAll] = useState(false);
 
   // Close the dropdown when clicking anywhere outside it
   useEffect(() => {
@@ -45,6 +48,16 @@ const NotificationDropdown = ({
     onClose(); // Close the dropdown when navigating away
   };
 
+  const handleClearAll = async () => {
+    setClearingAll(true);
+    try {
+      await onClearAll();
+      setClearAllConfirmation(false);
+    } finally {
+      setClearingAll(false);
+    }
+  };
+
   const hasUnread = notifications.some((n) => n.status === 'Unread');
 
   return (
@@ -72,7 +85,7 @@ const NotificationDropdown = ({
             {notifications.length > 0 && (
               <button
                 type="button"
-                onClick={onClearAll}
+                onClick={() => setClearAllConfirmation(true)}
                 className="text-[13px] text-[#64748B] hover:text-[#0F172A] hover:underline font-medium"
               >
                 Clear All
@@ -132,6 +145,18 @@ const NotificationDropdown = ({
           </button>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={clearAllConfirmation}
+        onClose={() => {
+          if (!clearingAll) setClearAllConfirmation(false);
+        }}
+        onConfirm={handleClearAll}
+        title="Clear all notifications?"
+        description="This will permanently remove ALL of your notifications, not just the notifications currently visible in this dropdown."
+        confirmText="Clear All"
+        isLoading={clearingAll}
+      />
     </div>
   );
 };

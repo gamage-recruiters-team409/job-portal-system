@@ -103,14 +103,14 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
     pendingClearIds.current.add(id);
     setActionError(null);
 
-    const notification = notifications.find((item) => item._id === id);
-
     try {
       await notificationService.deleteNotification(id);
-      setNotifications((prev) => prev.filter((item) => item._id !== id));
-      if (notification?.status === 'Unread') {
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      }
+      const [data, unread] = await Promise.all([
+        notificationService.getNotifications(1, 5),
+        notificationService.getUnreadCount(),
+      ]);
+      setNotifications(data.notifications || []);
+      setUnreadCount(unread);
     } catch (error) {
       console.error('Failed to clear notification:', error);
       setActionError('Unable to clear this notification. Try again.');
