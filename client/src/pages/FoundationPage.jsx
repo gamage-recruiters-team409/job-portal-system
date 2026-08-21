@@ -305,8 +305,8 @@ export default function FoundationPage() {
           getCategories(),
         ]);
         if (!active) return;
-        setRecentJobs(jobsRes?.data?.jobs ?? []);
-        setTotalJobs(jobsRes?.data?.pagination?.total ?? 0);
+        setRecentJobs(jobsRes?.jobs ?? []);
+        setTotalJobs(jobsRes?.pagination?.total ?? 0);
         setCategories((catsRes ?? []).slice(0, 6));
       } catch {
         // Non-critical — page still renders without live data
@@ -415,7 +415,7 @@ export default function FoundationPage() {
                       onClick={() => navigate(`/jobs?category=${cat._id}`)}
                       className="rounded-full border border-white/25 px-3 py-1 text-xs font-medium text-white transition-colors duration-150 hover:bg-white/15"
                     >
-                      {cat.name}
+                      {cat.categoryName || cat.name}
                     </button>
                   ))}
                 </div>
