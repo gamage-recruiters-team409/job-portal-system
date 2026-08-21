@@ -37,10 +37,17 @@ const AdminDashboard = () => {
   const [pendingReports, setPendingReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
+
+  // Section Error States
+  const [statsError, setStatsError] = useState(false);
+  const [employersError, setEmployersError] = useState(false);
+  const [reportsError, setReportsError] = useState(false);
+  
+  const hasErrors = statsError || employersError || reportsError;
 
   // Helper to format numbers with commas
-  const formatNumber = (num) => {
+  const formatNumber = (num, isError = false) => {
+    if (isError) return 'N/A';
     if (num === undefined || num === null) return '0';
     return new Intl.NumberFormat().format(num);
   };
@@ -66,30 +73,36 @@ const AdminDashboard = () => {
   // Fetch all dashboard data concurrently
   const fetchDashboardData = useCallback(async (isManualRefresh = false) => {
     try {
-      if (isManualRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-      setError(null);
+      if (isManualRefresh) setRefreshing(true);
+      else setLoading(true);
 
-      const [statsData, employersData, reportsData] = await Promise.all([
-        getAdminStatistics().catch(() => null),
-        getAdminEmployers({ status: 'pending', limit: 4 }).catch(() => null),
-        getAdminReports({ status: 'pending', limit: 4 }).catch(() => null),
+      setStatsError(false);
+      setEmployersError(false);
+      setReportsError(false);
+
+      const [statsResult, employersResult, reportsResult] = await Promise.allSettled([
+        getAdminStatistics(),
+        getAdminEmployers({ status: 'pending', limit: 4 }),
+        getAdminReports({ status: 'pending', limit: 4 }),
       ]);
 
-      if (statsData) {
-        setStats(statsData);
+      if (statsResult.status === 'fulfilled') {
+        setStats(statsResult.value);
+      } else {
+        setStatsError(true);
       }
-      if (employersData?.data?.companies) {
-        setPendingEmployers(employersData.data.companies);
+
+      if (employersResult.status === 'fulfilled') {
+        setPendingEmployers(employersResult.value?.data?.companies || []);
+      } else {
+        setEmployersError(true);
       }
-      if (reportsData?.data?.reports) {
-        setPendingReports(reportsData.data.reports);
+
+      if (reportsResult.status === 'fulfilled') {
+        setPendingReports(reportsResult.value?.data?.reports || []);
+      } else {
+        setReportsError(true);
       }
-    } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to load dashboard data.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -122,10 +135,17 @@ const AdminDashboard = () => {
           <div className="space-y-2 max-w-2xl">
             {/* Live system status pill following section 7 badge format */}
             <div className="flex items-center gap-2.5 flex-wrap mb-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#16A34A] text-xs font-semibold border border-green-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] animate-pulse"></span>
-                All Systems Operational
-              </span>
+              {hasErrors ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#FEF3C7] text-[#D97706] text-xs font-semibold border border-amber-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] animate-pulse"></span>
+                  Degraded Performance
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#16A34A] text-xs font-semibold border border-green-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] animate-pulse"></span>
+                  All Systems Operational
+                </span>
+              )}
               <span className="text-xs font-medium text-slate-400">•</span>
               <span className="text-xs font-normal text-slate-500">{formattedDate}</span>
             </div>
@@ -164,20 +184,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* ─── 2. Error State (if any) ────────────────────────────────────────── */}
-      {error && (
-        <div className="bg-[#FEE2E2] border border-red-200 rounded-2xl p-6 text-center flex flex-col items-center">
-          <AlertOctagon size={36} className="text-[#DC2626] mb-2" />
-          <h3 className="text-base font-semibold text-slate-900">Failed to load statistics</h3>
-          <p className="text-sm font-normal text-slate-600 mt-1 mb-4 max-w-md">{error}</p>
-          <button
-            onClick={() => fetchDashboardData()}
-            className="px-4 h-11 bg-[#DC2626] hover:bg-red-700 text-white text-sm font-medium rounded-xl transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      )}
+      {/* ─── 2. Global Error State (Removed for granular section errors) ─── */}
 
       {/* ─── 3. Top Metrics & KPI Cards (5 Standardized Cards) ──────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5">
@@ -197,7 +204,7 @@ const AdminDashboard = () => {
             </div>
             <div className="mt-3">
               <span className="text-3xl font-bold text-slate-900">
-                {loading ? '—' : formatNumber(stats?.totalUsers)}
+                {loading ? '—' : formatNumber(stats?.totalUsers, statsError)}
               </span>
             </div>
           </div>
@@ -223,7 +230,7 @@ const AdminDashboard = () => {
             </div>
             <div className="mt-3">
               <span className="text-3xl font-bold text-slate-900">
-                {loading ? '—' : formatNumber(stats?.totalEmployers)}
+                {loading ? '—' : formatNumber(stats?.totalEmployers, statsError)}
               </span>
             </div>
           </div>
@@ -249,7 +256,7 @@ const AdminDashboard = () => {
             </div>
             <div className="mt-3">
               <span className="text-3xl font-bold text-slate-900">
-                {loading ? '—' : formatNumber(stats?.verifiedEmployers)}
+                {loading ? '—' : formatNumber(stats?.verifiedEmployers, statsError)}
               </span>
             </div>
           </div>
@@ -275,7 +282,7 @@ const AdminDashboard = () => {
             </div>
             <div className="mt-3">
               <span className="text-3xl font-bold text-slate-900">
-                {loading ? '—' : formatNumber(stats?.publishedJobs)}
+                {loading ? '—' : formatNumber(stats?.publishedJobs, statsError)}
               </span>
             </div>
           </div>
@@ -301,7 +308,7 @@ const AdminDashboard = () => {
             </div>
             <div className="mt-3 flex items-baseline gap-2 flex-wrap">
               <span className="text-3xl font-bold text-slate-900">
-                {loading ? '—' : formatNumber(stats?.pendingReports)}
+                {loading ? '—' : formatNumber(stats?.pendingReports, statsError)}
               </span>
               {stats?.pendingReports > 0 && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#D97706] text-xs font-semibold border border-amber-200">
@@ -347,6 +354,13 @@ const AdminDashboard = () => {
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="h-16 bg-slate-50 rounded-xl animate-pulse" />
                 ))}
+              </div>
+            ) : employersError ? (
+              <div className="py-10 text-center flex flex-col items-center justify-center bg-[#FEE2E2] rounded-xl border border-red-200 h-full">
+                <AlertOctagon size={24} className="text-[#DC2626] mb-2" />
+                <h3 className="text-sm font-semibold text-slate-900">Unable to load queue</h3>
+                <p className="text-xs text-slate-500 mt-1 mb-3">Failed to connect to employer service.</p>
+                <button onClick={() => fetchDashboardData()} className="text-xs font-medium text-[#DC2626] hover:underline">Retry Connection</button>
               </div>
             ) : pendingEmployers.length === 0 ? (
               <div className="py-10 text-center flex flex-col items-center justify-center">
@@ -428,6 +442,13 @@ const AdminDashboard = () => {
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="h-16 bg-slate-50 rounded-xl animate-pulse" />
                 ))}
+              </div>
+            ) : reportsError ? (
+              <div className="py-10 text-center flex flex-col items-center justify-center bg-[#FEE2E2] rounded-xl border border-red-200 h-full">
+                <AlertOctagon size={24} className="text-[#DC2626] mb-2" />
+                <h3 className="text-sm font-semibold text-slate-900">Unable to load queue</h3>
+                <p className="text-xs text-slate-500 mt-1 mb-3">Failed to connect to reporting service.</p>
+                <button onClick={() => fetchDashboardData()} className="text-xs font-medium text-[#DC2626] hover:underline">Retry Connection</button>
               </div>
             ) : pendingReports.length === 0 ? (
               <div className="py-10 text-center flex flex-col items-center justify-center">
