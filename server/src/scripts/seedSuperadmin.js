@@ -35,11 +35,19 @@ const seedSuperadmin = async () => {
     await mongoose.connect(MONGODB_URI);
     console.log('Connected to MongoDB.');
 
-    // Check if the superadmin already exists
-    const existingSuperadmin = await User.findOne({ email: SUPERADMIN_EMAIL });
+    // Check if the email is already in use
+    const existingUser = await User.findOne({ email: SUPERADMIN_EMAIL });
 
-    if (existingSuperadmin) {
-      console.log(`Superadmin with email ${SUPERADMIN_EMAIL} already exists. Skipping seeding.`);
+    if (existingUser) {
+      if (existingUser.role === USER_ROLES.SUPERADMIN) {
+        console.log(`Superadmin with email ${SUPERADMIN_EMAIL} already exists. Skipping seeding.`);
+      } else {
+        console.error(
+          `Error: The email ${SUPERADMIN_EMAIL} is already in use by a user with role '${existingUser.role}'.\n` +
+          `Please provide a different SUPERADMIN_EMAIL or resolve the conflict manually. The script will not silently promote an existing user.`
+        );
+        process.exit(1);
+      }
     } else {
       console.log('Creating superadmin account...');
       const superadmin = new User({
