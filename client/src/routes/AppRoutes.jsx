@@ -164,7 +164,7 @@ function AppRoutes() {
         path="/jobs/create"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
-            <AuthenticatedLayout>
+            <AuthenticatedLayout showFooter>
               <CreateJobPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
@@ -175,7 +175,7 @@ function AppRoutes() {
         path="/jobs/:jobId/edit"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
-            <AuthenticatedLayout>
+            <AuthenticatedLayout showFooter>
               <EditJobPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
@@ -186,7 +186,7 @@ function AppRoutes() {
         path="/jobs/manage"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
-            <AuthenticatedLayout>
+            <AuthenticatedLayout showFooter>
               <ManageJobsPage />
             </AuthenticatedLayout>
           </ProtectedRoute>
@@ -197,7 +197,7 @@ function AppRoutes() {
         path="/jobs/:jobId/preview"
         element={
           <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYER]}>
-            <AuthenticatedLayout>
+            <AuthenticatedLayout showFooter>
               <JobPreviewPage />
             </AuthenticatedLayout>
           </ProtectedRoute>

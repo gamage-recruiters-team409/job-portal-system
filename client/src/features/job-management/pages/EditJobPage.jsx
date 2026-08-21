@@ -116,6 +116,12 @@ export default function EditJobPage() {
     })();
   }, [jobId, reset]);
 
+  useEffect(() => {
+    if (!isLoading) {
+      topRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
+  }, [isLoading]);
+
   const buildPayload = (formValues) => ({
     ...formValues,
     skills: selectedSkillIds,
@@ -183,9 +189,9 @@ export default function EditJobPage() {
 
   if (loadError) {
     return (
-      <div className="mx-0 max-w-7xl p-10">
+      <div ref={topRef} className="mx-0 max-w-7xl p-4 sm:p-6 md:p-10">
         <Breadcrumb items={[{ label: 'Jobs', path: '/jobs/manage' }, { label: 'Edit job' }]} />
-        <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm text-[#DC2626]">
+        <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#DC2626]">
           {loadError}
         </div>
         <button
@@ -203,7 +209,7 @@ export default function EditJobPage() {
   const handleSaveAndSubmitClick = () => handleSubmit(onSaveAndSubmit)();
 
   return (
-    <div ref={topRef} className="mx-0 max-w-7xl p-10">
+    <div ref={topRef} className="mx-0 max-w-7xl p-4 sm:p-6 md:p-10">
       <Breadcrumb items={[{ label: 'Jobs', path: '/jobs/manage' }, { label: 'Edit job' }]} />
       <button
         type="button"
@@ -212,20 +218,20 @@ export default function EditJobPage() {
       >
         ← Back to Manage Jobs
       </button>
-      <h1 className="mt-4 text-3xl md:text-4xl font-bold text-[#000000]">Edit job</h1>
+      <h1 className="mt-3 text-xl sm:text-2xl md:text-4xl font-bold text-[#000000]">Edit job</h1>
 
       {serverError && (
-        <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm text-[#DC2626]">
+        <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#DC2626]">
           {serverError}
         </div>
       )}
       {successMessage && (
-        <div className="mt-4 rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-4 py-3 text-sm text-[#15803D]">
+        <div className="mt-4 rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#15803D]">
           {successMessage}
         </div>
       )}
 
-      <form className="mt-6 rounded-xl border border-[#E2E8F0] bg-white p-10 shadow-[0_0_3px_rgba(0,0,0,0.25)]">
+      <form className="mt-4 sm:mt-6 rounded-xl border border-[#E2E8F0] bg-white p-4 sm:p-6 md:p-10 shadow-[0_0_3px_rgba(0,0,0,0.25)]">
         <JobFormFields
           register={register}
           errors={errors}
@@ -235,11 +241,11 @@ export default function EditJobPage() {
           onSkillsChange={setSelectedSkillIds}
         />
 
-        <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-[#E2E8F0] pt-6">
+        <div className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row sm:flex-wrap justify-end gap-2 sm:gap-3 border-t border-[#E2E8F0] pt-4 sm:pt-6">
           <button
             type="button"
             onClick={() => navigate('/jobs/manage')}
-            className="rounded-lg border border-[#94A3B8] px-4 py-2 text-sm font-medium text-[#000000] hover:bg-[#94A3B8]"
+            className="rounded-lg border border-[#94A3B8] w-full sm:w-auto px-4 py-2 text-sm sm:text-base font-medium text-[#000000] hover:bg-[#94A3B8]"
           >
             Cancel
           </button>
@@ -247,7 +253,7 @@ export default function EditJobPage() {
             type="button"
             disabled={isSubmitting || isLockedAfterSubmit}
             onClick={handleSaveClick}
-            className="rounded-lg border border-[#94A3B8] px-4 py-2 text-sm font-medium text-[#000000] hover:bg-[#94A3B8] disabled:opacity-50"
+            className="rounded-lg border border-[#94A3B8] w-full sm:w-auto px-4 py-2 text-sm sm:text-base font-medium text-[#000000] hover:bg-[#94A3B8] disabled:opacity-50"
           >
             Save changes
           </button>
@@ -255,7 +261,7 @@ export default function EditJobPage() {
             type="button"
             disabled={isSubmitting || isLockedAfterSubmit}
             onClick={handleSaveAndSubmitClick}
-            className="rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1E40AF] disabled:opacity-50"
+            className="rounded-lg bg-[#2563EB] w-full sm:w-auto px-4 py-2 text-sm sm:text-base font-medium text-white hover:bg-[#1E40AF] disabled:opacity-50"
           >
             Save and submit for review
           </button>
