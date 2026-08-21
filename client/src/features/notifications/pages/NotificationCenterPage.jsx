@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import ConfirmationModal from '../../../components/common/ConfirmationModal.jsx';
 import NotificationItem from '../components/NotificationItem.jsx';
 import EmptyNotificationState from '../components/EmptyNotificationState.jsx';
 import notificationService from '../../../services/notificationService.js';
@@ -30,6 +31,9 @@ export default function NotificationCenterPage() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('All');
   const [unreadOnly, setUnreadOnly] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   const refreshUnreadCount = useCallback(async () => {
     try {
@@ -109,6 +113,37 @@ export default function NotificationCenterPage() {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      setDeleteError(null);
+      setDeleting(true);
+      if (deleteConfirmation.type === 'all') {
+        await notificationService.deleteAllNotifications();
+      } else {
+        await notificationService.deleteNotification(deleteConfirmation.id);
+      }
+
+      setDeleteConfirmation(null);
+      await Promise.all([fetchNotifications(pagination.page), refreshUnreadCount()]);
+    } catch (err) {
+      console.error('Failed to delete notification(s):', err);
+      setDeleteError(err.message || 'Failed to delete notification. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const openDeleteConfirmation = (confirmation) => {
+    setDeleteError(null);
+    setDeleteConfirmation(confirmation);
+  };
+
+  const closeDeleteConfirmation = () => {
+    if (!deleting) {
+      setDeleteError(null);
+      setDeleteConfirmation(null);
+    }
+  };
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
     fetchNotifications(newPage);
@@ -137,15 +172,17 @@ export default function NotificationCenterPage() {
               All updates about your jobs, applicants and account activity
             </p>
           </div>
-          {unreadCount > 0 && (
-            <button
-              type="button"
-              onClick={handleMarkAllAsRead}
-              className="inline-flex items-center gap-2 rounded-[8px] border border-[#E2E8F0] bg-white px-4 py-2 text-[13px] font-medium text-[#0F172A] shadow-sm transition-colors hover:bg-[#F8FAFC]"
-            >
-              Mark all as read
-            </button>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {unreadCount > 0 && (
+              <button
+                type="button"
+                onClick={handleMarkAllAsRead}
+                className="inline-flex items-center gap-2 rounded-[8px] border border-[#E2E8F0] bg-white px-4 py-2 text-[13px] font-medium text-[#0F172A] shadow-sm transition-colors hover:bg-[#F8FAFC]"
+              >
+                Mark all as read
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -168,17 +205,28 @@ export default function NotificationCenterPage() {
           ))}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setUnreadOnly(!unreadOnly)}
-          className={`inline-flex items-center gap-2 rounded-[8px] border px-4 py-2 text-[13px] font-medium shadow-sm transition-colors ${
-            unreadOnly
-              ? 'border-[#BFDBFE] bg-[#EFF6FF] text-[#2563EB]'
-              : 'border-[#E2E8F0] bg-white text-[#475569] hover:bg-[#F8FAFC]'
-          }`}
-        >
-          Unread only
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setUnreadOnly(!unreadOnly)}
+            className={`inline-flex items-center gap-2 rounded-[8px] border px-4 py-2 text-[13px] font-medium shadow-sm transition-colors ${
+              unreadOnly
+                ? 'border-[#BFDBFE] bg-[#EFF6FF] text-[#2563EB]'
+                : 'border-[#E2E8F0] bg-white text-[#475569] hover:bg-[#F8FAFC]'
+            }`}
+          >
+            Unread only
+          </button>
+          {pagination.total > 0 && (
+            <button
+              type="button"
+              onClick={() => openDeleteConfirmation({ type: 'all' })}
+              className="inline-flex items-center gap-2 rounded-[8px] border border-red-200 bg-white px-4 py-2 text-[13px] font-medium text-[#B91C1C] shadow-sm transition-colors hover:bg-red-50"
+            >
+              Delete all
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Error Banner OR List / Empty State / Loading — never both */}
@@ -217,6 +265,7 @@ export default function NotificationCenterPage() {
               key={notification._id}
               notification={notification}
               onMarkAsRead={handleMarkAsRead}
+              onDelete={(id) => openDeleteConfirmation({ type: 'single', id })}
             />
           ))}
         </div>
@@ -252,6 +301,23 @@ export default function NotificationCenterPage() {
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={Boolean(deleteConfirmation)}
+        onClose={closeDeleteConfirmation}
+        onConfirm={handleDelete}
+        title={
+          deleteConfirmation?.type === 'all' ? 'Delete all notifications?' : 'Delete notification?'
+        }
+        description={
+          deleteError ||
+          (deleteConfirmation?.type === 'all'
+            ? 'This will permanently remove all of your notifications.'
+            : 'This notification will be permanently removed.')
+        }
+        confirmText="Delete"
+        isLoading={deleting}
+      />
     </div>
   );
 }

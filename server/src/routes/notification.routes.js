@@ -4,6 +4,8 @@ import {
   markAsRead,
   markAllAsRead,
   unreadCount,
+  deleteAll,
+  removeNotification,
 } from '../controllers/notification.controller.js';
 import { protect } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -25,11 +27,20 @@ notificationRouter.get(
 
 notificationRouter.patch('/mark-all-read', protect, markAllAsRead);
 
+notificationRouter.delete('/delete-all', protect, deleteAll);
+
 notificationRouter.patch(
   '/:id/read',
   protect,
   validate(notificationIdParamSchema, 'params'),
   markAsRead
+);
+
+notificationRouter.delete(
+  '/:id',
+  protect,
+  validate(notificationIdParamSchema, 'params'),
+  removeNotification
 );
 
 export default notificationRouter;

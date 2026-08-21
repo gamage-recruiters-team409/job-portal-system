@@ -4,6 +4,8 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
   getUnreadNotificationCount,
+  deleteNotification,
+  deleteAllNotifications,
 } from '../services/notification.service.js';
 
 /**
@@ -53,6 +55,36 @@ export async function markAllAsRead(req, res, next) {
     return sendSuccess(res, {
       message: 'All notifications marked as read.',
       data: { modifiedCount },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * DELETE /notifications/delete-all — delete all of the current user's notifications.
+ */
+export async function deleteAll(req, res, next) {
+  try {
+    const { deletedCount } = await deleteAllNotifications(req.user._id);
+    return sendSuccess(res, {
+      message: 'All notifications deleted.',
+      data: { deletedCount },
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * DELETE /notifications/:id — delete one notification owned by the current user.
+ */
+export async function removeNotification(req, res, next) {
+  try {
+    const { notification } = await deleteNotification(req.validatedParams.id, req.user._id);
+    return sendSuccess(res, {
+      message: 'Notification deleted.',
+      data: { notification },
     });
   } catch (error) {
     return next(error);

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import Job from '../models/Job.js';
 import Report from '../models/Report.js';
 import { ApiError } from '../utils/apiError.js';
-import { JOB_STATUSES } from '../constants/statuses.js';
+import { JOB_STATUSES, REPORT_STATUSES } from '../constants/statuses.js';
 
 export const createReport = async (reportData) => {
   const { jobId, reason, description, reportedBy } = reportData;
@@ -21,6 +21,25 @@ export const createReport = async (reportData) => {
     throw new ApiError(404, 'Job not found.');
   }
 
+  const existingReport = await Report.findOne({
+  jobId: job._id,
+  reportedBy,
+  status: {
+    $in: [
+      REPORT_STATUSES.PENDING,
+      REPORT_STATUSES.UNDER_REVIEW,
+    ],
+  },
+});
+
+if (existingReport) {
+  throw new ApiError(
+    400,
+    'You have already reported this job. Please wait until the previous report is reviewed.'
+  );
+}
+
+try {
   const report = await Report.create({
     jobId: job._id,
     jobTitle: job.title,
@@ -32,6 +51,19 @@ export const createReport = async (reportData) => {
   });
 
   return report;
+
+} catch (error) {
+
+  // Handle MongoDB duplicate key error from unique index
+  if (error.code === 11000) {
+    throw new ApiError(
+      400,
+      'You have already reported this job. Please wait until the previous report is reviewed.'
+    );
+  }
+
+  throw error;
+}
 };
 
 export const getMyReports = async (userId) => {

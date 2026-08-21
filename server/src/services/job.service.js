@@ -2,6 +2,7 @@ import Job from '../models/Job.js';
 import Company from '../models/company.model.js';
 import { JOB_STATUSES } from '../constants/statuses.js';
 import { ApiError } from '../utils/apiError.js';
+import Application from '../models/Application.js';
 
 /**
  * Explicit public field projection for the Job model.
@@ -305,7 +306,19 @@ export async function listEmployerJobs({ employerId }) {
     isDeleted: false,
   }).sort({ createdAt: -1 });
 
-  return jobs;
+  const jobIds = jobs.map((job) => job._id);
+
+  const counts = await Application.aggregate([
+    { $match: { job: { $in: jobIds } } },
+    { $group: { _id: '$job', count: { $sum: 1 } } },
+  ]);
+  const countMap = Object.fromEntries(counts.map((c) => [c._id.toString(), c.count]));
+
+  return jobs.map((job) => {
+    const jobObj = job.toObject();
+    jobObj.applicationsCount = countMap[job._id.toString()] ?? 0;
+    return jobObj;
+  });
 }
 
 export async function getJobById({ jobId, employerId }) {
