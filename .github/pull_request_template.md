@@ -8,8 +8,8 @@
 
 ## Main Changes
 
-- 
-- 
+- [Describe the first main change]
+- [Describe the second main change]
 
 ## Basic Development Verification
 

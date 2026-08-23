@@ -1,0 +1,297 @@
+{
+  "info": {
+    "_postman_id": "a908a8a4-05a8-444f-a957-cc3903ad8542",
+    "name": "Gamage Recruiters Auth API",
+    "description": "API collection to test user registration, email verification, and session authentication flows locally.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Register User",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Generate a unique email for every test run",
+              "const randomId = Math.floor(Math.random() * 1000000);",
+              "pm.collectionVariables.set(\"testEmail\", `postman-test-${randomId}@example.com`);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const jsonData = pm.response.json();",
+              "if (jsonData.success && jsonData.data && jsonData.data.user) {",
+              "    pm.collectionVariables.set(\"testUserId\", jsonData.data.user.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Postman Test User\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Password123!\",\n  \"confirmPassword\": \"Password123!\",\n  \"role\": \"job_seeker\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Login - Unverified (Should Fail 403)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 403 Forbidden\", function () {",
+              "    pm.response.to.have.status(403);",
+              "});",
+              "",
+              "pm.test(\"Message says to verify email\", function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.message).to.include(\"verify your email\");",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Password123!\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Resend Verification Email",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testEmail}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/resend-verification",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "resend-verification"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Verify Email",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/auth/verify-email/{{verificationToken}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "verify-email",
+            "{{verificationToken}}"
+          ]
+        },
+        "description": "Copy the token parameter from the console/logs of the running backend server and paste it into the `verificationToken` variable in Postman."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Login - Verified (Should Succeed)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const jsonData = pm.response.json();",
+              "if (jsonData.success && jsonData.data && jsonData.data.token) {",
+              "    pm.collectionVariables.set(\"authToken\", jsonData.data.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Password123!\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Get Me (Protected Route)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{authToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/auth/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "testEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "verificationToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
