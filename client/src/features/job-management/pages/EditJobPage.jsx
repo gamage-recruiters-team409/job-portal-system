@@ -10,6 +10,7 @@ import { JOB_STATUSES } from '../../../constants/statuses.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import JobFormFields from '../components/JobFormFields.jsx';
 import LoadingState from '../../../components/jobs/LoadingState.jsx';
+import toast from 'react-hot-toast';
 
 const editJobFormSchema = z
   .object({
@@ -52,7 +53,6 @@ export default function EditJobPage() {
   const [skills, setSkills] = useState([]);
   const [selectedSkillIds, setSelectedSkillIds] = useState([]);
   const [serverError, setServerError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -131,7 +131,6 @@ export default function EditJobPage() {
 
   const onSave = async (formValues) => {
     setServerError('');
-    setSuccessMessage('');
     setIsSubmitting(true);
     try {
       const payload = buildPayload(formValues);
@@ -139,8 +138,7 @@ export default function EditJobPage() {
         delete payload.deadline;
       }
       await updateJob(jobId, payload);
-      setSuccessMessage('Job updated successfully.');
-      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toast.success('Job updated successfully.');
     } catch (error) {
       setServerError(error.response?.data?.message || 'Failed to update job.');
       topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -151,7 +149,6 @@ export default function EditJobPage() {
 
   const onSaveAndSubmit = async (formValues) => {
     setServerError('');
-    setSuccessMessage('');
 
     if (new Date(formValues.deadline) <= new Date()) {
       setServerError(
@@ -167,10 +164,7 @@ export default function EditJobPage() {
       await updateJob(jobId, payload);
       await submitJobForReview(jobId);
       setIsLockedAfterSubmit(true);
-      setSuccessMessage(
-        'Job updated and submitted for review successfully. Redirecting to Manage Jobs...'
-      );
-      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toast.success('Job updated and submitted for review successfully. Redirecting...');
       setTimeout(() => navigate('/jobs/manage'), 1500);
     } catch (error) {
       setServerError(
@@ -223,11 +217,6 @@ export default function EditJobPage() {
       {serverError && (
         <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#DC2626]">
           {serverError}
-        </div>
-      )}
-      {successMessage && (
-        <div className="mt-4 rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#15803D]">
-          {successMessage}
         </div>
       )}
 
