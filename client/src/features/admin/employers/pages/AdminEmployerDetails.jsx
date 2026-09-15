@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   Building2,
@@ -60,7 +60,6 @@ const getInitials = (name) => {
 
 const AdminEmployerDetails = () => {
   const { companyId } = useParams();
-  const navigate = useNavigate();
 
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -108,11 +107,13 @@ const AdminEmployerDetails = () => {
     try {
       setIsUpdating(true);
       await updateEmployerVerification(companyId, status);
-      toast.success(
-        status === 'verified'
-          ? 'Employer profile successfully verified!'
-          : 'Employer profile rejected.'
-      );
+      if (status === EMPLOYER_VERIFICATION_STATUSES.VERIFIED) {
+        toast.success(`"${company?.companyName || 'Employer'}" verified successfully!`);
+      } else if (status === EMPLOYER_VERIFICATION_STATUSES.REJECTED) {
+        toast.success(`"${company?.companyName || 'Employer'}" marked as rejected.`);
+      } else {
+        toast.success(`Verification status updated to ${status}.`);
+      }
       setConfirmAction(null);
       setRefreshTrigger((prev) => prev + 1);
     } catch (err) {
@@ -321,41 +322,58 @@ const AdminEmployerDetails = () => {
             </div>
           )}
 
-          {/* Verification Actions Card (only shown when action is needed) */}
-          {company.verificationStatus !== EMPLOYER_VERIFICATION_STATUSES.VERIFIED && (
-            <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col gap-3.5">
+          {/* Verification Moderation Card */}
+          <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col gap-3.5">
+            <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Verification Moderation</h3>
+              {renderStatusBadge(company.verificationStatus)}
+            </div>
 
-              <div className="flex flex-col gap-2.5">
-                {company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.PENDING ? (
-                  <>
-                    <button
-                      onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.VERIFIED)}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap"
-                    >
-                      <CheckCircle2 size={16} />
-                      Verify Employer Partner
-                    </button>
-                    <button
-                      onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.REJECTED)}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap"
-                    >
-                      <XCircle size={16} />
-                      Reject Profile
-                    </button>
-                  </>
-                ) : (
+            <div className="flex flex-col gap-2.5">
+              {company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.PENDING && (
+                <>
                   <button
+                    type="button"
                     onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.VERIFIED)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
                   >
                     <CheckCircle2 size={16} />
-                    Approve & Verify Partner
+                    Verify Employer Partner
                   </button>
-                )}
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.REJECTED)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                  >
+                    <XCircle size={16} />
+                    Reject Profile
+                  </button>
+                </>
+              )}
+
+              {company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.REJECTED && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.VERIFIED)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                >
+                  <CheckCircle2 size={16} />
+                  Re-evaluate & Verify Partner
+                </button>
+              )}
+
+              {company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.VERIFIED && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.REJECTED)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-semibold transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                >
+                  <XCircle size={15} />
+                  Revoke Partner Verification
+                </button>
+              )}
             </div>
-          )}
+          </div>
 
         </div>
 
@@ -527,11 +545,17 @@ const AdminEmployerDetails = () => {
 
               <div>
                 <h3 className="text-lg font-bold text-slate-900">
-                  {confirmAction === 'verified' ? 'Verify Employer Partner?' : 'Reject Company Profile?'}
+                  {confirmAction === EMPLOYER_VERIFICATION_STATUSES.VERIFIED
+                    ? 'Verify Employer Partner?'
+                    : company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.VERIFIED
+                    ? 'Revoke Partner Verification?'
+                    : 'Reject Company Profile?'}
                 </h3>
                 <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">
-                  {confirmAction === 'verified'
-                    ? `Are you sure you want to verify ${company.companyName} as an authorized partner?`
+                  {confirmAction === EMPLOYER_VERIFICATION_STATUSES.VERIFIED
+                    ? `Are you sure you want to verify ${company.companyName} as an authorized platform partner?`
+                    : company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.VERIFIED
+                    ? `Are you sure you want to revoke verification for ${company.companyName}? Their partner status will be changed to rejected.`
                     : `Are you sure you want to reject the company profile for ${company.companyName}?`}
                 </p>
               </div>
