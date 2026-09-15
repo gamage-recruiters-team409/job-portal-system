@@ -6,6 +6,7 @@ import {
   sendNewApplicationEmail,
   sendApplicationStatusChangeEmail,
 } from './email.service.js';
+import { emitToUser } from '../realtime/socket.js';
 
 /**
  * Returns a paginated page of notifications belonging to the given user,
@@ -127,6 +128,18 @@ export async function createNotification({ user, type, message, relatedJob }) {
     message,
     relatedJob,
   });
+
+  // Best-effort real-time push — same defensive pattern as email sending
+  // below: if this fails (e.g. no active socket, or an unexpected error),
+  // the notification is already saved and the calling flow must not fail
+  // because of it. `emitToUser` itself never throws, but the try/catch
+  // stays here as a safety net regardless of that guarantee.
+  try {
+    emitToUser(String(user), 'notification:new', { notification });
+  } catch (error) {
+    console.error('Failed to emit real-time notification:', error.message);
+  }
+
   return { notification };
 }
 

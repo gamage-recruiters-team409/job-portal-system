@@ -7,6 +7,7 @@ import Sidebar, {
 } from '../../components/layout/Sidebar.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import notificationService from '../../services/notificationService.js';
+import { connectSocket, disconnectSocket } from '../../services/socketClient.js';
 import NotificationDropdown from '../../features/notifications/components/NotificationDropdown.jsx';
 import PublicFooter from '../public/PublicFooter.jsx';
 
@@ -48,7 +49,32 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
     }
   }, [user]);
 
+  // --- Real-time: listen for new notifications over the existing
+  // Socket.IO connection, so the list/badge update without a manual
+  // refresh (per the QA recommendation). Silent update only — no toast.
+  useEffect(() => {
+    if (!user) return;
+
+    const socket = connectSocket();
+    if (!socket) return;
+
+    const handleNewNotification = ({ notification }) => {
+      // Keep this consistent with the dropdown's own page size (5) —
+      // prepend the new one and drop the oldest so the list always
+      // matches what a fresh fetch of the first page would show.
+      setNotifications((prev) => [notification, ...prev].slice(0, 5));
+      setUnreadCount((prev) => prev + 1);
+    };
+
+    socket.on('notification:new', handleNewNotification);
+
+    return () => {
+      socket.off('notification:new', handleNewNotification);
+    };
+  }, [user]);
+
   const handleLogout = () => {
+    disconnectSocket();
     logout();
     navigate('/login');
   };
