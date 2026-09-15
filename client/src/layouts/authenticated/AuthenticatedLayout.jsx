@@ -23,6 +23,9 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
   const notificationButtonRef = useRef(null);
   const pendingMarkAsReadIds = useRef(new Set());
   const pendingClearIds = useRef(new Set());
+  const notificationsPageRef = useRef(1);
+  const [hasMoreNotifications, setHasMoreNotifications] = useState(false);
+  const [loadingMoreNotifications, setLoadingMoreNotifications] = useState(false);
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -38,6 +41,8 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
 
         setNotifications(data.notifications || []);
         setUnreadCount(unread);
+        notificationsPageRef.current = 1;
+        setHasMoreNotifications((data.pagination?.totalPages || 1) > 1);
       } catch (error) {
         console.error('Failed to load notifications:', error);
         setNotificationsError('Unable to load notifications.');
@@ -59,10 +64,10 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
     if (!socket) return;
 
     const handleNewNotification = ({ notification }) => {
-      // Keep this consistent with the dropdown's own page size (5) —
-      // prepend the new one and drop the oldest so the list always
-      // matches what a fresh fetch of the first page would show.
-      setNotifications((prev) => [notification, ...prev].slice(0, 5));
+      // Prepend without truncating — the list can now hold more than 5
+      // items once the user has clicked "Load more", and a live arrival
+      // shouldn't discard anything they've already loaded.
+      setNotifications((prev) => [notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
     };
 
@@ -140,13 +145,10 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
         return;
       }
 
-      try {
-        const data = await notificationService.getNotifications(1, 5);
-        setNotifications(data.notifications || []);
-      } catch (error) {
-        console.error('Failed to refresh notification list after clear:', error);
-        setNotifications((prev) => prev.filter((item) => item._id !== id));
-      }
+      // Remove just the cleared item from the existing list, whatever
+      // its current length — refetching page 1 here would silently
+      // discard anything loaded via "Load more".
+      setNotifications((prev) => prev.filter((item) => item._id !== id));
 
       try {
         const unread = await notificationService.getUnreadCount();
@@ -169,9 +171,34 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
       await notificationService.deleteAllNotifications();
       setNotifications([]);
       setUnreadCount(0);
+      notificationsPageRef.current = 1;
+      setHasMoreNotifications(false);
     } catch (error) {
       console.error('Failed to clear all notifications:', error);
       setActionError('Unable to clear all notifications. Try again.');
+    }
+  };
+
+  // --- Lazy-load the next page of notifications into the dropdown
+  // (QA recommendation: pagination within the dropdown for users with
+  // a high volume of historical notifications) ---
+  const handleLoadMoreNotifications = async () => {
+    if (loadingMoreNotifications || !hasMoreNotifications) return;
+    setLoadingMoreNotifications(true);
+    setActionError(null);
+
+    try {
+      const nextPage = notificationsPageRef.current + 1;
+      const data = await notificationService.getNotifications(nextPage, 5);
+
+      setNotifications((prev) => [...prev, ...(data.notifications || [])]);
+      notificationsPageRef.current = nextPage;
+      setHasMoreNotifications(nextPage < (data.pagination?.totalPages || nextPage));
+    } catch (error) {
+      console.error('Failed to load more notifications:', error);
+      setActionError('Unable to load more notifications. Try again.');
+    } finally {
+      setLoadingMoreNotifications(false);
     }
   };
 
@@ -215,6 +242,9 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
         onClearAll={handleClearAll}
         triggerRef={notificationButtonRef}
         actionError={actionError}
+        hasMore={hasMoreNotifications}
+        onLoadMore={handleLoadMoreNotifications}
+        loadingMore={loadingMoreNotifications}
       />
 
       {/* Main Body */}
