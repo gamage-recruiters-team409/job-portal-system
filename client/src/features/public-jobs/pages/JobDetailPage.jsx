@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Bookmark, Flag } from 'lucide-react';
-import { getJob } from '../../../services/jobService.js';
+import { getJob, clearJobCache } from '../../../services/jobService.js';
 import { getCategories, getSkills } from '../../../services/referenceService.js';
 import { saveJob, removeSavedJob, getSavedJobs } from '../../../services/savedJobService.js';
 import { formatSalary, timeAgo, formatExperience, titleCase } from '../utils/format.js';
@@ -162,6 +162,7 @@ export default function JobDetailPage() {
     setApplyError('');
     try {
       await applyToJob(job._id, coverLetter);
+      clearJobCache(job._id);
       setShowApplyModal(false);
       setShowSuccessModal(true);
     } catch (err) {

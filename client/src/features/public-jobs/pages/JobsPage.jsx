@@ -190,6 +190,16 @@ export default function JobsPage() {
     [category, jobType, workMode, minSalary, maxSalary, minExperience, maxExperience, postedDate]
   );
 
+  const searchSuggestions = useMemo(() => {
+    const catNames = Object.values(categoriesMap)
+      .map((c) => c.name)
+      .filter(Boolean);
+    const skillNames = Object.values(skillsMap)
+      .map((s) => s.name)
+      .filter(Boolean);
+    return Array.from(new Set([...catNames, ...skillNames]));
+  }, [categoriesMap, skillsMap]);
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       {/* Header Banner */}
@@ -202,7 +212,12 @@ export default function JobsPage() {
         </p>
 
         <div className="mt-6">
-          <JobSearchBar key={`${q}-${location}`} initial={{ q, location }} onSearch={handleSearch} />
+          <JobSearchBar
+            key={`${q}-${location}`}
+            initial={{ q, location }}
+            onSearch={handleSearch}
+            suggestions={searchSuggestions.length > 0 ? searchSuggestions : undefined}
+          />
         </div>
       </div>
 
