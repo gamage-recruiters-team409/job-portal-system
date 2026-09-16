@@ -398,7 +398,9 @@ const AdminReportList = () => {
         {!loading && !error && reports.length > 0 && (
           <div className="flex items-center justify-between pt-4 pb-8">
             <span className="text-sm text-slate-500">
-              Showing page {page} of {totalPages}
+              Showing <span className="font-medium text-slate-900">{(page - 1) * limit + 1}</span> to{' '}
+              <span className="font-medium text-slate-900">{Math.min(page * limit, totalReports)}</span> of{' '}
+              <span className="font-medium text-slate-900">{totalReports}</span> reports
             </span>
             <div className="flex gap-2">
               <button

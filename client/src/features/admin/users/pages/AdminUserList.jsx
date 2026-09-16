@@ -20,6 +20,7 @@ import {
   AlertOctagon,
   ArrowRight,
   UserCheck,
+  X,
 } from 'lucide-react';
 import { getAdminUsers, getAdminUserStats } from '../../../../services/adminUser.service';
 import AddUserModal from '../components/AddUserModal';
@@ -64,6 +65,7 @@ const AdminUserList = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
 
@@ -73,6 +75,15 @@ const AdminUserList = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Debounce search query
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
   // Fetch Users
   useEffect(() => {
@@ -84,7 +95,7 @@ const AdminUserList = () => {
         const params = { page, limit };
         if (statusFilter) params.status = statusFilter;
         if (roleFilter) params.role = roleFilter;
-        if (searchQuery) params.search = searchQuery;
+        if (debouncedSearch) params.search = debouncedSearch;
 
         const data = await getAdminUsers(params);
         if (isMounted) {
@@ -112,7 +123,7 @@ const AdminUserList = () => {
     return () => {
       isMounted = false;
     };
-  }, [page, limit, statusFilter, roleFilter, searchQuery, refreshTrigger]);
+  }, [page, limit, statusFilter, roleFilter, debouncedSearch, refreshTrigger]);
 
   // Fetch Stats
   useEffect(() => {
@@ -139,6 +150,19 @@ const AdminUserList = () => {
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setDebouncedSearch('');
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setDebouncedSearch('');
+    setStatusFilter('');
+    setRoleFilter('');
     setPage(1);
   };
 
@@ -370,7 +394,7 @@ const AdminUserList = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
               <input
                 className={
-                  'w-full h-11 pl-10 pr-4 bg-white border border-slate-200 ' +
+                  'w-full h-11 pl-10 pr-10 bg-white border border-slate-200 ' +
                   'rounded-xl text-sm text-slate-900 focus:outline-none ' +
                   'focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all shadow-sm'
                 }
@@ -379,6 +403,16 @@ const AdminUserList = () => {
                 value={searchQuery}
                 onChange={handleSearchChange}
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  aria-label="Clear search"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              )}
             </div>
 
             {/* Role Filter */}
@@ -481,8 +515,36 @@ const AdminUserList = () => {
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-slate-500 text-sm">
-                    No users found matching your criteria.
+                  <td colSpan="5" className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center justify-center max-w-md mx-auto">
+                      <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 shadow-2xs">
+                        <Users size={26} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-1">
+                        No Users Found
+                      </h3>
+                      <p className="text-xs text-slate-500 max-w-sm mb-5 leading-relaxed">
+                        {searchQuery || statusFilter || roleFilter
+                          ? `No user accounts match your active search and filter criteria${
+                              searchQuery ? ` for "${searchQuery}"` : ''
+                            }${
+                              roleFilter ? ` with role "${roleFilter}"` : ''
+                            }${
+                              statusFilter ? ` with status "${statusFilter}"` : ''
+                            }. Try adjusting your query or reset filters.`
+                          : 'There are currently no registered users in the platform.'}
+                      </p>
+                      {(searchQuery || statusFilter || roleFilter) && (
+                        <button
+                          type="button"
+                          onClick={handleResetFilters}
+                          className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-blue-600 transition-all shadow-2xs cursor-pointer"
+                        >
+                          <RotateCcw size={13} />
+                          <span>Reset Filters</span>
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (
