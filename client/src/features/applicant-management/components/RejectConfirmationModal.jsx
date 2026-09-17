@@ -22,8 +22,8 @@ export default function RejectConfirmationModal({
 
     try {
       // Body payload must use 'note' (Rule 3)
-      await rejectApplicant(applicationId, { note: note.trim() });
-      onSuccess?.();
+      const response = await rejectApplicant(applicationId, { note: note.trim() });
+      onSuccess?.(response?.message);
       onClose?.();
     } catch (err) {
       setError(
