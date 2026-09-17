@@ -33,5 +33,10 @@ export const listNotificationsQuerySchema = z
     // entirely — see getUserNotifications() for why this is needed
     // alongside real-time inserts/deletes.
     before: z.coerce.date().optional(),
+    beforeId: objectIdSchema.optional(),
   })
-  .strict();
+  .strict()
+  .refine((query) => !query.before || query.beforeId, {
+    message: 'beforeId is required when before is provided.',
+    path: ['beforeId'],
+  });

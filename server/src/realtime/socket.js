@@ -7,7 +7,7 @@ import { ACCOUNT_STATUSES } from '../constants/statuses.js';
 let io;
 
 // How often an already-connected socket re-checks that its session is
-// still valid (account active, email verified, tokenVersion unchanged).
+// still valid (JWT not expired, account active, email verified, tokenVersion unchanged).
 // 5 minutes bounds how long a revoked session could keep receiving
 // private notifications after being invalidated elsewhere.
 const REVALIDATION_INTERVAL_MS = 5 * 60 * 1000;
@@ -15,7 +15,7 @@ const REVALIDATION_INTERVAL_MS = 5 * 60 * 1000;
 /**
  * Creates the Socket.IO server on top of the existing HTTP server, and
  * authenticates each connection using the SAME rules as the `protect`
- * REST middleware (valid JWT, active account, verified email, matching
+ * REST middleware (valid unexpired JWT, active account, verified email, matching
  * tokenVersion). A connection that fails any of these is rejected before
  * it ever completes — it never reaches a connected state.
  *
@@ -60,6 +60,8 @@ export function initSocket(httpServer) {
       }
 
       socket.userId = String(user._id);
+      socket.tokenVersion = decoded.tokenVersion ?? 0;
+      socket.tokenExpiresAt = decoded.exp ? decoded.exp * 1000 : null;
       return next();
     } catch (error) {
       return next(error);
@@ -78,8 +80,10 @@ export function initSocket(httpServer) {
     // would have correctly rejected it.
     const revalidationInterval = setInterval(async () => {
       try {
+        const tokenStillValid = !socket.tokenExpiresAt || Date.now() < socket.tokenExpiresAt;
         const user = await User.findById(socket.userId).select('+tokenVersion');
         const stillValid =
+          tokenStillValid &&
           user &&
           user.accountStatus === ACCOUNT_STATUSES.ACTIVE &&
           user.emailVerified &&
@@ -94,8 +98,17 @@ export function initSocket(httpServer) {
       }
     }, REVALIDATION_INTERVAL_MS);
 
+    const msUntilTokenExpiry = socket.tokenExpiresAt ? socket.tokenExpiresAt - Date.now() : null;
+    const expiryTimeout =
+      msUntilTokenExpiry && msUntilTokenExpiry > 0
+        ? setTimeout(() => socket.disconnect(true), Math.min(msUntilTokenExpiry, 2147483647))
+        : null;
+
     socket.on('disconnect', () => {
       clearInterval(revalidationInterval);
+      if (expiryTimeout) {
+        clearTimeout(expiryTimeout);
+      }
     });
   });
 

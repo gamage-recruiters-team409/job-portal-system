@@ -1,12 +1,13 @@
 import apiClient from './apiClient.js';
 
 export const notificationService = {
-  async getNotifications(page = 1, limit = 20, { type, unreadOnly, before } = {}) {
+  async getNotifications(page = 1, limit = 20, { type, unreadOnly, before, beforeId } = {}) {
     try {
       const params = { page, limit };
       if (type) params.type = type;
       if (unreadOnly) params.unreadOnly = 'true';
       if (before) params.before = before;
+      if (beforeId) params.beforeId = beforeId;
 
       const response = await apiClient.get('/notifications', { params });
 

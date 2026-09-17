@@ -26,8 +26,9 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
   // Cursor-based, not page-number-based — see handleLoadMoreNotifications
   // for why: a page number silently drifts (skips or duplicates) once
   // real-time inserts/deletes can change the underlying list between
-  // fetches. A timestamp cursor doesn't have that problem.
-  const oldestLoadedCreatedAtRef = useRef(null);
+  // fetches. The cursor includes createdAt + _id so items with identical
+  // timestamps still paginate deterministically.
+  const oldestLoadedNotificationRef = useRef(null);
   const [hasMoreNotifications, setHasMoreNotifications] = useState(false);
   const [loadingMoreNotifications, setLoadingMoreNotifications] = useState(false);
 
@@ -46,8 +47,8 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
         const initialNotifications = data.notifications || [];
         setNotifications(initialNotifications);
         setUnreadCount(unread);
-        oldestLoadedCreatedAtRef.current =
-          initialNotifications[initialNotifications.length - 1]?.createdAt || null;
+        oldestLoadedNotificationRef.current =
+          initialNotifications[initialNotifications.length - 1] || null;
         setHasMoreNotifications(Boolean(data.pagination?.hasMore));
       } catch (error) {
         console.error('Failed to load notifications:', error);
@@ -182,7 +183,7 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
       await notificationService.deleteAllNotifications();
       setNotifications([]);
       setUnreadCount(0);
-      oldestLoadedCreatedAtRef.current = null;
+      oldestLoadedNotificationRef.current = null;
       setHasMoreNotifications(false);
     } catch (error) {
       console.error('Failed to clear all notifications:', error);
@@ -194,27 +195,30 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
   // pagination within the dropdown for users with a high volume of
   // historical notifications).
   //
-  // Uses a timestamp CURSOR (the createdAt of the oldest notification
+  // Uses a compound CURSOR (createdAt + _id of the oldest notification
   // currently shown), not a page number. This is what makes it resilient
   // to real-time inserts and deletes happening concurrently:
   //   - A WebSocket insertion always prepends something NEWER than any
   //     existing item, so it can never appear again in an "older than
   //     the cursor" fetch — no duplicates.
-  //   - Deleting an item doesn't change the cursor's timestamp value, so
-  //     the next fetch still resumes from exactly the right point — no
+  //   - Deleting an item doesn't change the cursor boundary, so the next
+  //     fetch still resumes from exactly the right point — no
   //     skipped items, unlike a page-number's skip count silently
   //     drifting when the underlying list shrinks or grows.
+  //   - _id breaks ties when multiple records share one createdAt value.
   // Deduplication by _id is kept as a defensive second layer regardless.
   const handleLoadMoreNotifications = async () => {
-    if (loadingMoreNotifications || !hasMoreNotifications || !oldestLoadedCreatedAtRef.current) {
+    if (loadingMoreNotifications || !hasMoreNotifications || !oldestLoadedNotificationRef.current) {
       return;
     }
     setLoadingMoreNotifications(true);
     setActionError(null);
 
     try {
+      const cursor = oldestLoadedNotificationRef.current;
       const data = await notificationService.getNotifications(1, 5, {
-        before: oldestLoadedCreatedAtRef.current,
+        before: cursor.createdAt,
+        beforeId: cursor._id,
       });
       const olderNotifications = data.notifications || [];
 
@@ -225,8 +229,7 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
       });
 
       if (olderNotifications.length > 0) {
-        oldestLoadedCreatedAtRef.current =
-          olderNotifications[olderNotifications.length - 1].createdAt;
+        oldestLoadedNotificationRef.current = olderNotifications[olderNotifications.length - 1];
       }
       setHasMoreNotifications(Boolean(data.pagination?.hasMore));
     } catch (error) {
