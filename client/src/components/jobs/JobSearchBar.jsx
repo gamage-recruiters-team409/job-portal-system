@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
 
-const DEFAULT_SUGGESTIONS = [
+/**
+ * Curated popular search terms used as a fallback when dynamic suggestions
+ * from published jobs, categories, and skills are not available.
+ */
+const POPULAR_SEARCHES = [
   'Software Engineer',
   'Frontend Developer',
   'Backend Developer',
@@ -19,6 +23,8 @@ const DEFAULT_SUGGESTIONS = [
   'Business Analyst',
 ];
 
+const DEFAULT_SUGGESTIONS = POPULAR_SEARCHES;
+
 /**
  * @file JobSearchBar.jsx
  * @description Keyword (q) + location search inputs with auto-suggestions. On submit it calls
@@ -35,7 +41,7 @@ export default function JobSearchBar({
   onSearch,
   placeholder = 'Job title, keyword…',
   locations = [],
-  suggestions = DEFAULT_SUGGESTIONS,
+  suggestions = POPULAR_SEARCHES,
 }) {
   const [q, setQ] = useState(initial.q ?? '');
   const [location, setLocation] = useState(initial.location ?? '');
@@ -51,6 +57,8 @@ export default function JobSearchBar({
       .filter((s) => s.toLowerCase().includes(trimmed) && s.toLowerCase() !== trimmed)
       .slice(0, 6);
   }, [q, suggestions]);
+
+  const isOpen = showSuggestions && filteredSuggestions.length > 0;
 
   // Dismiss suggestions dropdown when clicking outside
   useEffect(() => {
@@ -124,6 +132,11 @@ export default function JobSearchBar({
           placeholder={placeholder}
           className="h-12 w-full rounded-xl bg-slate-50 pl-4 pr-9 text-sm text-slate-900 outline-none ring-1 ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-600"
           autoComplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={isOpen}
+          aria-controls="job-search-suggestions-listbox"
+          aria-activedescendant={activeIndex >= 0 ? `job-suggestion-option-${activeIndex}` : undefined}
         />
 
         {q && (
@@ -138,16 +151,25 @@ export default function JobSearchBar({
         )}
 
         {/* Auto-suggestions dropdown */}
-        {showSuggestions && filteredSuggestions.length > 0 && (
-          <div className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+        {isOpen && (
+          <div
+            id="job-search-suggestions-listbox"
+            role="listbox"
+            aria-label="Search suggestions"
+            className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
+          >
             <div className="px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-slate-400">
-              Suggestions
+              {suggestions === POPULAR_SEARCHES ? 'Popular Searches' : 'Suggestions'}
             </div>
             {filteredSuggestions.map((suggestion, index) => {
               const isActive = index === activeIndex;
               return (
                 <div
                   key={suggestion}
+                  id={`job-suggestion-option-${index}`}
+                  role="option"
+                  aria-selected={isActive}
+                  tabIndex={-1}
                   onMouseDown={(e) => {
                     e.preventDefault();
                     handleSelectSuggestion(suggestion);

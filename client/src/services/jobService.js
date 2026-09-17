@@ -69,31 +69,8 @@ export async function filterJobs(params = {}) {
   return data.data;
 }
 
-/**
- * In-memory client cache for job details.
- * Implements QA recommendation to reduce redundant roundtrips
- * and improve navigation responsiveness between list and detail views.
- */
-const jobDetailCache = new Map();
-const JOB_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes TTL
-
 /** GET /jobs/:id — job detail + similar jobs. Returns { job, similar }. */
-export async function getJob(id, { skipCache = false } = {}) {
-  const cached = jobDetailCache.get(id);
-  const now = Date.now();
-  if (!skipCache && cached && now - cached.timestamp < JOB_CACHE_TTL_MS) {
-    return cached.data;
-  }
+export async function getJob(id) {
   const { data } = await apiClient.get(`/jobs/${id}`);
-  jobDetailCache.set(id, { data: data.data, timestamp: now });
   return data.data;
-}
-
-/** Invalidate cached job detail (e.g. after an action). */
-export function clearJobCache(id) {
-  if (id) {
-    jobDetailCache.delete(id);
-  } else {
-    jobDetailCache.clear();
-  }
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Bookmark, Flag } from 'lucide-react';
-import { getJob, clearJobCache } from '../../../services/jobService.js';
+import { getJob } from '../../../services/jobService.js';
 import { getCategories, getSkills } from '../../../services/referenceService.js';
 import { saveJob, removeSavedJob, getSavedJobs } from '../../../services/savedJobService.js';
 import { formatSalary, timeAgo, formatExperience, titleCase } from '../utils/format.js';
@@ -52,13 +52,15 @@ export default function JobDetailPage() {
         ]);
         const catMap = {};
         cats.forEach((c) => {
-          catMap[c._id] = { name: c.categoryName };
+          const categoryName = c.categoryName || c.name || '';
+          catMap[c._id] = { ...c, categoryName, name: categoryName };
         });
         setCategoriesMap(catMap);
 
         const skMap = {};
         sks.forEach((s) => {
-          skMap[s._id] = { name: s.skillName };
+          const skillName = s.skillName || s.name || '';
+          skMap[s._id] = { ...s, skillName, name: skillName };
         });
         setSkillsMap(skMap);
       } catch (err) {
@@ -162,7 +164,6 @@ export default function JobDetailPage() {
     setApplyError('');
     try {
       await applyToJob(job._id, coverLetter);
-      clearJobCache(job._id);
       setShowApplyModal(false);
       setShowSuccessModal(true);
     } catch (err) {
@@ -210,9 +211,17 @@ export default function JobDetailPage() {
 
   const company = job.companyId ?? {};
   const companyName = company.companyName ?? 'Company';
-  const categoryName = categoriesMap[job.category]?.name || 'General';
+  const categoryName =
+    categoriesMap[job.category]?.categoryName ||
+    categoriesMap[job.category]?.name ||
+    (typeof categoriesMap[job.category] === 'string' ? categoriesMap[job.category] : 'General');
   const salaryText = formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency);
-  const skillNames = (job.skills ?? []).map((skId) => skillsMap[skId]?.name || skId);
+  const skillNames = (job.skills ?? []).map(
+    (skId) =>
+      skillsMap[skId]?.skillName ||
+      skillsMap[skId]?.name ||
+      (typeof skillsMap[skId] === 'string' ? skillsMap[skId] : skId)
+  );
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
