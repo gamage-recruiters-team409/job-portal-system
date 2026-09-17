@@ -322,58 +322,47 @@ const AdminEmployerDetails = () => {
             </div>
           )}
 
-          {/* Verification Moderation Card */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col gap-3.5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Verification Moderation</h3>
-              {renderStatusBadge(company.verificationStatus)}
-            </div>
+          {/* Verification Actions Card (only shown when action is needed) */}
+          {company.verificationStatus !== EMPLOYER_VERIFICATION_STATUSES.VERIFIED && (
+            <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-2xs flex flex-col gap-3.5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Verification Moderation</h3>
+                {renderStatusBadge(company.verificationStatus)}
+              </div>
 
-            <div className="flex flex-col gap-2.5">
-              {company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.PENDING && (
-                <>
+              <div className="flex flex-col gap-2.5">
+                {company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.PENDING ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.VERIFIED)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                    >
+                      <CheckCircle2 size={16} />
+                      Verify Employer Partner
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.REJECTED)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
+                    >
+                      <XCircle size={16} />
+                      Reject Profile
+                    </button>
+                  </>
+                ) : (
                   <button
                     type="button"
                     onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.VERIFIED)}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
                   >
                     <CheckCircle2 size={16} />
-                    Verify Employer Partner
+                    Re-evaluate & Verify Partner
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.REJECTED)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
-                  >
-                    <XCircle size={16} />
-                    Reject Profile
-                  </button>
-                </>
-              )}
-
-              {company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.REJECTED && (
-                <button
-                  type="button"
-                  onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.VERIFIED)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-xl text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
-                >
-                  <CheckCircle2 size={16} />
-                  Re-evaluate & Verify Partner
-                </button>
-              )}
-
-              {company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.VERIFIED && (
-                <button
-                  type="button"
-                  onClick={() => setConfirmAction(EMPLOYER_VERIFICATION_STATUSES.REJECTED)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-semibold transition-colors shadow-2xs whitespace-nowrap cursor-pointer"
-                >
-                  <XCircle size={15} />
-                  Revoke Partner Verification
-                </button>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
 
@@ -547,15 +536,11 @@ const AdminEmployerDetails = () => {
                 <h3 className="text-lg font-bold text-slate-900">
                   {confirmAction === EMPLOYER_VERIFICATION_STATUSES.VERIFIED
                     ? 'Verify Employer Partner?'
-                    : company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.VERIFIED
-                    ? 'Revoke Partner Verification?'
                     : 'Reject Company Profile?'}
                 </h3>
                 <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">
                   {confirmAction === EMPLOYER_VERIFICATION_STATUSES.VERIFIED
                     ? `Are you sure you want to verify ${company.companyName} as an authorized platform partner?`
-                    : company.verificationStatus === EMPLOYER_VERIFICATION_STATUSES.VERIFIED
-                    ? `Are you sure you want to revoke verification for ${company.companyName}? Their partner status will be changed to rejected.`
                     : `Are you sure you want to reject the company profile for ${company.companyName}?`}
                 </p>
               </div>
