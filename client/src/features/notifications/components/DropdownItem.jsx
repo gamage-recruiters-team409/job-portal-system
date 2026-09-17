@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 
 // Helper to format the real API ISO timestamp into "5 minutes ago", etc.
@@ -54,6 +55,18 @@ const TYPE_CONFIG = {
       />
     ),
   },
+  report_status_changed: {
+    bg: 'bg-red-50',
+    text: 'text-red-500',
+    svg: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+      />
+    ),
+  },
 };
 
 const DEFAULT_CONFIG = {
@@ -69,7 +82,8 @@ const DEFAULT_CONFIG = {
   ),
 };
 
-const DropdownItem = ({ notification, onMarkAsRead, onClear }) => {
+const DropdownItem = ({ notification, onMarkAsRead, onClear, onClose }) => {
+  const navigate = useNavigate();
   const isUnread = notification.status === 'Unread';
   const {
     bg: bgColorClass,
@@ -80,6 +94,13 @@ const DropdownItem = ({ notification, onMarkAsRead, onClear }) => {
   const handleClick = () => {
     if (isUnread && onMarkAsRead) {
       onMarkAsRead(notification._id);
+    }
+
+    // Only report-status notifications navigate anywhere — every other
+    // type keeps its existing behavior (mark-as-read only, no navigation).
+    if (notification.type === 'report_status_changed' && notification.relatedReport) {
+      navigate(`/report-details/${notification.relatedReport}`);
+      onClose?.();
     }
   };
 

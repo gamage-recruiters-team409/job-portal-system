@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Trash2 } from 'lucide-react';
 
 const getRelativeTime = (dateString) => {
@@ -57,6 +58,18 @@ const TYPE_CONFIG = {
       />
     ),
   },
+  report_status_changed: {
+    bg: 'bg-[#FEE2E2]',
+    text: 'text-[#DC2626]',
+    label: 'Report update',
+    svg: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+      />
+    ),
+  },
 };
 
 const DEFAULT_CONFIG = {
@@ -75,12 +88,29 @@ const DEFAULT_CONFIG = {
 const getIconConfig = (type) => TYPE_CONFIG[type] || DEFAULT_CONFIG;
 
 const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
+  const navigate = useNavigate();
   const isUnread = notification.status === 'Unread';
   const iconConfig = getIconConfig(notification.type);
   const timeString = getRelativeTime(notification.createdAt);
 
+  // Only report-status notifications are clickable/navigable — every
+  // other type keeps its existing non-navigating behavior.
+  const isReportNotification =
+    notification.type === 'report_status_changed' && notification.relatedReport;
+
+  const handleItemClick = () => {
+    if (isReportNotification) {
+      navigate(`/report-details/${notification.relatedReport}`);
+    }
+  };
+
   return (
-    <div className="group flex items-start gap-4 p-5 border-b border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] transition-colors last:border-b-0">
+    <div
+      onClick={handleItemClick}
+      className={`group flex items-start gap-4 p-5 border-b border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] transition-colors last:border-b-0 ${
+        isReportNotification ? 'cursor-pointer' : ''
+      }`}
+    >
       <div className="pt-2 flex-shrink-0 w-2 flex justify-center">
         {isUnread && <div className="w-1.5 h-1.5 rounded-full bg-[#2563EB]" />}
       </div>
@@ -113,7 +143,10 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
           <div className="flex items-center gap-3 mt-3">
             <button
               type="button"
-              onClick={() => onMarkAsRead(notification._id)}
+              onClick={(event) => {
+                event.stopPropagation();
+                onMarkAsRead(notification._id);
+              }}
               className="text-[13px] font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] px-4 py-1.5 rounded-[6px] transition-colors"
             >
               Mark as read
@@ -126,7 +159,10 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
         <span className="text-[12px] text-[#64748B] whitespace-nowrap">{timeString}</span>
         <button
           type="button"
-          onClick={() => onDelete(notification._id)}
+          onClick={(event) => {
+            event.stopPropagation();
+            onDelete(notification._id);
+          }}
           aria-label="Delete notification"
           title="Delete notification"
           className="rounded-[6px] p-1.5 text-[#64748B] opacity-100 transition-opacity hover:bg-red-50 hover:text-[#DC2626] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] sm:opacity-0 sm:group-hover:opacity-100"

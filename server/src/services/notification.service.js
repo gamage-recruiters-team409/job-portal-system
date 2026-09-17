@@ -120,12 +120,13 @@ export async function getUnreadNotificationCount(userId) {
  * Called directly by other backend modules (Application, Job, Admin, etc.)
  * when a real notification-worthy event occurs.
  */
-export async function createNotification({ user, type, message, relatedJob }) {
+export async function createNotification({ user, type, message, relatedJob, relatedReport }) {
   const notification = await Notification.create({
     user,
     type,
     message,
     relatedJob,
+    relatedReport,
   });
   return { notification };
 }
@@ -230,4 +231,28 @@ export async function notifyApplicationStatusChange({
   }
 
   return { notification, emailSent };
+}
+
+/**
+ * Fires when an Admin reviews and changes the status of a Job Seeker's
+ * reported job (e.g. to 'under_review', 'resolved', or 'dismissed').
+ * Creates the in-app notification only — no email, per the QA
+ * recommendation's exact scope ("adding in-app notifications").
+ *
+ * Called by the Admin Report Management module (adminReport.service.js)
+ * once a report's status update is saved. Unlike the other notify*
+ * functions, this is NOT wrapped in a try/catch by its caller — a
+ * failure here is expected to propagate and fail the admin's review
+ * action, matching the same precedent as notifyApplicationStatusChange
+ * (only email-sending is best-effort, not notification creation itself).
+ */
+export async function notifyReportStatusChange({ jobSeekerId, jobTitle, newStatus, reportId }) {
+  const { notification } = await createNotification({
+    user: jobSeekerId,
+    type: 'report_status_changed',
+    message: `Your report on "${jobTitle}" is now: ${newStatus}.`,
+    relatedReport: reportId,
+  });
+
+  return { notification };
 }
