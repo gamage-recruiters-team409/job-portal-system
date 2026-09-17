@@ -1,11 +1,12 @@
 import apiClient from './apiClient.js';
 
 export const notificationService = {
-  async getNotifications(page = 1, limit = 20, { type, unreadOnly } = {}) {
+  async getNotifications(page = 1, limit = 20, { type, unreadOnly, before } = {}) {
     try {
       const params = { page, limit };
       if (type) params.type = type;
       if (unreadOnly) params.unreadOnly = 'true';
+      if (before) params.before = before;
 
       const response = await apiClient.get('/notifications', { params });
 
@@ -17,6 +18,7 @@ export const notificationService = {
             limit: 20,
             total: 0,
             totalPages: 1,
+            hasMore: false,
           },
         };
       }

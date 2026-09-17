@@ -23,7 +23,11 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
   const notificationButtonRef = useRef(null);
   const pendingMarkAsReadIds = useRef(new Set());
   const pendingClearIds = useRef(new Set());
-  const notificationsPageRef = useRef(1);
+  // Cursor-based, not page-number-based — see handleLoadMoreNotifications
+  // for why: a page number silently drifts (skips or duplicates) once
+  // real-time inserts/deletes can change the underlying list between
+  // fetches. A timestamp cursor doesn't have that problem.
+  const oldestLoadedCreatedAtRef = useRef(null);
   const [hasMoreNotifications, setHasMoreNotifications] = useState(false);
   const [loadingMoreNotifications, setLoadingMoreNotifications] = useState(false);
 
@@ -39,10 +43,12 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
           notificationService.getUnreadCount(),
         ]);
 
-        setNotifications(data.notifications || []);
+        const initialNotifications = data.notifications || [];
+        setNotifications(initialNotifications);
         setUnreadCount(unread);
-        notificationsPageRef.current = 1;
-        setHasMoreNotifications((data.pagination?.totalPages || 1) > 1);
+        oldestLoadedCreatedAtRef.current =
+          initialNotifications[initialNotifications.length - 1]?.createdAt || null;
+        setHasMoreNotifications(Boolean(data.pagination?.hasMore));
       } catch (error) {
         console.error('Failed to load notifications:', error);
         setNotificationsError('Unable to load notifications.');
@@ -75,6 +81,11 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
 
     return () => {
       socket.off('notification:new', handleNewNotification);
+      // Always tear the connection down on cleanup, not just on the
+      // explicit logout button — this effect re-runs whenever `user`
+      // changes, so this guarantees no authenticated socket survives
+      // past the session/user it was created for.
+      disconnectSocket();
     };
   }, [user]);
 
@@ -171,7 +182,7 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
       await notificationService.deleteAllNotifications();
       setNotifications([]);
       setUnreadCount(0);
-      notificationsPageRef.current = 1;
+      oldestLoadedCreatedAtRef.current = null;
       setHasMoreNotifications(false);
     } catch (error) {
       console.error('Failed to clear all notifications:', error);
@@ -179,21 +190,45 @@ export default function AuthenticatedLayout({ children, navItems, showFooter = f
     }
   };
 
-  // --- Lazy-load the next page of notifications into the dropdown
-  // (QA recommendation: pagination within the dropdown for users with
-  // a high volume of historical notifications) ---
+  // --- Lazy-load older notifications into the dropdown (QA recommendation:
+  // pagination within the dropdown for users with a high volume of
+  // historical notifications).
+  //
+  // Uses a timestamp CURSOR (the createdAt of the oldest notification
+  // currently shown), not a page number. This is what makes it resilient
+  // to real-time inserts and deletes happening concurrently:
+  //   - A WebSocket insertion always prepends something NEWER than any
+  //     existing item, so it can never appear again in an "older than
+  //     the cursor" fetch — no duplicates.
+  //   - Deleting an item doesn't change the cursor's timestamp value, so
+  //     the next fetch still resumes from exactly the right point — no
+  //     skipped items, unlike a page-number's skip count silently
+  //     drifting when the underlying list shrinks or grows.
+  // Deduplication by _id is kept as a defensive second layer regardless.
   const handleLoadMoreNotifications = async () => {
-    if (loadingMoreNotifications || !hasMoreNotifications) return;
+    if (loadingMoreNotifications || !hasMoreNotifications || !oldestLoadedCreatedAtRef.current) {
+      return;
+    }
     setLoadingMoreNotifications(true);
     setActionError(null);
 
     try {
-      const nextPage = notificationsPageRef.current + 1;
-      const data = await notificationService.getNotifications(nextPage, 5);
+      const data = await notificationService.getNotifications(1, 5, {
+        before: oldestLoadedCreatedAtRef.current,
+      });
+      const olderNotifications = data.notifications || [];
 
-      setNotifications((prev) => [...prev, ...(data.notifications || [])]);
-      notificationsPageRef.current = nextPage;
-      setHasMoreNotifications(nextPage < (data.pagination?.totalPages || nextPage));
+      setNotifications((prev) => {
+        const existingIds = new Set(prev.map((n) => n._id));
+        const deduped = olderNotifications.filter((n) => !existingIds.has(n._id));
+        return [...prev, ...deduped];
+      });
+
+      if (olderNotifications.length > 0) {
+        oldestLoadedCreatedAtRef.current =
+          olderNotifications[olderNotifications.length - 1].createdAt;
+      }
+      setHasMoreNotifications(Boolean(data.pagination?.hasMore));
     } catch (error) {
       console.error('Failed to load more notifications:', error);
       setActionError('Unable to load more notifications. Try again.');

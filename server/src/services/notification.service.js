@@ -19,10 +19,8 @@ import { emitToUser } from '../realtime/socket.js';
  */
 export async function getUserNotifications(
   userId,
-  { page = 1, limit = 20, type, unreadOnly = false } = {}
+  { page = 1, limit = 20, type, unreadOnly = false, before } = {}
 ) {
-  const skip = (page - 1) * limit;
-
   const query = { user: userId };
   if (type) {
     query.type = type;
@@ -31,6 +29,31 @@ export async function getUserNotifications(
     query.status = NOTIFICATION_STATUSES.UNREAD;
   }
 
+  if (before) {
+    // Cursor-based path: "give me notifications strictly older than
+    // this timestamp." Immune to real-time insertions (which only ever
+    // add items NEWER than any existing cursor) and to deletions
+    // (removing a document doesn't change the timestamp value used as
+    // the cursor, so the next fetch still resumes from exactly the
+    // right point — unlike page-number skip, which silently drifts
+    // when the underlying list changes between fetches).
+    query.createdAt = { $lt: before };
+
+    // Fetch one extra document to learn whether more exist beyond this
+    // batch, without a separate (and equally driftable) total count.
+    const notifications = await Notification.find(query)
+      .sort('-createdAt')
+      .limit(limit + 1);
+
+    const hasMore = notifications.length > limit;
+
+    return {
+      notifications: notifications.slice(0, limit),
+      pagination: { limit, hasMore },
+    };
+  }
+
+  const skip = (page - 1) * limit;
   const [notifications, total] = await Promise.all([
     Notification.find(query).sort('-createdAt').skip(skip).limit(limit),
     Notification.countDocuments(query),
@@ -43,6 +66,7 @@ export async function getUserNotifications(
       limit,
       total,
       totalPages: Math.ceil(total / limit),
+      hasMore: page < Math.ceil(total / limit),
     },
   };
 }

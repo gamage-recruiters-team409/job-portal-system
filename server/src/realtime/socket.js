@@ -6,6 +6,12 @@ import { ACCOUNT_STATUSES } from '../constants/statuses.js';
 
 let io;
 
+// How often an already-connected socket re-checks that its session is
+// still valid (account active, email verified, tokenVersion unchanged).
+// 5 minutes bounds how long a revoked session could keep receiving
+// private notifications after being invalidated elsewhere.
+const REVALIDATION_INTERVAL_MS = 5 * 60 * 1000;
+
 /**
  * Creates the Socket.IO server on top of the existing HTTP server, and
  * authenticates each connection using the SAME rules as the `protect`
@@ -62,6 +68,35 @@ export function initSocket(httpServer) {
 
   io.on('connection', (socket) => {
     socket.join(`user:${socket.userId}`);
+
+    // The io.use() middleware above only validates once, at handshake
+    // time. Since this is a long-lived connection carrying private
+    // notification data, it needs to keep re-checking the SAME rules
+    // the REST API enforces on every request — otherwise a revoked
+    // session (password reset, account suspended, tokenVersion bumped)
+    // could keep receiving private data indefinitely after a REST call
+    // would have correctly rejected it.
+    const revalidationInterval = setInterval(async () => {
+      try {
+        const user = await User.findById(socket.userId).select('+tokenVersion');
+        const stillValid =
+          user &&
+          user.accountStatus === ACCOUNT_STATUSES.ACTIVE &&
+          user.emailVerified &&
+          (socket.tokenVersion ?? 0) === (user.tokenVersion ?? 0);
+
+        if (!stillValid) {
+          socket.disconnect(true);
+        }
+      } catch (error) {
+        console.error('Socket re-validation failed:', error.message);
+        socket.disconnect(true);
+      }
+    }, REVALIDATION_INTERVAL_MS);
+
+    socket.on('disconnect', () => {
+      clearInterval(revalidationInterval);
+    });
   });
 
   return io;
