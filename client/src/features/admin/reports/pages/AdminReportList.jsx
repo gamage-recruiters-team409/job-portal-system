@@ -34,7 +34,7 @@ const AdminReportList = () => {
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [totalPages, setTotalPages] = useState(1);
-  const [totalReports, setTotalReports] = useState(0);
+  const [, setTotalReports] = useState(0);
   const [selectedReportId, setSelectedReportId] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -398,9 +398,7 @@ const AdminReportList = () => {
         {!loading && !error && reports.length > 0 && (
           <div className="flex items-center justify-between pt-4 pb-8">
             <span className="text-sm text-slate-500">
-              Showing <span className="font-medium text-slate-900">{(page - 1) * limit + 1}</span> to{' '}
-              <span className="font-medium text-slate-900">{Math.min(page * limit, totalReports)}</span> of{' '}
-              <span className="font-medium text-slate-900">{totalReports}</span> reports
+              Showing page {page} of {totalPages}
             </span>
             <div className="flex gap-2">
               <button
