@@ -12,7 +12,6 @@ import {
   Eye,
   Edit2,
   Ban,
-  RotateCcw,
   ChevronLeft,
   ChevronRight,
   TrendingUp,
@@ -20,6 +19,7 @@ import {
   AlertOctagon,
   ArrowRight,
   UserCheck,
+  RotateCcw,
   X,
 } from 'lucide-react';
 import { getAdminUsers, getAdminUserStats } from '../../../../services/adminUser.service';
