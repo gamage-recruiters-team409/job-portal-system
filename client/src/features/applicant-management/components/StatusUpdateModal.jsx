@@ -98,11 +98,11 @@ export default function StatusUpdateModal({
     setError(null);
 
     try {
-      await updateApplicantStatus(applicationId, {
+      const response = await updateApplicantStatus(applicationId, {
         status: selectedStatus,
         note: note.trim(),
       });
-      onSuccess?.();
+      onSuccess?.(response?.message);
       onClose?.();
     } catch (err) {
       setError(

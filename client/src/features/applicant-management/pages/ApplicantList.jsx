@@ -282,17 +282,19 @@ export default function ApplicantList() {
 
   // ── Sync URL 'search' query param to filter state ──
   useEffect(() => {
-    const urlSearch = searchParams.get('search');
-    if (urlSearch !== null) {
-      setDraftSearch(urlSearch);
-      setAppliedFilters((prev) => ({ ...prev, search: urlSearch }));
-      setCurrentPage(1);
-    } else {
-      // When the param is removed, reset the search state
-      setDraftSearch('');
-      setAppliedFilters((prev) => ({ ...prev, search: '' }));
-      setCurrentPage(1);
-    }
+    queueMicrotask(() => {
+      const urlSearch = searchParams.get('search');
+      if (urlSearch !== null) {
+        setDraftSearch(urlSearch);
+        setAppliedFilters((prev) => ({ ...prev, search: urlSearch }));
+        setCurrentPage(1);
+      } else {
+        // When the param is removed, reset the search state
+        setDraftSearch('');
+        setAppliedFilters((prev) => ({ ...prev, search: '' }));
+        setCurrentPage(1);
+      }
+    });
   }, [searchParams]);
 
   // ── Load employer's job list once on mount ──
