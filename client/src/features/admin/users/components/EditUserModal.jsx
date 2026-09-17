@@ -384,7 +384,7 @@ const EditUserModal = ({ user: editingUser, onClose, onSuccess }) => {
                 )}
                 {pendingConfirmation.accountStatus === ACCOUNT_STATUSES.SUSPENDED && (
                   <p className="text-[11px] text-red-600 pt-1 font-medium">
-                    ⚠️ The user will be immediately logged out and blocked from signing in.
+                    ⚠️ The suspended user will no longer be able to access protected functionality or sign in while the account remains suspended.
                   </p>
                 )}
               </div>
