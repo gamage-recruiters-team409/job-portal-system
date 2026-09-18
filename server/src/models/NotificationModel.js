@@ -25,6 +25,10 @@ const notificationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Job',
     },
+    relatedReport: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Report',
+    },
   },
   { timestamps: true }
 );

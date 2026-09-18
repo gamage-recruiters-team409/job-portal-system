@@ -140,6 +140,7 @@ const NotificationDropdown = ({
                   notification={notif}
                   onMarkAsRead={onMarkAsRead}
                   onClear={onClear}
+                  onClose={onClose}
                 />
               ))}
 

@@ -2,6 +2,7 @@ import Report from '../models/Report.js';
 import { ApiError } from '../utils/apiError.js';
 import { REPORT_STATUSES, JOB_STATUSES } from '../constants/statuses.js';
 import { moderateJob } from './adminJob.service.js';
+import { notifyReportStatusChange } from './notification.service.js';
 
 const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -16,7 +17,7 @@ export async function getReports({ search, status, page = 1, limit = 10 }) {
     const escaped = escapeRegex(search);
     filter.$or = [
       { jobTitle: { $regex: escaped, $options: 'i' } },
-      { companyName: { $regex: escaped, $options: 'i' } }
+      { companyName: { $regex: escaped, $options: 'i' } },
     ];
   }
 
@@ -121,6 +122,17 @@ export async function reviewReport(reportId, adminUserId, status, reviewNote, jo
 
   await report.save();
 
+  try {
+    await notifyReportStatusChange({
+      jobSeekerId: report.reportedBy,
+      jobTitle: report.jobTitle,
+      newStatus: status,
+      reportId: report._id,
+    });
+  } catch (error) {
+    console.error('Failed to create report status notification:', error.message);
+  }
+
   return { report, updatedJob };
 }
 
@@ -128,13 +140,14 @@ export async function reviewReport(reportId, adminUserId, status, reviewNote, jo
  * Get report statistics for Admin Report List cards.
  */
 export async function getReportStats() {
-  const [totalReports, pendingReports, underReviewReports, resolvedReports, dismissedReports] = await Promise.all([
-    Report.countDocuments(),
-    Report.countDocuments({ status: REPORT_STATUSES.PENDING }),
-    Report.countDocuments({ status: REPORT_STATUSES.UNDER_REVIEW }),
-    Report.countDocuments({ status: REPORT_STATUSES.RESOLVED }),
-    Report.countDocuments({ status: REPORT_STATUSES.DISMISSED }),
-  ]);
+  const [totalReports, pendingReports, underReviewReports, resolvedReports, dismissedReports] =
+    await Promise.all([
+      Report.countDocuments(),
+      Report.countDocuments({ status: REPORT_STATUSES.PENDING }),
+      Report.countDocuments({ status: REPORT_STATUSES.UNDER_REVIEW }),
+      Report.countDocuments({ status: REPORT_STATUSES.RESOLVED }),
+      Report.countDocuments({ status: REPORT_STATUSES.DISMISSED }),
+    ]);
 
   return {
     totalReports,
