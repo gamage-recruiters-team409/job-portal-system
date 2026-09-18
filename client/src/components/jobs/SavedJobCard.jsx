@@ -15,6 +15,8 @@ export default function SavedJobCard({
 }) {
   const { job, isAvailable, unavailableReason, savedAt } = item;
 
+  const companyName = job?.companyId?.companyName ?? 'Company';
+
   function timeAgo(dateString) {
     const diffMs = Date.now() - new Date(dateString).getTime();
     const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -69,8 +71,9 @@ export default function SavedJobCard({
           isSelectMode ? 'pl-6' : ''
         } pr-8`}
       >
+        {/* Company Initial Placeholder */}
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-xs font-semibold text-blue-700">
-          {isAvailable ? 'Logo' : '—'}
+          {isAvailable ? companyName.charAt(0).toUpperCase() : '—'}
         </span>
 
         <div className="min-w-0 flex-1">
@@ -81,7 +84,7 @@ export default function SavedJobCard({
               </h3>
 
               <p className="truncate text-sm text-slate-500">
-                {job.companyId?.companyName ?? 'Company'}
+                {companyName}
               </p>
             </Link>
           ) : (

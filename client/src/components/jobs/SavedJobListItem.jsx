@@ -35,7 +35,6 @@ export default function SavedJobListItem({
       }`}
     >
       <div className="flex min-w-0 items-center gap-3">
-
         {/* Selection Checkbox - Only visible in Select Mode */}
         {isSelectMode && (
           <input
@@ -47,9 +46,9 @@ export default function SavedJobListItem({
           />
         )}
 
-        {/* Job Logo / Placeholder */}
+        {/* Job Logo / Company Initial Placeholder */}
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-xs font-semibold text-blue-700">
-          {isAvailable ? 'Logo' : '—'}
+          {isAvailable ? companyName.charAt(0).toUpperCase() : '—'}
         </span>
 
         {/* Job Information */}
