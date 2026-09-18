@@ -195,8 +195,14 @@ export default function EmployerDashboard() {
       setStats(data);
     } catch (err) {
       console.error('Error fetching employer statistics:', err);
-      setStatsError(err.response?.data?.message || 'Failed to load statistics.');
-      setStats(null);
+      if (err.response?.status === 404) {
+        // Company not created yet — default statistics gracefully without showing error banner
+        setStats({ totalJobPosts: 0, activeJobs: 0, closedJobs: 0, totalApplicationsReceived: 0 });
+        setStatsError(null);
+      } else {
+        setStatsError(err.response?.data?.message || 'Dashboard statistics are currently unavailable.');
+        setStats(null);
+      }
     } finally {
       setStatsLoading(false);
     }
@@ -249,6 +255,16 @@ export default function EmployerDashboard() {
     fetchApplications();
   };
 
+  // Check if stats/dashboard data is unavailable (error occurred, missing, or zero activity across all metrics)
+  const isDataUnavailable =
+    !statsLoading &&
+    (Boolean(statsError) ||
+      !stats ||
+      (stats.totalJobPosts === 0 &&
+        stats.totalApplicationsReceived === 0 &&
+        stats.activeJobs === 0 &&
+        stats.closedJobs === 0));
+
   // Helper for displaying stat card value
   const getStatValue = (key) => {
     if (statsLoading) {
@@ -257,7 +273,7 @@ export default function EmployerDashboard() {
     if (statsError || !stats || stats[key] === undefined || stats[key] === null) {
       return '—';
     }
-    return stats[key];
+    return typeof stats[key] === 'number' ? stats[key] : '—';
   };
 
   // Stat Cards configuration aligned directly with backend API fields:
@@ -415,23 +431,6 @@ export default function EmployerDashboard() {
         </div>
       )}
 
-      {hasNoDashboardData && (
-        <div className="animate-fade-in flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-xs">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
-            <p className="text-sm font-medium">No data available.</p>
-          </div>
-          <button
-            type="button"
-            onClick={handleRefreshAll}
-            className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-amber-700 transition-colors duration-150 hover:underline"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            <span>Refresh</span>
-          </button>
-        </div>
-      )}
-
       {/* ── COMPANY HEADER CARD ── */}
       <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-xs">
         {companyLoading ? (
@@ -528,16 +527,16 @@ export default function EmployerDashboard() {
       </div>
 
       {/* ── STAT CARDS GRID (4 total, 4 cols lg, 2 cols sm, 1 col mobile) ── */}
-      {statsError && (
-        <div className="animate-fade-in flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900 shadow-xs">
-          <div className="flex items-center gap-2">
+      {isDataUnavailable && (
+        <div className="animate-fade-in flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-amber-900 shadow-xs">
+          <div className="flex items-center gap-2.5">
             <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
-            <p className="text-xs font-medium">No data available.</p>
+            <p className="text-xs sm:text-sm font-medium">No data available.</p>
           </div>
           <button
             type="button"
-            onClick={fetchStats}
-            className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-amber-700 transition-colors duration-150 hover:underline"
+            onClick={handleRefreshAll}
+            className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-amber-700 transition-colors duration-150 hover:underline cursor-pointer"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             <span>Retry</span>
