@@ -73,7 +73,7 @@ export default function SavedJobCard({
       >
         {/* Company Initial Placeholder */}
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-xs font-semibold text-blue-700">
-          {isAvailable ? companyName.charAt(0).toUpperCase() : '—'}
+          {isAvailable ? 'Logo' : '—'}
         </span>
 
         <div className="min-w-0 flex-1">
