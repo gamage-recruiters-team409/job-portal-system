@@ -278,6 +278,7 @@ export default function JobDetailPage() {
                   <button
                     type="button"
                     onClick={handleOpenApplyModal}
+                    disabled={isAuthenticated && !isJobSeeker}
                     title={
                       isAuthenticated && !isJobSeeker
                         ? 'Only Job Seeker accounts can apply for jobs.'

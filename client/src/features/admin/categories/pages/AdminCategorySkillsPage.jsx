@@ -20,6 +20,7 @@ import {
   TrendingUp,
   XCircle,
   RefreshCw,
+  X,
 } from 'lucide-react';
 import {
   getAdminCategories,
@@ -200,7 +201,7 @@ const AdminCategorySkillsPage = () => {
       if (!query) return true;
       return skill.skillName.toLowerCase().includes(query);
     });
-  }, [skillsByCategory.uncategorized, searchQuery, statusFilter]);
+  }, [skillsByCategory, searchQuery, statusFilter]);
 
   const hasResults =
     filteredCategories.length > 0 || filteredUncategorizedSkills.length > 0;
@@ -314,8 +315,18 @@ const AdminCategorySkillsPage = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search categories or skills..."
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-10 py-2 text-xs text-slate-800 placeholder-slate-400 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 transition-colors"
+              title="Clear search"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         {/* Filter Tabs & Accordion Actions */}
@@ -420,20 +431,27 @@ const AdminCategorySkillsPage = () => {
             No Categories or Skills Found
           </h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-            {searchQuery
-              ? `No categories or skills matched "${searchQuery}". Try a different search keyword.`
+            {searchQuery || statusFilter !== 'ALL'
+              ? `No categories or skills matched your filter criteria${
+                  searchQuery ? ` for "${searchQuery}"` : ''
+                }. Try resetting your search or filters.`
               : 'Get started by creating your first platform job category or skill.'}
           </p>
           <div className="mt-5 flex items-center justify-center gap-3">
-            {searchQuery ? (
+            {searchQuery || statusFilter !== 'ALL' ? (
               <button
-                onClick={() => setSearchQuery('')}
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  setStatusFilter('ALL');
+                }}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-colors"
               >
-                <span>Clear Search</span>
+                <span>Reset Filters</span>
               </button>
             ) : (
               <button
+                type="button"
                 onClick={() => setIsCreateCategoryOpen(true)}
                 className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
               >
@@ -448,9 +466,23 @@ const AdminCategorySkillsPage = () => {
       {!loading && !error && hasResults && (
         <div className="space-y-4">
           {filteredCategories.map((category) => {
-            const isExpanded = expandedCategories.has(category._id);
+            const query = searchQuery.trim().toLowerCase();
+            const isExpanded = query ? true : expandedCategories.has(category._id);
             const categorySkills = skillsByCategory.map[category._id] || [];
             const activeSkillsCount = categorySkills.filter((s) => s.isActive).length;
+            const catMatchesQuery = query && (
+              category.categoryName.toLowerCase().includes(query) ||
+              (category.description && category.description.toLowerCase().includes(query))
+            );
+
+            const visibleSkills = categorySkills.filter((s) => {
+              if (statusFilter === 'ACTIVE' && !s.isActive) return false;
+              if (statusFilter === 'INACTIVE' && s.isActive) return false;
+              if (query && !catMatchesQuery) {
+                return s.skillName.toLowerCase().includes(query);
+              }
+              return true;
+            });
 
             return (
               <div
@@ -523,35 +555,46 @@ const AdminCategorySkillsPage = () => {
                 {isExpanded && (
                   <div className="border-t border-slate-100 bg-slate-50/40 p-5 md:p-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                      {categorySkills.map((skill) => (
-                        <div
-                          key={skill._id}
-                          className="group relative flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 shadow-2xs hover:border-blue-200 hover:shadow-xs transition-all"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                            <span
-                              className={`h-2 w-2 rounded-full shrink-0 ${
-                                skill.isActive ? 'bg-blue-600' : 'bg-slate-300'
-                              }`}
-                            />
-                            <span
-                              className={`text-xs font-semibold truncate ${
-                                skill.isActive ? 'text-slate-800' : 'text-slate-400 line-through'
-                              }`}
-                            >
-                              {skill.skillName}
-                            </span>
-                          </div>
-
-                          <button
-                            onClick={() => setEditingSkill(skill)}
-                            title="Edit Skill"
-                            className="opacity-0 group-hover:opacity-100 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </button>
+                      {visibleSkills.length === 0 ? (
+                        <div className="col-span-full py-4 text-center">
+                          <p className="text-xs text-slate-400 italic">
+                            {categorySkills.length === 0
+                              ? 'No skills added to this category yet.'
+                              : 'No skills in this category match the current filter.'}
+                          </p>
                         </div>
-                      ))}
+                      ) : (
+                        visibleSkills.map((skill) => (
+                          <div
+                            key={skill._id}
+                            className="group relative flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-3.5 shadow-2xs hover:border-blue-200 hover:shadow-xs transition-all"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                              <span
+                                className={`h-2 w-2 rounded-full shrink-0 ${
+                                  skill.isActive ? 'bg-blue-600' : 'bg-slate-300'
+                                }`}
+                              />
+                              <span
+                                className={`text-xs font-semibold truncate ${
+                                  skill.isActive ? 'text-slate-800' : 'text-slate-400 line-through'
+                                }`}
+                              >
+                                {skill.skillName}
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => setEditingSkill(skill)}
+                              title="Edit Skill"
+                              className="opacity-0 group-hover:opacity-100 rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all"
+                            >
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))
+                      )}
 
                       {/* Add Skill Button (Dashed card matching design) */}
                       <button
@@ -575,36 +618,45 @@ const AdminCategorySkillsPage = () => {
           {/* ── Uncategorized Skills Section (if any exist) ── */}
           {filteredUncategorizedSkills.length > 0 && (
             <div className="overflow-hidden rounded-2xl border border-amber-200/80 bg-amber-50/20 shadow-2xs">
-              <div
-                className="flex items-center justify-between p-5 md:p-6 cursor-pointer hover:bg-amber-50/50 transition-colors"
-                onClick={() => toggleCategory('uncategorized')}
-              >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 shadow-2xs">
-                    <FolderTree className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h2 className="text-base font-bold text-slate-900">
-                      Uncategorized Skills
-                    </h2>
-                    <p className="text-xs font-medium text-slate-500 mt-0.5">
-                      {filteredUncategorizedSkills.length}{' '}
-                      {filteredUncategorizedSkills.length === 1 ? 'skill' : 'skills'}{' '}
-                      without an assigned category
-                    </p>
-                  </div>
-                </div>
+              {/* Uncategorized Header */}
+              {(() => {
+                const query = searchQuery.trim().toLowerCase();
+                const isUncategorizedExpanded = query
+                  ? true
+                  : expandedCategories.has('uncategorized');
 
-                <div className="p-1 rounded-lg text-slate-400">
-                  {expandedCategories.has('uncategorized') ? (
-                    <ChevronUp className="h-5 w-5 text-amber-600" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5" />
-                  )}
-                </div>
-              </div>
+                return (
+                  <>
+                    <div
+                      className="flex items-center justify-between p-5 md:p-6 cursor-pointer hover:bg-amber-50/50 transition-colors"
+                      onClick={() => toggleCategory('uncategorized')}
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 shadow-2xs">
+                          <FolderTree className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h2 className="text-base font-bold text-slate-900">
+                            Uncategorized Skills
+                          </h2>
+                          <p className="text-xs font-medium text-slate-500 mt-0.5">
+                            {filteredUncategorizedSkills.length}{' '}
+                            {filteredUncategorizedSkills.length === 1 ? 'skill' : 'skills'}{' '}
+                            without an assigned category
+                          </p>
+                        </div>
+                      </div>
 
-              {expandedCategories.has('uncategorized') && (
+                      <div className="p-1 rounded-lg text-slate-400">
+                        {isUncategorizedExpanded ? (
+                          <ChevronUp className="h-5 w-5 text-amber-600" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5" />
+                        )}
+                      </div>
+                    </div>
+
+                    {isUncategorizedExpanded && (
                 <div className="border-t border-amber-100 bg-white/60 p-5 md:p-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                     {filteredUncategorizedSkills.map((skill) => (
@@ -634,7 +686,10 @@ const AdminCategorySkillsPage = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </>
+          );
+        })()}
+      </div>
           )}
         </div>
       )}

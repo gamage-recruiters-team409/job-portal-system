@@ -41,6 +41,7 @@ export default function ApplicationHistoryPage() {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState('newest');
   async function fetchHistory() {
     setLoading(true);
     setError(null);
@@ -63,14 +64,20 @@ export default function ApplicationHistoryPage() {
 
   const normalizedSearch = search.trim().toLowerCase();
 
-  const filtered = applications.filter((app) => {
-    const title = app.job?.title?.toLowerCase() ?? '';
-    const company = app.job?.companyId?.companyName?.toLowerCase() ?? '';
-    const matchesSearch =
-      !normalizedSearch || title.includes(normalizedSearch) || company.includes(normalizedSearch);
-    const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filtered = applications
+    .filter((app) => {
+      const title = app.job?.title?.toLowerCase() ?? '';
+      const company = app.job?.companyId?.companyName?.toLowerCase() ?? '';
+      const matchesSearch =
+        !normalizedSearch || title.includes(normalizedSearch) || company.includes(normalizedSearch);
+      const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -115,6 +122,15 @@ export default function ApplicationHistoryPage() {
           <option value="shortlisted">Shortlisted</option>
           <option value="selected">Selected</option>
           <option value="rejected">Rejected</option>
+        </select>
+
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+          className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:w-auto"
+        >
+          <option value="newest">Sort: Newest First</option>
+          <option value="oldest">Sort: Oldest First</option>
         </select>
       </div>
 

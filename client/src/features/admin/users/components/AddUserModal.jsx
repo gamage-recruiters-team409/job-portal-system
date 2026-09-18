@@ -53,7 +53,7 @@ const AddUserModal = ({ onClose, onSuccess }) => {
     try {
       setApiError(null);
       await createAdminUser(data);
-      toast.success('User added successfully!');
+      toast.success(`User "${data.name}" added successfully!`);
       onSuccess();
     } catch (err) {
       const message = err.response?.data?.message || err.message || 'Failed to add user';

@@ -16,7 +16,9 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  Briefcase
+  Briefcase,
+  X,
+  RotateCcw,
 } from 'lucide-react';
 import {
   getAdminEmployers,
@@ -137,6 +139,19 @@ const AdminEmployerList = () => {
     } else {
       searchParams.delete('status');
     }
+    setSearchParams(searchParams);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('');
+    setPage(1);
+    searchParams.delete('status');
     setSearchParams(searchParams);
   };
 
@@ -325,7 +340,7 @@ const AdminEmployerList = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
             <input
               className={
-                'w-full h-11 pl-10 pr-4 bg-white border border-slate-200 ' +
+                'w-full h-11 pl-10 pr-10 bg-white border border-slate-200 ' +
                 'rounded-xl text-sm text-slate-900 focus:outline-none ' +
                 'focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all shadow-sm'
               }
@@ -334,6 +349,16 @@ const AdminEmployerList = () => {
               value={searchQuery}
               onChange={handleSearchChange}
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 transition-colors"
+                title="Clear search"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
 
           {/* Tabs */}
@@ -426,8 +451,34 @@ const AdminEmployerList = () => {
                 </tr>
               ) : employers.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-slate-500 text-sm">
-                    No employers found matching your criteria.
+                  <td colSpan="5" className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center justify-center max-w-md mx-auto">
+                      <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 shadow-2xs">
+                        <Building2 size={26} />
+                      </div>
+                      <h3 className="text-base font-bold text-slate-900 mb-1">
+                        No Employers Found
+                      </h3>
+                      <p className="text-xs text-slate-500 max-w-sm mb-5 leading-relaxed">
+                        {searchQuery || statusFilter
+                          ? `No employer records matched your active criteria${
+                              searchQuery ? ` for "${searchQuery}"` : ''
+                            }${
+                              statusFilter ? ` with status "${statusFilter}"` : ''
+                            }. Try clearing your search or status filters.`
+                          : 'There are currently no registered employer profiles in the system.'}
+                      </p>
+                      {(searchQuery || statusFilter) && (
+                        <button
+                          type="button"
+                          onClick={handleResetFilters}
+                          className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-blue-600 transition-all shadow-2xs cursor-pointer"
+                        >
+                          <RotateCcw size={13} />
+                          <span>Reset Filters</span>
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (

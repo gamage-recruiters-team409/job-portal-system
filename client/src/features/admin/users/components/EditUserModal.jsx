@@ -8,7 +8,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, AlertCircle } from 'lucide-react';
+import { X, AlertCircle, AlertTriangle, ShieldAlert } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { updateAdminUser, updateAdminUserStatus } from '../../../../services/adminUser.service';
 import { USER_ROLES, ACCOUNT_STATUSES } from '../../../../constants/statuses';
@@ -29,6 +29,8 @@ const EditUserModal = ({ user: editingUser, onClose, onSuccess }) => {
   const isSuperAdmin = currentUser?.role === USER_ROLES.SUPERADMIN;
   
   const [apiError, setApiError] = useState(null);
+  const [pendingConfirmation, setPendingConfirmation] = useState(null);
+  const [isExecutingUpdate, setIsExecutingUpdate] = useState(false);
 
   const schema = useMemo(() => getEditUserSchema(isSuperAdmin), [isSuperAdmin]);
 
@@ -61,8 +63,9 @@ const EditUserModal = ({ user: editingUser, onClose, onSuccess }) => {
     }
   }, [editingUser, reset]);
 
-  const onSubmit = async (data) => {
+  const executeUpdate = async (data) => {
     try {
+      setIsExecutingUpdate(true);
       setApiError(null);
       const updatePromises = [];
       
@@ -86,12 +89,31 @@ const EditUserModal = ({ user: editingUser, onClose, onSuccess }) => {
       
       await Promise.all(updatePromises);
 
-      toast.success('User updated successfully!');
+      toast.success(`User profile for "${data.name}" updated successfully!`);
+      setPendingConfirmation(null);
       onSuccess();
     } catch (err) {
       const message = err.response?.data?.message || err.message || 'Failed to update user';
       setApiError(message);
       toast.error(message);
+    } finally {
+      setIsExecutingUpdate(false);
+    }
+  };
+
+  const onSubmit = (data) => {
+    const isSuspending =
+      data.accountStatus === ACCOUNT_STATUSES.SUSPENDED &&
+      editingUser.accountStatus !== ACCOUNT_STATUSES.SUSPENDED;
+    const isDeactivating =
+      data.accountStatus === ACCOUNT_STATUSES.INACTIVE &&
+      editingUser.accountStatus !== ACCOUNT_STATUSES.INACTIVE;
+    const isChangingRole = data.role !== editingUser.role;
+
+    if (isSuspending || isDeactivating || isChangingRole) {
+      setPendingConfirmation(data);
+    } else {
+      executeUpdate(data);
     }
   };
 
@@ -289,10 +311,10 @@ const EditUserModal = ({ user: editingUser, onClose, onSuccess }) => {
           <button
             type="submit"
             form="edit-user-form"
-            disabled={isSubmitting || !isDirty}
+            disabled={isSubmitting || isExecutingUpdate || !isDirty}
             className="px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-70 flex items-center gap-2 shadow-sm"
           >
-            {isSubmitting ? (
+            {isSubmitting || isExecutingUpdate ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Saving...
@@ -302,6 +324,103 @@ const EditUserModal = ({ user: editingUser, onClose, onSuccess }) => {
             )}
           </button>
         </div>
+
+        {/* Confirmation Modal for Critical Role / Status Changes */}
+        {pendingConfirmation && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200 text-center animate-in zoom-in-95 duration-200">
+              <div
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+                  pendingConfirmation.accountStatus === ACCOUNT_STATUSES.SUSPENDED
+                    ? 'bg-red-50 text-[#DC2626]'
+                    : 'bg-amber-50 text-amber-600'
+                }`}
+              >
+                {pendingConfirmation.accountStatus === ACCOUNT_STATUSES.SUSPENDED ? (
+                  <ShieldAlert size={28} />
+                ) : (
+                  <AlertTriangle size={28} />
+                )}
+              </div>
+
+              <h3 className="text-lg font-bold text-slate-900 mb-2">
+                {pendingConfirmation.accountStatus === ACCOUNT_STATUSES.SUSPENDED
+                  ? 'Confirm Account Suspension'
+                  : 'Confirm Role & Status Change'}
+              </h3>
+
+              <div className="text-xs text-slate-600 space-y-2 mb-6 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-100 text-left">
+                <p>
+                  You are about to modify administrative settings for{' '}
+                  <span className="font-semibold text-slate-900">{editingUser.name}</span>:
+                </p>
+                {pendingConfirmation.accountStatus !== editingUser.accountStatus && (
+                  <div className="flex items-center justify-between text-xs py-1 border-t border-slate-200/60">
+                    <span className="text-slate-500">Account Status:</span>
+                    <span className="font-semibold capitalize text-slate-800">
+                      {editingUser.accountStatus} →{' '}
+                      <span
+                        className={
+                          pendingConfirmation.accountStatus === ACCOUNT_STATUSES.SUSPENDED
+                            ? 'text-red-600 font-bold'
+                            : 'text-slate-900'
+                        }
+                      >
+                        {pendingConfirmation.accountStatus}
+                      </span>
+                    </span>
+                  </div>
+                )}
+                {pendingConfirmation.role !== editingUser.role && (
+                  <div className="flex items-center justify-between text-xs py-1 border-t border-slate-200/60">
+                    <span className="text-slate-500">System Role:</span>
+                    <span className="font-semibold capitalize text-slate-800">
+                      {editingUser.role?.replace('_', ' ')} →{' '}
+                      <span className="text-blue-600 font-bold">
+                        {pendingConfirmation.role?.replace('_', ' ')}
+                      </span>
+                    </span>
+                  </div>
+                )}
+                {pendingConfirmation.accountStatus === ACCOUNT_STATUSES.SUSPENDED && (
+                  <p className="text-[11px] text-red-600 pt-1 font-medium">
+                    ⚠️ The suspended user will no longer be able to access protected functionality or sign in while the account remains suspended.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingConfirmation(null)}
+                  disabled={isExecutingUpdate}
+                  className="flex-1 h-11 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                >
+                  Go Back
+                </button>
+                <button
+                  type="button"
+                  onClick={() => executeUpdate(pendingConfirmation)}
+                  disabled={isExecutingUpdate}
+                  className={`flex-1 h-11 rounded-xl text-sm font-semibold text-white shadow-xs flex items-center justify-center gap-2 transition-all ${
+                    pendingConfirmation.accountStatus === ACCOUNT_STATUSES.SUSPENDED
+                      ? 'bg-red-600 hover:bg-red-700'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  } disabled:opacity-50`}
+                >
+                  {isExecutingUpdate ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <span>Confirm & Save</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -34,7 +34,7 @@ const AdminReportList = () => {
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [totalPages, setTotalPages] = useState(1);
-  const [totalReports, setTotalReports] = useState(0);
+  const [, setTotalReports] = useState(0);
   const [selectedReportId, setSelectedReportId] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 

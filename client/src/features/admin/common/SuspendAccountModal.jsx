@@ -4,7 +4,7 @@
  * Matches UI specifications with consequences list and acknowledgement checkbox.
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { AlertTriangle, Ban, Lock, Check } from 'lucide-react';
 
 const SuspendAccountModal = ({
@@ -17,13 +17,12 @@ const SuspendAccountModal = ({
 }) => {
   const [acknowledged, setAcknowledged] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      setAcknowledged(false);
-    }
-  }, [isOpen]);
-
   if (!isOpen) return null;
+
+  const handleClose = () => {
+    setAcknowledged(false);
+    onClose();
+  };
 
   const isSuspend = actionType === 'suspended';
   const title = isSuspend ? 'Suspend Account' : 'Deactivate Account';
@@ -104,7 +103,7 @@ const SuspendAccountModal = ({
           <div className="flex items-center gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isSubmitting}
               className="flex-1 h-12 px-4 bg-white border border-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50 whitespace-nowrap shadow-2xs inline-flex items-center justify-center"
             >

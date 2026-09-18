@@ -195,8 +195,14 @@ export default function EmployerDashboard() {
       setStats(data);
     } catch (err) {
       console.error('Error fetching employer statistics:', err);
-      setStatsError(err.response?.data?.message || 'Failed to load statistics.');
-      setStats(null);
+      if (err.response?.status === 404) {
+        // Company not created yet — default statistics gracefully without showing error banner
+        setStats({ totalJobPosts: 0, activeJobs: 0, closedJobs: 0, totalApplicationsReceived: 0 });
+        setStatsError(null);
+      } else {
+        setStatsError(err.response?.data?.message || 'Dashboard statistics are currently unavailable.');
+        setStats(null);
+      }
     } finally {
       setStatsLoading(false);
     }
@@ -231,6 +237,15 @@ export default function EmployerDashboard() {
 
   const completeness = calculateCompleteness(company);
 
+  const handleRefreshAll = () => {
+    fetchCompany();
+    fetchStats();
+    fetchApplications();
+  };
+
+  // Check if stats data is genuinely unavailable (actual fetch error or missing response data)
+  const isDataUnavailable = !statsLoading && (Boolean(statsError) || !stats);
+
   // Helper for displaying stat card value
   const getStatValue = (key) => {
     if (statsLoading) {
@@ -239,7 +254,7 @@ export default function EmployerDashboard() {
     if (statsError || !stats || stats[key] === undefined || stats[key] === null) {
       return '—';
     }
-    return stats[key];
+    return typeof stats[key] === 'number' ? stats[key] : '—';
   };
 
   // Stat Cards configuration aligned directly with backend API fields:
@@ -356,6 +371,21 @@ export default function EmployerDashboard() {
             You have not created a company profile yet. Create your company profile to start posting jobs.
           </p>
         </div>
+      ) : companyError ? (
+        <div className="animate-fade-in flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 shadow-xs">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+            <p className="text-sm font-medium">{companyError}</p>
+          </div>
+          <button
+            type="button"
+            onClick={fetchCompany}
+            className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-red-700 transition-colors duration-150 hover:underline"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span>Retry</span>
+          </button>
+        </div>
       ) : company?.verificationStatus === 'verified' ? (
         <div className="animate-fade-in flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 shadow-xs">
           <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
@@ -407,6 +437,20 @@ export default function EmployerDashboard() {
             >
               <Plus className="h-4 w-4" />
               <span>Create Company Profile</span>
+            </button>
+          </div>
+        ) : companyError ? (
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <AlertCircle className="h-12 w-12 text-red-400" />
+            <h2 className="mt-3 text-lg font-bold text-[#0F172A]">Couldn&apos;t load company profile</h2>
+            <p className="mt-1 text-sm text-[#64748B]">{companyError}</p>
+            <button
+              type="button"
+              onClick={fetchCompany}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white transition-colors duration-150 hover:bg-blue-700"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Retry</span>
             </button>
           </div>
         ) : (
@@ -464,6 +508,22 @@ export default function EmployerDashboard() {
       </div>
 
       {/* ── STAT CARDS GRID (4 total, 4 cols lg, 2 cols sm, 1 col mobile) ── */}
+      {isDataUnavailable && (
+        <div className="animate-fade-in flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-amber-900 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+            <p className="text-xs sm:text-sm font-medium">No data available.</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRefreshAll}
+            className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-amber-700 transition-colors duration-150 hover:underline cursor-pointer"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            <span>Retry</span>
+          </button>
+        </div>
+      )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCardsConfig.map((card) => {
           const IconComp = card.icon;
@@ -691,6 +751,12 @@ export default function EmployerDashboard() {
               {noCompany && (
                 <p className="border-t border-slate-100 pt-3 text-xs text-[#64748B]">
                   Create a company profile to submit your organization for verification.
+                </p>
+              )}
+
+              {companyError && (
+                <p className="border-t border-slate-100 pt-3 text-xs text-red-600">
+                  Couldn&apos;t load verification status. Please refresh.
                 </p>
               )}
             </div>
