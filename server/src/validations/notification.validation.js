@@ -12,11 +12,12 @@ export const notificationIdParamSchema = z
   .strict();
 
 // Matches the real notification.type values created by notification.service.js:
-// application_submitted, new_application, application_status_changed
+// application_submitted, new_application, application_status_changed, report_status_changed
 const NOTIFICATION_TYPE_VALUES = [
   'application_submitted',
   'new_application',
   'application_status_changed',
+  'report_status_changed',
 ];
 
 export const listNotificationsQuerySchema = z

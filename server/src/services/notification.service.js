@@ -8,6 +8,16 @@ import {
 } from './email.service.js';
 import { emitToUser } from '../realtime/socket.js';
 
+const REPORT_STATUS_LABELS = Object.freeze({
+  under_review: 'Under Review',
+  resolved: 'Resolved',
+  dismissed: 'Dismissed',
+});
+
+function formatReportStatus(status) {
+  return REPORT_STATUS_LABELS[status] || status;
+}
+
 /**
  * Returns a paginated page of notifications belonging to the given user,
  * newest first. Used by both the Notification Dropdown (small limit) and
@@ -274,17 +284,17 @@ export async function notifyApplicationStatusChange({
  * recommendation's exact scope ("adding in-app notifications").
  *
  * Called by the Admin Report Management module (adminReport.service.js)
- * once a report's status update is saved. Unlike the other notify*
- * functions, this is NOT wrapped in a try/catch by its caller — a
- * failure here is expected to propagate and fail the admin's review
- * action, matching the same precedent as notifyApplicationStatusChange
- * (only email-sending is best-effort, not notification creation itself).
+ * once a report's status update is saved. The caller treats this as
+ * best-effort so a notification failure does not make an already-saved
+ * moderation update look like it failed.
  */
 export async function notifyReportStatusChange({ jobSeekerId, jobTitle, newStatus, reportId }) {
+  const statusLabel = formatReportStatus(newStatus);
+
   const { notification } = await createNotification({
     user: jobSeekerId,
     type: 'report_status_changed',
-    message: `Your report on "${jobTitle}" is now: ${newStatus}.`,
+    message: `Your report on "${jobTitle}" is now: ${statusLabel}.`,
     relatedReport: reportId,
   });
 

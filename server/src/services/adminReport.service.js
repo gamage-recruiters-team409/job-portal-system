@@ -122,12 +122,16 @@ export async function reviewReport(reportId, adminUserId, status, reviewNote, jo
 
   await report.save();
 
-  await notifyReportStatusChange({
-    jobSeekerId: report.reportedBy,
-    jobTitle: report.jobTitle,
-    newStatus: status,
-    reportId: report._id,
-  });
+  try {
+    await notifyReportStatusChange({
+      jobSeekerId: report.reportedBy,
+      jobTitle: report.jobTitle,
+      newStatus: status,
+      reportId: report._id,
+    });
+  } catch (error) {
+    console.error('Failed to create report status notification:', error.message);
+  }
 
   return { report, updatedJob };
 }
