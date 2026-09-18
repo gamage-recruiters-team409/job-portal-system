@@ -237,40 +237,21 @@ export default function EmployerDashboard() {
 
   const completeness = calculateCompleteness(company);
 
-  // True once every section has finished loading and none of them has
-  // anything to show — a brand-new employer, or every fetch coming back
-  // empty/failed at once — so we can surface one combined notice instead
-  // of three separate blank sections.
-  const hasNoDashboardData =
-    !companyLoading &&
-    !statsLoading &&
-    !appsLoading &&
-    (noCompany || !company || Boolean(companyError)) &&
-    (!stats || Boolean(statsError)) &&
-    recentApplications.length === 0;
-
   const handleRefreshAll = () => {
     fetchCompany();
     fetchStats();
     fetchApplications();
   };
 
-  // Check if stats/dashboard data is unavailable (error occurred, missing, or zero activity across all metrics)
-  const isDataUnavailable =
-    !statsLoading &&
-    (Boolean(statsError) ||
-      !stats ||
-      (stats.totalJobPosts === 0 &&
-        stats.totalApplicationsReceived === 0 &&
-        stats.activeJobs === 0 &&
-        stats.closedJobs === 0));
+  // Check if stats data is genuinely unavailable (actual fetch error or missing response data)
+  const isDataUnavailable = !statsLoading && (Boolean(statsError) || !stats);
 
   // Helper for displaying stat card value
   const getStatValue = (key) => {
     if (statsLoading) {
       return <div className="h-7 w-12 animate-pulse rounded bg-slate-200" />;
     }
-    if (isDataUnavailable || statsError || !stats || stats[key] === undefined || stats[key] === null) {
+    if (statsError || !stats || stats[key] === undefined || stats[key] === null) {
       return '—';
     }
     return typeof stats[key] === 'number' ? stats[key] : '—';
