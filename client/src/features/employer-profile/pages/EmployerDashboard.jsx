@@ -270,7 +270,7 @@ export default function EmployerDashboard() {
     if (statsLoading) {
       return <div className="h-7 w-12 animate-pulse rounded bg-slate-200" />;
     }
-    if (statsError || !stats || stats[key] === undefined || stats[key] === null) {
+    if (isDataUnavailable || statsError || !stats || stats[key] === undefined || stats[key] === null) {
       return '—';
     }
     return typeof stats[key] === 'number' ? stats[key] : '—';
