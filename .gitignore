@@ -69,3 +69,9 @@ desktop.ini
 
 # Local overrides
 *.local
+
+# QA Reports
+Frontend/
+backend/
+frontend/
+Backend/

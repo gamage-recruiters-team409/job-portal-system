@@ -14,12 +14,14 @@ import {
  */
 export async function listNotifications(req, res, next) {
   try {
-    const { page, limit, type, unreadOnly } = req.validatedQuery;
+    const { page, limit, type, unreadOnly, before, beforeId } = req.validatedQuery;
     const { notifications, pagination } = await getUserNotifications(req.user._id, {
       page,
       limit,
       type,
       unreadOnly,
+      before,
+      beforeId,
     });
     return sendSuccess(res, {
       message: 'Notifications retrieved.',

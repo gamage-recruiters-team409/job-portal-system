@@ -46,17 +46,19 @@ export default function JobsPage() {
           getCategories().catch(() => []),
           getSkills().catch(() => []),
         ]);
-        // Normalise to a { name } shape so consumers use one field. The API
-        // returns categoryName / skillName (not `name`).
+        // Store both categoryName / skillName and name to align with the shared
+        // Category and Skill schemas while preserving backward compatibility.
         const catMap = {};
         cats.forEach((c) => {
-          catMap[c._id] = { name: c.categoryName };
+          const categoryName = c.categoryName || c.name || '';
+          catMap[c._id] = { ...c, categoryName, name: categoryName };
         });
         setCategoriesMap(catMap);
 
         const skMap = {};
         sks.forEach((s) => {
-          skMap[s._id] = { name: s.skillName };
+          const skillName = s.skillName || s.name || '';
+          skMap[s._id] = { ...s, skillName, name: skillName };
         });
         setSkillsMap(skMap);
       } catch (err) {
@@ -190,6 +192,17 @@ export default function JobsPage() {
     [category, jobType, workMode, minSalary, maxSalary, minExperience, maxExperience, postedDate]
   );
 
+  const searchSuggestions = useMemo(() => {
+    const jobTitles = (jobs ?? []).map((j) => j.title).filter(Boolean);
+    const catNames = Object.values(categoriesMap)
+      .map((c) => (typeof c === 'string' ? c : c?.categoryName || c?.name || ''))
+      .filter(Boolean);
+    const skillNames = Object.values(skillsMap)
+      .map((s) => (typeof s === 'string' ? s : s?.skillName || s?.name || ''))
+      .filter(Boolean);
+    return Array.from(new Set([...jobTitles, ...catNames, ...skillNames]));
+  }, [jobs, categoriesMap, skillsMap]);
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       {/* Header Banner */}
@@ -202,7 +215,12 @@ export default function JobsPage() {
         </p>
 
         <div className="mt-6">
-          <JobSearchBar key={`${q}-${location}`} initial={{ q, location }} onSearch={handleSearch} />
+          <JobSearchBar
+            key={`${q}-${location}`}
+            initial={{ q, location }}
+            onSearch={handleSearch}
+            suggestions={searchSuggestions.length > 0 ? searchSuggestions : undefined}
+          />
         </div>
       </div>
 

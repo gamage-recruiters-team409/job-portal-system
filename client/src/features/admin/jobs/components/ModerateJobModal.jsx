@@ -6,7 +6,7 @@
  * @module Admin/Jobs/Components
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   CheckCircle2,
   XCircle,
@@ -65,13 +65,12 @@ const ModerateJobModal = ({
   const config = ACTION_CONFIG[targetStatus] || ACTION_CONFIG[JOB_STATUSES.PUBLISHED];
   const IconComponent = config.icon;
 
-  useEffect(() => {
-    if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setReviewNote('');
-      setValidationError('');
+  const handleBlur = () => {
+    const trimmed = reviewNote.trim();
+    if (trimmed && trimmed.length < 10) {
+      setValidationError(`Review note must be at least 10 characters long (${trimmed.length}/10).`);
     }
-  }, [isOpen]);
+  };
 
   if (!isOpen || !job) return null;
 
@@ -186,11 +185,13 @@ const ModerateJobModal = ({
               <textarea
                 id="reviewNote"
                 rows={4}
+                maxLength={500}
                 value={reviewNote}
                 onChange={(e) => {
                   setReviewNote(e.target.value);
                   if (validationError) setValidationError('');
                 }}
+                onBlur={handleBlur}
                 disabled={isSubmitting}
                 placeholder="E.g., Job posting verified against company requirements and approved for public listing."
                 className={`mt-2 w-full rounded-xl border p-3 text-sm text-slate-900 placeholder-slate-400 shadow-2xs transition-all focus:outline-hidden focus:ring-1 ${
@@ -211,15 +212,15 @@ const ModerateJobModal = ({
                   <span className="text-slate-400">Minimum 10 characters required</span>
                 )}
                 <span
-                  className={`font-mono font-medium ${
-                    charCount < 10
-                      ? 'text-slate-400'
-                      : charCount <= 500
-                        ? 'text-[#16A34A]'
-                        : 'text-[#DC2626]'
+                  className={`font-mono font-medium transition-colors ${
+                    charCount >= 500
+                      ? 'text-amber-600 font-semibold'
+                      : charCount < 10
+                        ? 'text-slate-400'
+                        : 'text-[#16A34A]'
                   }`}
                 >
-                  {charCount}/500
+                  {charCount}/500 {charCount >= 500 && <span className="text-2xs font-semibold text-amber-500">(Max)</span>}
                 </span>
               </div>
             </div>

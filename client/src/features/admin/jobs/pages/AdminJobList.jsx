@@ -21,6 +21,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  RotateCcw,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getAdminJobs, moderateAdminJob, getAdminJobStats } from '../../../../services/adminJob.service';
@@ -220,6 +221,19 @@ const AdminJobList = () => {
     }
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setDebouncedSearch('');
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setDebouncedSearch('');
+    setSelectedTab('');
+    setPage(1);
+  };
+
   const handleOpenModeration = (job, targetStatus) => {
     setModalState({ isOpen: true, job, targetStatus });
   };
@@ -310,8 +324,10 @@ const AdminJobList = () => {
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                type="button"
+                onClick={handleClearSearch}
+                aria-label="Clear search"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -383,23 +399,24 @@ const AdminJobList = () => {
               </button>
             </div>
           ) : jobs.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-200 bg-white p-8 sm:p-12 text-center">
-              <Briefcase className="mx-auto h-12 w-12 text-slate-300" />
-              <h3 className="mt-4 text-base font-bold text-slate-900">No Job Postings Found</h3>
-              <p className="mt-1 text-sm text-slate-500">
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-8 sm:p-12 text-center flex flex-col items-center justify-center max-w-md mx-auto my-6">
+              <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-slate-400 mb-4">
+                <Briefcase size={28} className="text-slate-400" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">No Job Postings Found</h3>
+              <p className="mt-1.5 text-sm text-slate-500 max-w-xs leading-relaxed">
                 {searchQuery || selectedTab
-                  ? 'No jobs match your current search and filter criteria.'
-                  : 'There are currently no job postings on the platform.'}
+                  ? 'No job listings match your current search and filter criteria. Try adjusting your query or reset filters.'
+                  : 'There are currently no job postings available on the platform.'}
               </p>
               {(searchQuery || selectedTab) && (
                 <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSelectedTab('');
-                  }}
-                  className="mt-5 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="mt-5 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl bg-white text-slate-700 border border-slate-200 shadow-2xs hover:bg-slate-50 hover:text-blue-600 transition-all cursor-pointer"
                 >
-                  Clear Filters
+                  <RotateCcw size={14} />
+                  <span>Reset Filters</span>
                 </button>
               )}
             </div>
@@ -620,16 +637,18 @@ const AdminJobList = () => {
       </div>
 
       {/* ─── Moderation Modal ────────────────────────────────────────────────── */}
-      <ModerateJobModal
-        isOpen={modalState.isOpen}
-        onClose={() =>
-          setModalState({ isOpen: false, job: null, targetStatus: JOB_STATUSES.PUBLISHED })
-        }
-        onConfirm={handleConfirmModeration}
-        job={modalState.job}
-        targetStatus={modalState.targetStatus}
-        isSubmitting={isSubmittingModeration}
-      />
+      {modalState.isOpen && (
+        <ModerateJobModal
+          isOpen={modalState.isOpen}
+          onClose={() =>
+            setModalState({ isOpen: false, job: null, targetStatus: JOB_STATUSES.PUBLISHED })
+          }
+          onConfirm={handleConfirmModeration}
+          job={modalState.job}
+          targetStatus={modalState.targetStatus}
+          isSubmitting={isSubmittingModeration}
+        />
+      )}
     </div>
   );
 };

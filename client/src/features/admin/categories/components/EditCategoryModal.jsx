@@ -17,22 +17,39 @@ const EditCategoryModal = ({ isOpen, category, onClose, onSuccess }) => {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   if (!isOpen || !category) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!categoryName.trim()) {
-      setError('Category name is required.');
+    const trimmedName = categoryName.trim();
+    const errors = {};
+
+    if (!trimmedName) {
+      errors.categoryName = 'Category name is required.';
+    } else if (trimmedName.length < 2) {
+      errors.categoryName = 'Category name must be at least 2 characters.';
+    } else if (trimmedName.length > 60) {
+      errors.categoryName = 'Category name cannot exceed 60 characters.';
+    }
+
+    if (description.length > 300) {
+      errors.description = 'Description cannot exceed 300 characters.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
+      setFieldErrors({});
 
       const payload = {
-        categoryName: categoryName.trim(),
+        categoryName: trimmedName,
         description: description.trim() || '',
         isActive,
       };
@@ -54,6 +71,7 @@ const EditCategoryModal = ({ isOpen, category, onClose, onSuccess }) => {
   const handleClose = () => {
     if (loading) return;
     setError(null);
+    setFieldErrors({});
     onClose();
   };
 
@@ -99,33 +117,96 @@ const EditCategoryModal = ({ isOpen, category, onClose, onSuccess }) => {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4" noValidate>
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Category Name <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                Category Name <span className="text-red-500">*</span>
+              </label>
+              <span
+                className={`text-2xs font-medium transition-colors ${
+                  categoryName.length >= 60
+                    ? 'text-amber-600 font-semibold'
+                    : 'text-slate-400'
+                }`}
+              >
+                {categoryName.length}/60 {categoryName.length >= 60 && '(Max)'}
+              </span>
+            </div>
             <input
               type="text"
               value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
+              onChange={(e) => {
+                setCategoryName(e.target.value);
+                if (fieldErrors.categoryName) {
+                  setFieldErrors((prev) => ({ ...prev, categoryName: '' }));
+                }
+              }}
+              onBlur={() => {
+                const trimmed = categoryName.trim();
+                if (trimmed && trimmed.length < 2) {
+                  setFieldErrors((prev) => ({
+                    ...prev,
+                    categoryName: 'Category name must be at least 2 characters.',
+                  }));
+                }
+              }}
               placeholder="Category Name"
               disabled={loading}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 disabled:bg-slate-100"
+              maxLength={60}
+              className={`w-full rounded-xl border px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition-all focus:outline-none focus:ring-4 disabled:bg-slate-100 ${
+                fieldErrors.categoryName
+                  ? 'border-red-400 bg-red-50/20 focus:border-red-500 focus:ring-red-500/10'
+                  : 'border-slate-200 bg-slate-50/50 focus:border-blue-500 focus:bg-white focus:ring-blue-500/10'
+              }`}
             />
+            {fieldErrors.categoryName && (
+              <p className="mt-1.5 text-xs text-red-600 font-medium flex items-center gap-1">
+                <AlertCircle className="h-3 w-3 shrink-0" />
+                <span>{fieldErrors.categoryName}</span>
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Description <span className="text-slate-400 text-2xs lowercase font-normal">(optional)</span>
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                Description <span className="text-slate-400 text-2xs lowercase font-normal">(optional)</span>
+              </label>
+              <span
+                className={`text-2xs font-medium transition-colors ${
+                  description.length >= 300
+                    ? 'text-amber-600 font-semibold'
+                    : 'text-slate-400'
+                }`}
+              >
+                {description.length}/300 {description.length >= 300 && '(Max)'}
+              </span>
+            </div>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (fieldErrors.description) {
+                  setFieldErrors((prev) => ({ ...prev, description: '' }));
+                }
+              }}
               placeholder="Category description..."
               rows={3}
+              maxLength={300}
               disabled={loading}
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 disabled:bg-slate-100"
+              className={`w-full resize-none rounded-xl border px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition-all focus:outline-none focus:ring-4 disabled:bg-slate-100 ${
+                fieldErrors.description
+                  ? 'border-red-400 bg-red-50/20 focus:border-red-500 focus:ring-red-500/10'
+                  : 'border-slate-200 bg-slate-50/50 focus:border-blue-500 focus:bg-white focus:ring-blue-500/10'
+              }`}
             />
+            {fieldErrors.description && (
+              <p className="mt-1.5 text-xs text-red-600 font-medium flex items-center gap-1">
+                <AlertCircle className="h-3 w-3 shrink-0" />
+                <span>{fieldErrors.description}</span>
+              </p>
+            )}
           </div>
 
           {/* Status Toggle */}

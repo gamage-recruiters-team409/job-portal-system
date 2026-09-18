@@ -6,6 +6,7 @@ import {
   sendNewApplicationEmail,
   sendApplicationStatusChangeEmail,
 } from './email.service.js';
+import { emitToUser } from '../realtime/socket.js';
 
 /**
  * Returns a paginated page of notifications belonging to the given user,
@@ -18,10 +19,8 @@ import {
  */
 export async function getUserNotifications(
   userId,
-  { page = 1, limit = 20, type, unreadOnly = false } = {}
+  { page = 1, limit = 20, type, unreadOnly = false, before, beforeId } = {}
 ) {
-  const skip = (page - 1) * limit;
-
   const query = { user: userId };
   if (type) {
     query.type = type;
@@ -30,8 +29,30 @@ export async function getUserNotifications(
     query.status = NOTIFICATION_STATUSES.UNREAD;
   }
 
+  if (before && beforeId) {
+    // Cursor-based path: "give me notifications after this exact
+    // already-loaded boundary in the deterministic newest-first order."
+    // The tie-breaker on _id prevents skipping records when several
+    // notifications share the same createdAt millisecond.
+    query.$or = [{ createdAt: { $lt: before } }, { createdAt: before, _id: { $lt: beforeId } }];
+
+    // Fetch one extra document to learn whether more exist beyond this
+    // batch, without a separate (and equally driftable) total count.
+    const notifications = await Notification.find(query)
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(limit + 1);
+
+    const hasMore = notifications.length > limit;
+
+    return {
+      notifications: notifications.slice(0, limit),
+      pagination: { limit, hasMore },
+    };
+  }
+
+  const skip = (page - 1) * limit;
   const [notifications, total] = await Promise.all([
-    Notification.find(query).sort('-createdAt').skip(skip).limit(limit),
+    Notification.find(query).sort({ createdAt: -1, _id: -1 }).skip(skip).limit(limit),
     Notification.countDocuments(query),
   ]);
 
@@ -42,6 +63,7 @@ export async function getUserNotifications(
       limit,
       total,
       totalPages: Math.ceil(total / limit),
+      hasMore: page < Math.ceil(total / limit),
     },
   };
 }
@@ -127,6 +149,18 @@ export async function createNotification({ user, type, message, relatedJob }) {
     message,
     relatedJob,
   });
+
+  // Best-effort real-time push — same defensive pattern as email sending
+  // below: if this fails (e.g. no active socket, or an unexpected error),
+  // the notification is already saved and the calling flow must not fail
+  // because of it. `emitToUser` itself never throws, but the try/catch
+  // stays here as a safety net regardless of that guarantee.
+  try {
+    emitToUser(String(user), 'notification:new', { notification });
+  } catch (error) {
+    console.error('Failed to emit real-time notification:', error.message);
+  }
+
   return { notification };
 }
 

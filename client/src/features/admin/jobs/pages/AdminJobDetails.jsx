@@ -622,14 +622,16 @@ const AdminJobDetails = () => {
       </div>
 
       {/* ─── Moderation Modal ────────────────────────────────────────────────── */}
-      <ModerateJobModal
-        isOpen={modalState.isOpen}
-        onClose={() => setModalState({ isOpen: false, targetStatus: JOB_STATUSES.PUBLISHED })}
-        onConfirm={handleConfirmModeration}
-        job={job}
-        targetStatus={modalState.targetStatus}
-        isSubmitting={isSubmittingModeration}
-      />
+      {modalState.isOpen && (
+        <ModerateJobModal
+          isOpen={modalState.isOpen}
+          onClose={() => setModalState({ isOpen: false, targetStatus: JOB_STATUSES.PUBLISHED })}
+          onConfirm={handleConfirmModeration}
+          job={job}
+          targetStatus={modalState.targetStatus}
+          isSubmitting={isSubmittingModeration}
+        />
+      )}
     </div>
   );
 };
