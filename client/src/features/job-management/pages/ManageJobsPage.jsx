@@ -15,6 +15,7 @@ import ReopenJobModal from '../components/ReopenJobModal.jsx';
 import SubmitForReviewModal from '../components/SubmitForReviewModal.jsx';
 import JobStatusModal from '../components/JobStatusModal.jsx';
 import LoadingState from '../../../components/jobs/LoadingState.jsx';
+import toast from 'react-hot-toast';
 
 const STATUS_BADGES = {
   [JOB_STATUSES.DRAFT]: { label: 'Draft', className: 'bg-[#D0D0D0] text-[#000000]' },
@@ -50,21 +51,11 @@ export default function ManageJobsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [actionError, setActionError] = useState('');
-  const [actionMessage, setActionMessage] = useState('');
   const [busyJobId, setBusyJobId] = useState(null);
   const [activeModal, setActiveModal] = useState(null); // { type: 'close'|'delete'|'reopen'|'submit', job }
   const [modalError, setModalError] = useState('');
   const [statusModalJob, setStatusModalJob] = useState(null);
-  const messageTimeoutRef = useRef(null);
   const loadRequestIdRef = useRef(0);
-
-  const showTemporaryMessage = (setter, text, duration = 4000) => {
-    if (messageTimeoutRef.current) {
-      clearTimeout(messageTimeoutRef.current);
-    }
-    setter(text);
-    messageTimeoutRef.current = setTimeout(() => setter(''), duration);
-  };
 
   const loadJobs = async () => {
     const requestId = ++loadRequestIdRef.current;
@@ -97,11 +88,10 @@ export default function ManageJobsPage() {
   const runAction = async (jobId, actionFn, successText) => {
     setModalError('');
     setActionError('');
-    setActionMessage('');
     setBusyJobId(jobId);
     try {
       await actionFn(jobId);
-      showTemporaryMessage(setActionMessage, successText);
+      toast.success(successText);
       loadJobs();
       return true;
     } catch (error) {
@@ -141,7 +131,7 @@ export default function ManageJobsPage() {
     try {
       const deadlineIso = newDeadlineInput ? new Date(newDeadlineInput).toISOString() : undefined;
       await reopenJob(jobId, deadlineIso);
-      showTemporaryMessage(setActionMessage, 'Job reopened.');
+      toast.success('Job reopened.');
       loadJobs();
       closeModal();
     } catch (error) {
@@ -286,11 +276,6 @@ export default function ManageJobsPage() {
       {actionError && (
         <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#DC2626]">
           {actionError}
-        </div>
-      )}
-      {actionMessage && (
-        <div className="mt-4 rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#15803D]">
-          {actionMessage}
         </div>
       )}
 

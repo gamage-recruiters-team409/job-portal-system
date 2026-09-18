@@ -19,8 +19,8 @@ export default function ShortlistConfirmationModal({
     setError(null);
 
     try {
-      await shortlistApplicant(applicationId);
-      onSuccess?.();
+      const response = await shortlistApplicant(applicationId);
+      onSuccess?.(response?.message);
       onClose?.();
     } catch (err) {
       setError(

@@ -8,6 +8,7 @@ import { getCategories, getSkills } from '../../../services/lookupService.js';
 import { JOB_TYPES, WORK_MODES } from '../../../constants/jobOptions.js';
 import Breadcrumb from '../components/Breadcrumb.jsx';
 import JobFormFields from '../components/JobFormFields.jsx';
+import toast from 'react-hot-toast';
 
 const createJobFormSchema = z
   .object({
@@ -51,7 +52,6 @@ export default function CreateJobPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSkillIds, setSelectedSkillIds] = useState([]);
   const [createdJobId, setCreatedJobId] = useState(null);
-  const [successMessage, setSuccessMessage] = useState('');
   const topRef = useRef(null);
 
   const {
@@ -86,14 +86,12 @@ export default function CreateJobPage() {
 
   const onSaveAsDraft = async (formValues) => {
     setServerError('');
-    setSuccessMessage('');
     setIsSubmitting(true);
     try {
       const payload = buildPayload(formValues);
       await createJob(payload);
       setCreatedJobId(null);
-      setSuccessMessage('Job saved as draft successfully.');
-      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toast.success('Job saved as draft successfully.');
       reset();
       setSelectedSkillIds([]);
     } catch (error) {
@@ -106,7 +104,6 @@ export default function CreateJobPage() {
 
   const onSubmitForReview = async (formValues) => {
     setServerError('');
-    setSuccessMessage('');
     setIsSubmitting(true);
 
     let jobId = createdJobId;
@@ -120,8 +117,7 @@ export default function CreateJobPage() {
       }
 
       await submitJobForReview(jobId);
-      setSuccessMessage('Job submitted for review successfully.');
-      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toast.success('Job submitted for review successfully.');
       setCreatedJobId(null);
       reset();
       setSelectedSkillIds([]);
@@ -162,12 +158,6 @@ export default function CreateJobPage() {
       {serverError && (
         <div className="mt-4 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#DC2626]">
           {serverError}
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="mt-4 rounded-lg border border-[#86EFAC] bg-[#F0FDF4] px-3 py-2 sm:px-4 sm:py-3 text-sm text-[#15803D]">
-          {successMessage}
         </div>
       )}
 

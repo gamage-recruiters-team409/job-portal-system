@@ -5,6 +5,7 @@ import { getApplicantById } from '../../../services/applicantService.js';
 import StatusUpdateModal from '../components/StatusUpdateModal.jsx';
 import ShortlistConfirmationModal from '../components/ShortlistConfirmationModal.jsx';
 import RejectConfirmationModal from '../components/RejectConfirmationModal.jsx';
+import toast from 'react-hot-toast';
 
 // ─── Status Badge Config (Matches ApplicantList.jsx) ─────────────────────────
 
@@ -135,6 +136,13 @@ export default function ApplicantDetails() {
     },
     [id]
   );
+
+  const handleActionSuccess = (message) => {
+    if (message) {
+      toast.success(message);
+    }
+    fetchApplicantDetails({ silent: true });
+  };
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -543,7 +551,7 @@ export default function ApplicantDetails() {
         appliedDate={createdAt}
         isOpen={isStatusModalOpen}
         onClose={() => setIsStatusModalOpen(false)}
-        onSuccess={() => fetchApplicantDetails({ silent: true })}
+        onSuccess={handleActionSuccess}
       />
 
       <ShortlistConfirmationModal
@@ -553,7 +561,7 @@ export default function ApplicantDetails() {
         jobTitle={job?.title}
         isOpen={isShortlistModalOpen}
         onClose={() => setIsShortlistModalOpen(false)}
-        onSuccess={() => fetchApplicantDetails({ silent: true })}
+        onSuccess={handleActionSuccess}
       />
 
       <RejectConfirmationModal
@@ -563,7 +571,7 @@ export default function ApplicantDetails() {
         jobTitle={job?.title}
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
-        onSuccess={() => fetchApplicantDetails({ silent: true })}
+        onSuccess={handleActionSuccess}
       />
     </div>
   );
