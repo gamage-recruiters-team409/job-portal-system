@@ -20,22 +20,35 @@ const EditSkillModal = ({ isOpen, skill, categories = [], onClose, onSuccess }) 
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   if (!isOpen || !skill) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!skillName.trim()) {
-      setError('Skill name is required.');
+    const trimmedName = skillName.trim();
+    const errors = {};
+
+    if (!trimmedName) {
+      errors.skillName = 'Skill name is required.';
+    } else if (trimmedName.length < 2) {
+      errors.skillName = 'Skill name must be at least 2 characters.';
+    } else if (trimmedName.length > 50) {
+      errors.skillName = 'Skill name cannot exceed 50 characters.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
+      setFieldErrors({});
 
       const payload = {
-        skillName: skillName.trim(),
+        skillName: trimmedName,
         categoryId: categoryId || null,
         isActive,
       };
@@ -57,6 +70,7 @@ const EditSkillModal = ({ isOpen, skill, categories = [], onClose, onSuccess }) 
   const handleClose = () => {
     if (loading) return;
     setError(null);
+    setFieldErrors({});
     onClose();
   };
 
@@ -102,19 +116,55 @@ const EditSkillModal = ({ isOpen, skill, categories = [], onClose, onSuccess }) 
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4" noValidate>
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Skill Name <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                Skill Name <span className="text-red-500">*</span>
+              </label>
+              <span
+                className={`text-2xs font-medium transition-colors ${
+                  skillName.length >= 50
+                    ? 'text-amber-600 font-semibold'
+                    : 'text-slate-400'
+                }`}
+              >
+                {skillName.length}/50 {skillName.length >= 50 && '(Max)'}
+              </span>
+            </div>
             <input
               type="text"
               value={skillName}
-              onChange={(e) => setSkillName(e.target.value)}
-              placeholder="Skill Name"
+              onChange={(e) => {
+                setSkillName(e.target.value);
+                if (fieldErrors.skillName) {
+                  setFieldErrors((prev) => ({ ...prev, skillName: '' }));
+                }
+              }}
+              onBlur={() => {
+                const trimmed = skillName.trim();
+                if (trimmed && trimmed.length < 2) {
+                  setFieldErrors((prev) => ({
+                    ...prev,
+                    skillName: 'Skill name must be at least 2 characters.',
+                  }));
+                }
+              }}
+              placeholder="e.g. React.js, Python, Figma, PostgreSQL"
               disabled={loading}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition-all focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 disabled:bg-slate-100"
+              maxLength={50}
+              className={`w-full rounded-xl border px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition-all focus:outline-none focus:ring-4 disabled:bg-slate-100 ${
+                fieldErrors.skillName
+                  ? 'border-red-400 bg-red-50/20 focus:border-red-500 focus:ring-red-500/10'
+                  : 'border-slate-200 bg-slate-50/50 focus:border-blue-500 focus:bg-white focus:ring-blue-500/10'
+              }`}
             />
+            {fieldErrors.skillName && (
+              <p className="mt-1.5 text-xs text-red-600 font-medium flex items-center gap-1">
+                <AlertCircle className="h-3 w-3 shrink-0" />
+                <span>{fieldErrors.skillName}</span>
+              </p>
+            )}
           </div>
 
           <div>

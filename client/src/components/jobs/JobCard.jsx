@@ -21,8 +21,15 @@ export default function JobCard({ job, skillsMap = {}, categoriesMap = {} }) {
   const company = job?.companyId ?? {};
   const companyName = company?.companyName ?? 'Company';
   const salary = formatSalaryCompact(job?.salaryMin, job?.salaryMax, job?.salaryCurrency);
-  const skillNames = (job?.skills ?? []).slice(0, 4).map((id) => skillsMap[id]?.name).filter(Boolean);
-  const categoryName = job?.category ? categoriesMap[job.category]?.name : '';
+  const skillNames = (job?.skills ?? [])
+    .slice(0, 4)
+    .map((id) => (typeof skillsMap[id] === 'string' ? skillsMap[id] : skillsMap[id]?.skillName || skillsMap[id]?.name))
+    .filter(Boolean);
+  const categoryName = job?.category
+    ? (typeof categoriesMap[job.category] === 'string'
+        ? categoriesMap[job.category]
+        : categoriesMap[job.category]?.categoryName || categoriesMap[job.category]?.name || '')
+    : '';
 
   return (
     <Link

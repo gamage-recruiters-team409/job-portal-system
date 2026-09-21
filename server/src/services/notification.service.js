@@ -6,6 +6,17 @@ import {
   sendNewApplicationEmail,
   sendApplicationStatusChangeEmail,
 } from './email.service.js';
+import { emitToUser } from '../realtime/socket.js';
+
+const REPORT_STATUS_LABELS = Object.freeze({
+  under_review: 'Under Review',
+  resolved: 'Resolved',
+  dismissed: 'Dismissed',
+});
+
+function formatReportStatus(status) {
+  return REPORT_STATUS_LABELS[status] || status;
+}
 
 /**
  * Returns a paginated page of notifications belonging to the given user,
@@ -18,10 +29,8 @@ import {
  */
 export async function getUserNotifications(
   userId,
-  { page = 1, limit = 20, type, unreadOnly = false } = {}
+  { page = 1, limit = 20, type, unreadOnly = false, before, beforeId } = {}
 ) {
-  const skip = (page - 1) * limit;
-
   const query = { user: userId };
   if (type) {
     query.type = type;
@@ -30,8 +39,30 @@ export async function getUserNotifications(
     query.status = NOTIFICATION_STATUSES.UNREAD;
   }
 
+  if (before && beforeId) {
+    // Cursor-based path: "give me notifications after this exact
+    // already-loaded boundary in the deterministic newest-first order."
+    // The tie-breaker on _id prevents skipping records when several
+    // notifications share the same createdAt millisecond.
+    query.$or = [{ createdAt: { $lt: before } }, { createdAt: before, _id: { $lt: beforeId } }];
+
+    // Fetch one extra document to learn whether more exist beyond this
+    // batch, without a separate (and equally driftable) total count.
+    const notifications = await Notification.find(query)
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(limit + 1);
+
+    const hasMore = notifications.length > limit;
+
+    return {
+      notifications: notifications.slice(0, limit),
+      pagination: { limit, hasMore },
+    };
+  }
+
+  const skip = (page - 1) * limit;
   const [notifications, total] = await Promise.all([
-    Notification.find(query).sort('-createdAt').skip(skip).limit(limit),
+    Notification.find(query).sort({ createdAt: -1, _id: -1 }).skip(skip).limit(limit),
     Notification.countDocuments(query),
   ]);
 
@@ -42,6 +73,7 @@ export async function getUserNotifications(
       limit,
       total,
       totalPages: Math.ceil(total / limit),
+      hasMore: page < Math.ceil(total / limit),
     },
   };
 }
@@ -120,13 +152,26 @@ export async function getUnreadNotificationCount(userId) {
  * Called directly by other backend modules (Application, Job, Admin, etc.)
  * when a real notification-worthy event occurs.
  */
-export async function createNotification({ user, type, message, relatedJob }) {
+export async function createNotification({ user, type, message, relatedJob, relatedReport }) {
   const notification = await Notification.create({
     user,
     type,
     message,
     relatedJob,
+    relatedReport,
   });
+
+  // Best-effort real-time push — same defensive pattern as email sending
+  // below: if this fails (e.g. no active socket, or an unexpected error),
+  // the notification is already saved and the calling flow must not fail
+  // because of it. `emitToUser` itself never throws, but the try/catch
+  // stays here as a safety net regardless of that guarantee.
+  try {
+    emitToUser(String(user), 'notification:new', { notification });
+  } catch (error) {
+    console.error('Failed to emit real-time notification:', error.message);
+  }
+
   return { notification };
 }
 
@@ -230,4 +275,28 @@ export async function notifyApplicationStatusChange({
   }
 
   return { notification, emailSent };
+}
+
+/**
+ * Fires when an Admin reviews and changes the status of a Job Seeker's
+ * reported job (e.g. to 'under_review', 'resolved', or 'dismissed').
+ * Creates the in-app notification only — no email, per the QA
+ * recommendation's exact scope ("adding in-app notifications").
+ *
+ * Called by the Admin Report Management module (adminReport.service.js)
+ * once a report's status update is saved. The caller treats this as
+ * best-effort so a notification failure does not make an already-saved
+ * moderation update look like it failed.
+ */
+export async function notifyReportStatusChange({ jobSeekerId, jobTitle, newStatus, reportId }) {
+  const statusLabel = formatReportStatus(newStatus);
+
+  const { notification } = await createNotification({
+    user: jobSeekerId,
+    type: 'report_status_changed',
+    message: `Your report on "${jobTitle}" is now: ${statusLabel}.`,
+    relatedReport: reportId,
+  });
+
+  return { notification };
 }

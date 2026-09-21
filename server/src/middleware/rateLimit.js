@@ -24,3 +24,21 @@ export const resetPasswordLimiter = rateLimit({
   legacyHeaders: false,
   message: 'Too many attempts. Please try again later.',
 });
+
+/**
+ * Login rate limiter — prevents brute-force credential attacks on POST /auth/login.
+ *
+ * 10 attempts per IP per 5-minute window before a 429 is returned.
+ * Uses draft-7 standard headers so the frontend receives a Retry-After value
+ * it can use to drive the countdown timer directly from server state.
+ *
+ * Limit is intentionally generous so normal development/QA use-cases
+ * (multiple team members sharing an IP) are not impacted. Adjust for production.
+ */
+export const loginLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: 'Too many login attempts. Please try again later.',
+});

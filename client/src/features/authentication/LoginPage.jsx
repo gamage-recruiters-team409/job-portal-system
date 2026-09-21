@@ -9,6 +9,7 @@ import AuthLayout from './components/AuthLayout.jsx';
 import FormInput from './components/FormInput.jsx';
 import { getErrorMessage } from './utils/getErrorMessage.js';
 import { roleHome } from './utils/roleHome.js';
+import useLoginRateLimit from './utils/useLoginRateLimit.js';
 
 const loginSchema = z.object({
   email: z
@@ -23,6 +24,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState(null);
+  const { isLocked, secondsLeft, lockReason, recordSuccess, recordFailure } = useLoginRateLimit();
 
   const {
     register,
@@ -34,9 +36,11 @@ export default function LoginPage() {
     setServerError(null);
     try {
       const user = await login(values);
+      recordSuccess();
       toast.success('Logged in successfully.');
       navigate(roleHome(user.role));
     } catch (error) {
+      recordFailure(error);
       setServerError(getErrorMessage(error));
     }
   }
@@ -77,12 +81,24 @@ export default function LoginPage() {
           </Link>
         </div>
 
+        {isLocked && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            {lockReason === 'rate_limit'
+              ? 'Too many requests. Please wait '
+              : 'Too many invalid sign-in attempts. Please wait '}
+            <span className="font-semibold">
+              {secondsLeft} second{secondsLeft !== 1 ? 's' : ''}
+            </span>{' '}
+            before trying again.
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isLocked}
           className="mt-2 h-12 w-full rounded-xl bg-blue-600 text-base font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting ? 'Signing in…' : 'Sign in'}
+          {isSubmitting ? 'Signing in…' : isLocked ? `Try again in ${secondsLeft}s` : 'Sign in'}
         </button>
       </form>
 

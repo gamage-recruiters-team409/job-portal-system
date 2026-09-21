@@ -14,6 +14,9 @@ const NotificationDropdown = ({
   onClearAll,
   triggerRef,
   actionError,
+  hasMore,
+  onLoadMore,
+  loadingMore,
 }) => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -137,8 +140,23 @@ const NotificationDropdown = ({
                   notification={notif}
                   onMarkAsRead={onMarkAsRead}
                   onClear={onClear}
+                  onClose={onClose}
                 />
               ))}
+
+              {/* Lazy-load more notifications (QA recommendation) —
+                  only shown once the current page is loaded, and only
+                  while there's genuinely more to fetch. */}
+              {hasMore && (
+                <button
+                  type="button"
+                  onClick={onLoadMore}
+                  disabled={loadingMore}
+                  className="py-3 text-[13px] text-[#2563EB] hover:underline font-medium text-center disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {loadingMore ? 'Loading…' : 'Load more'}
+                </button>
+              )}
             </div>
           )}
         </div>
