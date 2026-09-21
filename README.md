@@ -9,8 +9,8 @@ A full-stack recruitment platform developed for **Gamage Recruiters (PVT) Ltd** 
 ![Development](https://img.shields.io/badge/Development-Complete-brightgreen)
 ![QA](https://img.shields.io/badge/QA-Complete-brightgreen)
 ![Recommendations](https://img.shields.io/badge/QA%20Recommendations-Complete-brightgreen)
-![Phase](https://img.shields.io/badge/Phase-Main%20Promotion%20Ready-blue)
-![Deployment](https://img.shields.io/badge/Deployment-Pending-yellow)
+![Phase](https://img.shields.io/badge/Phase-Deployment%20Preparation-blue)
+![Deployment](https://img.shields.io/badge/Deployment-In%20Progress-yellow)
 ![Frontend](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB)
 ![Backend](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-339933)
 ![Database](https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248)
@@ -24,7 +24,7 @@ A full-stack recruitment platform developed for **Gamage Recruiters (PVT) Ltd** 
 **Team Lead Intern – Software Engineering:** Sithum Buddhika Jayalal
 
 
-`develop` contains the completed, QA-reviewed and post-QA corrected integrated build. Formal QA and the approved QA recommendations are complete, and this branch is now ready for controlled promotion to `main` before deployment preparation.
+`main` now contains the completed, QA-reviewed and post-QA corrected release baseline. Development, formal QA, approved QA recommendations and the controlled promotion from `develop` to `main` are complete. The project is now entering deployment preparation for Render and Vercel.
 
 </div>
 
@@ -143,11 +143,11 @@ Rather than developing isolated frontend demonstrations, the project was impleme
 | QA Bug Fixes | ✅ Completed |
 | QA Recommendations | ✅ Completed |
 | Post-QA Re-Review & Integration | ✅ Completed |
-| Promotion from `develop` to `main` | 🔄 Next Step |
-| Deployment Preparation | ⏳ Next Phase |
+| Promotion from `develop` to `main` | ✅ Completed |
+| Deployment Preparation | 🔄 In Progress |
 | Production Deployment | ⏳ Not Started |
 
-> **Release-candidate status:** The approved MVP has completed development, formal QA review, QA corrections and recommendation implementation on `develop`. The next controlled step is to promote the final QA-approved `develop` state to `main`, then begin deployment preparation for Vercel and Render.
+> **Release status:** The approved MVP has completed development, formal QA review, QA corrections, recommendation implementation and controlled promotion to `main`. The `main` branch is now the release baseline for deployment preparation using Render and Vercel.
 
 ---
 
@@ -4193,10 +4193,10 @@ Post-QA Re-Review
    ✅ Complete
       ↓
 Promote develop → main
-   🔄 Next
+   ✅ Complete
       ↓
 Deployment Preparation
-   ⏳ Next Phase
+   🔄 In Progress
 ```
 
 Deployment validation will still need to confirm production environment variables, CORS, SMTP, Cloudinary, WebSocket connectivity, production builds and health checks in the deployed environment.
@@ -4602,20 +4602,22 @@ Brevo SMTP
 
 ## Current Deployment Status
 
-Deployment has **not** been completed yet. The development and QA phases are complete, and the next release workflow is:
+Deployment has **not** been completed yet. Development, formal QA, post-QA corrections and the release promotion to `main` are complete. The project is now in deployment preparation.
 
-1. finalize the `develop` README and release documentation;
-2. promote the final QA-approved `develop` state to `main`;
-3. verify the `main` branch and update the release-facing `main` README if required;
-4. configure the backend service on Render;
-5. configure the frontend on Vercel;
-6. configure production environment secrets;
-7. configure production CORS and frontend/backend URLs;
-8. verify MongoDB Atlas connectivity;
-9. verify Cloudinary media operations;
-10. verify Brevo transactional email;
-11. verify Socket.IO/WebSocket connectivity through the deployed frontend/backend;
-12. run deployment smoke checks and production health checks.
+The deployment workflow is:
+
+1. configure the backend service on Render;
+2. configure production backend environment variables and secrets;
+3. verify MongoDB Atlas connectivity from the deployed backend;
+4. verify Cloudinary media operations;
+5. verify Brevo transactional email;
+6. configure production CORS and allowed frontend/backend origins;
+7. verify Socket.IO/WebSocket connectivity on Render;
+8. configure and deploy the frontend on Vercel;
+9. configure the production frontend API/base URL and Socket.IO endpoint;
+10. verify authentication and role-based routes in production;
+11. run end-to-end production smoke checks;
+12. confirm production health checks and final deployment readiness.
 
 The deployment phase will be handled separately from this development/QA handover so that production-specific configuration is not mixed with the completed feature history.
 
@@ -4635,7 +4637,7 @@ Until then, the absence of a licence should **not** be interpreted as permission
 
 The **Gamage Recruiters Job Portal System** has completed its primary development, integration, formal QA and post-QA recommendation phase.
 
-The final accepted `develop` branch represents the consolidated QA-approved MVP, including:
+The final accepted `main` branch represents the consolidated QA-approved release baseline, including:
 
 - 🔐 secure authentication and backend login throttling;
 - 🔎 public Job discovery with QA-hardened search behaviour;
@@ -4659,7 +4661,7 @@ The final accepted `develop` branch represents the consolidated QA-approved MVP,
 - ✅ approved QA fixes and recommendations;
 - ✅ post-QA code review and integration.
 
-The project now moves from **development and QA** into **release promotion and deployment preparation**. The immediate next step is to promote the final accepted `develop` state to `main`, after which the deployment phase will be carried out using **Vercel** for the frontend and **Render** for the backend.
+The project has now moved beyond **development, QA and release promotion** into **deployment preparation**. The `main` branch is the approved release baseline. The immediate next step is to configure and deploy the backend on **Render**, followed by the frontend on **Vercel**, then complete production environment verification and smoke testing.
 
 The development and QA history demonstrates an engineering principle followed throughout the project:
 
@@ -4673,6 +4675,6 @@ The development and QA history demonstrates an engineering principle followed th
 
 **Built collaboratively by the Software Engineering Development Team**
 
-**Development: ✅ Complete · QA: ✅ Complete · Next Phase: 🚀 Main Promotion & Deployment**
+**Development: ✅ Complete · QA: ✅ Complete · Main Promotion: ✅ Complete · Deployment: 🔄 In Progress**
 
 </div>
