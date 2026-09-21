@@ -24,7 +24,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState(null);
-  const { isLocked, secondsLeft, recordSuccess, recordFailure } = useLoginRateLimit();
+  const { isLocked, secondsLeft, lockReason, recordSuccess, recordFailure } = useLoginRateLimit();
 
   const {
     register,
@@ -40,7 +40,7 @@ export default function LoginPage() {
       toast.success('Logged in successfully.');
       navigate(roleHome(user.role));
     } catch (error) {
-      recordFailure();
+      recordFailure(error);
       setServerError(getErrorMessage(error));
     }
   }
@@ -83,7 +83,9 @@ export default function LoginPage() {
 
         {isLocked && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-            Too many failed attempts. Please wait{' '}
+            {lockReason === 'rate_limit'
+              ? 'Too many requests. Please wait '
+              : 'Too many invalid sign-in attempts. Please wait '}
             <span className="font-semibold">
               {secondsLeft} second{secondsLeft !== 1 ? 's' : ''}
             </span>{' '}

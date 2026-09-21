@@ -1,33 +1,35 @@
 import { useState, useEffect, useRef } from 'react';
 
-/** Maximum consecutive failures before the lockout kicks in. */
+/** Maximum consecutive invalid-credential (401) failures before the local cooldown kicks in. */
 const FAILURE_THRESHOLD = 3;
 
-/** Duration of the lockout window in seconds. */
-const LOCKOUT_SECONDS = 30;
+/** Duration of the local cooldown window in seconds. */
+const DEFAULT_COOLDOWN_SECONDS = 30;
 
 /**
  * @file useLoginRateLimit.js
- * @description Frontend-only login rate-limiting hook.
+ * @description Frontend login rate-limiting UX hook.
  *
- * Tracks consecutive failed sign-in attempts within a single page session.
- * After FAILURE_THRESHOLD consecutive failures the submit button is locked for
- * LOCKOUT_SECONDS seconds, displaying a countdown timer to the user.
- *
- * This is a UX-layer deterrent against automated brute-force attempts. It does
- * not replace server-side rate limiting. The lock resets on page reload because
- * no persistent storage is used — intentional by design.
+ * Provides responsive feedback for login rate limiting and rapid submission cooldown:
+ * 1. Synchronizes with server-side 429 Too Many Requests responses and respects
+ *    the standard `Retry-After` header.
+ * 2. Provides a client-side UX cooldown when consecutive invalid credential (401)
+ *    failures reach FAILURE_THRESHOLD.
+ * 3. Safely ignores network errors, 5xx server errors, and 403 account-state failures
+ *    (e.g., unverified email or suspended accounts) so they do not falsely trigger lockouts.
  *
  * @returns {{
  *   isLocked: boolean,
  *   secondsLeft: number,
+ *   lockReason: 'rate_limit' | 'cooldown' | null,
  *   recordSuccess: () => void,
- *   recordFailure: () => void,
+ *   recordFailure: (error: any) => void,
  * }}
  */
 export default function useLoginRateLimit() {
   const failureCountRef = useRef(0);
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [lockReason, setLockReason] = useState(null);
   const intervalRef = useRef(null);
 
   const isLocked = secondsLeft > 0;
@@ -43,6 +45,7 @@ export default function useLoginRateLimit() {
       setSecondsLeft((prev) => {
         if (prev <= 1) {
           clearInterval(intervalRef.current);
+          setLockReason(null);
           return 0;
         }
         return prev - 1;
@@ -57,15 +60,39 @@ export default function useLoginRateLimit() {
     clearInterval(intervalRef.current);
     failureCountRef.current = 0;
     setSecondsLeft(0);
+    setLockReason(null);
   }
 
-  function recordFailure() {
-    failureCountRef.current += 1;
-    if (failureCountRef.current >= FAILURE_THRESHOLD) {
-      setSecondsLeft(LOCKOUT_SECONDS);
-      failureCountRef.current = 0; // reset counter so the next window starts fresh after lockout
+  function recordFailure(error) {
+    // 1. If the server explicitly returns 429 Too Many Requests, drive the timer from backend metadata
+    if (error?.response?.status === 429) {
+      let waitSeconds = DEFAULT_COOLDOWN_SECONDS;
+      const retryAfterHeader =
+        error.response.headers?.['retry-after'] || error.response.headers?.['Retry-After'];
+      if (retryAfterHeader) {
+        const parsed = parseInt(retryAfterHeader, 10);
+        if (!isNaN(parsed) && parsed > 0) {
+          waitSeconds = parsed;
+        }
+      }
+      setLockReason('rate_limit');
+      setSecondsLeft(waitSeconds);
+      failureCountRef.current = 0;
+      return;
+    }
+
+    // 2. Only count specific invalid-credential responses (HTTP 401).
+    // Network errors (ERR_NETWORK), server 5xx, or account-state errors (403 unverified/suspended)
+    // are strictly ignored and will not count toward the lockout.
+    if (error?.response?.status === 401) {
+      failureCountRef.current += 1;
+      if (failureCountRef.current >= FAILURE_THRESHOLD) {
+        setLockReason('cooldown');
+        setSecondsLeft(DEFAULT_COOLDOWN_SECONDS);
+        failureCountRef.current = 0; // Reset counter for the next window
+      }
     }
   }
 
-  return { isLocked, secondsLeft, recordSuccess, recordFailure };
+  return { isLocked, secondsLeft, lockReason, recordSuccess, recordFailure };
 }
