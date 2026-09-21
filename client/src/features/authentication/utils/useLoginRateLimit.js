@@ -6,6 +6,11 @@ const FAILURE_THRESHOLD = 3;
 /** Duration of the local cooldown window in seconds. */
 const DEFAULT_COOLDOWN_SECONDS = 30;
 
+/** sessionStorage keys */
+const SS_EXPIRY_KEY = 'login_lockout_expiry';
+const SS_REASON_KEY = 'login_lockout_reason';
+const SS_COUNT_KEY = 'login_failure_count';
+
 /**
  * @file useLoginRateLimit.js
  * @description Frontend login rate-limiting UX hook.
@@ -15,7 +20,9 @@ const DEFAULT_COOLDOWN_SECONDS = 30;
  *    the standard `Retry-After` header.
  * 2. Provides a client-side UX cooldown when consecutive invalid credential (401)
  *    failures reach FAILURE_THRESHOLD.
- * 3. Safely ignores network errors, 5xx server errors, and 403 account-state failures
+ * 3. Persists the lockout expiry timestamp in sessionStorage so the countdown
+ *    survives browser refreshes within the same tab session.
+ * 4. Safely ignores network errors, 5xx server errors, and 403 account-state failures
  *    (e.g., unverified email or suspended accounts) so they do not falsely trigger lockouts.
  *
  * @returns {{
@@ -26,10 +33,53 @@ const DEFAULT_COOLDOWN_SECONDS = 30;
  *   recordFailure: (error: any) => void,
  * }}
  */
+
+function readStoredLockout() {
+  try {
+    const expiry = parseInt(sessionStorage.getItem(SS_EXPIRY_KEY), 10);
+    const reason = sessionStorage.getItem(SS_REASON_KEY);
+    const count = parseInt(sessionStorage.getItem(SS_COUNT_KEY), 10) || 0;
+    if (expiry && expiry > Date.now()) {
+      return { secondsLeft: Math.ceil((expiry - Date.now()) / 1000), reason, count };
+    }
+  } catch {
+    // sessionStorage unavailable (e.g., private browsing restrictions) — degrade gracefully.
+  }
+  return { secondsLeft: 0, reason: null, count: 0 };
+}
+
+function writeLockout(durationSeconds, reason) {
+  try {
+    sessionStorage.setItem(SS_EXPIRY_KEY, String(Date.now() + durationSeconds * 1000));
+    sessionStorage.setItem(SS_REASON_KEY, reason);
+  } catch {
+    // Ignore storage errors.
+  }
+}
+
+function clearLockout() {
+  try {
+    sessionStorage.removeItem(SS_EXPIRY_KEY);
+    sessionStorage.removeItem(SS_REASON_KEY);
+    sessionStorage.removeItem(SS_COUNT_KEY);
+  } catch {
+    // Ignore storage errors.
+  }
+}
+
+function writeCount(count) {
+  try {
+    sessionStorage.setItem(SS_COUNT_KEY, String(count));
+  } catch {
+    // Ignore storage errors.
+  }
+}
+
 export default function useLoginRateLimit() {
-  const failureCountRef = useRef(0);
-  const [secondsLeft, setSecondsLeft] = useState(0);
-  const [lockReason, setLockReason] = useState(null);
+  const stored = readStoredLockout();
+  const failureCountRef = useRef(stored.count);
+  const [secondsLeft, setSecondsLeft] = useState(stored.secondsLeft);
+  const [lockReason, setLockReason] = useState(stored.reason);
   const intervalRef = useRef(null);
 
   const isLocked = secondsLeft > 0;
@@ -46,6 +96,7 @@ export default function useLoginRateLimit() {
         if (prev <= 1) {
           clearInterval(intervalRef.current);
           setLockReason(null);
+          clearLockout();
           return 0;
         }
         return prev - 1;
@@ -61,10 +112,11 @@ export default function useLoginRateLimit() {
     failureCountRef.current = 0;
     setSecondsLeft(0);
     setLockReason(null);
+    clearLockout();
   }
 
   function recordFailure(error) {
-    // 1. If the server explicitly returns 429 Too Many Requests, drive the timer from backend metadata
+    // 1. If the server explicitly returns 429 Too Many Requests, drive the timer from backend metadata.
     if (error?.response?.status === 429) {
       let waitSeconds = DEFAULT_COOLDOWN_SECONDS;
       const retryAfterHeader =
@@ -75,9 +127,11 @@ export default function useLoginRateLimit() {
           waitSeconds = parsed;
         }
       }
+      writeLockout(waitSeconds, 'rate_limit');
       setLockReason('rate_limit');
       setSecondsLeft(waitSeconds);
       failureCountRef.current = 0;
+      writeCount(0);
       return;
     }
 
@@ -86,10 +140,13 @@ export default function useLoginRateLimit() {
     // are strictly ignored and will not count toward the lockout.
     if (error?.response?.status === 401) {
       failureCountRef.current += 1;
+      writeCount(failureCountRef.current);
       if (failureCountRef.current >= FAILURE_THRESHOLD) {
+        writeLockout(DEFAULT_COOLDOWN_SECONDS, 'cooldown');
         setLockReason('cooldown');
         setSecondsLeft(DEFAULT_COOLDOWN_SECONDS);
-        failureCountRef.current = 0; // Reset counter for the next window
+        failureCountRef.current = 0;
+        writeCount(0);
       }
     }
   }
