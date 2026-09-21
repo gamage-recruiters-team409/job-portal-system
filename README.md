@@ -7,7 +7,10 @@
 A full-stack recruitment platform developed for **Gamage Recruiters (PVT) Ltd** to connect Job Seekers, Employers and Administrators through a secure, responsive and structured recruitment workflow.
 
 ![Development](https://img.shields.io/badge/Development-Complete-brightgreen)
-![Phase](https://img.shields.io/badge/Phase-QA%20Ready-blue)
+![QA](https://img.shields.io/badge/QA-Complete-brightgreen)
+![Recommendations](https://img.shields.io/badge/QA%20Recommendations-Complete-brightgreen)
+![Phase](https://img.shields.io/badge/Phase-Main%20Promotion%20Ready-blue)
+![Deployment](https://img.shields.io/badge/Deployment-Pending-yellow)
 ![Frontend](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB)
 ![Backend](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-339933)
 ![Database](https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248)
@@ -21,7 +24,7 @@ A full-stack recruitment platform developed for **Gamage Recruiters (PVT) Ltd** 
 **Team Lead Intern – Software Engineering:** Sithum Buddhika Jayalal
 
 
-`develop` contains the completed integrated development build and is the handover point for formal QA, regression testing, bug fixing and deployment preparation.
+`develop` contains the completed, QA-reviewed and post-QA corrected integrated build. Formal QA and the approved QA recommendations are complete, and this branch is now ready for controlled promotion to `main` before deployment preparation.
 
 </div>
 
@@ -63,7 +66,7 @@ A full-stack recruitment platform developed for **Gamage Recruiters (PVT) Ltd** 
 32. [Responsive Design](#-responsive-design)
 33. [Validation & Error Handling](#-validation--error-handling)
 34. [Important Engineering Problems Solved](#-important-engineering-problems-solved)
-35. [Testing & Development Verification](#-testing--development-verification)
+35. [Testing, QA & Verification](#-testing-qa--verification)
 36. [Local Development Setup](#-local-development-setup)
 37. [Frontend Setup](#%EF%B8%8F-frontend-setup)
 38. [Backend Setup](#-backend-setup)
@@ -136,12 +139,15 @@ Rather than developing isolated frontend demonstrations, the project was impleme
 | Responsive Implementation | ✅ Completed |
 | Pull Request Review | ✅ Completed |
 | Development Integration into `develop` | ✅ Completed |
-| Formal QA / System Testing | 🔄 Next Phase |
-| Regression & Bug Fixing | 🔄 QA Phase |
-| Deployment Preparation | ⏳ After QA |
-| Production Release | ⏳ Pending Approval |
+| Formal QA / System Testing | ✅ Completed |
+| QA Bug Fixes | ✅ Completed |
+| QA Recommendations | ✅ Completed |
+| Post-QA Re-Review & Integration | ✅ Completed |
+| Promotion from `develop` to `main` | 🔄 Next Step |
+| Deployment Preparation | ⏳ Next Phase |
+| Production Deployment | ⏳ Not Started |
 
-> **Development handover status:** The approved MVP development scope has been implemented and integrated into `develop`. The project is now ready for formal QA, system-level regression testing and deployment preparation.
+> **Release-candidate status:** The approved MVP has completed development, formal QA review, QA corrections and recommendation implementation on `develop`. The next controlled step is to promote the final QA-approved `develop` state to `main`, then begin deployment preparation for Vercel and Render.
 
 ---
 
@@ -183,7 +189,7 @@ The primary objectives of the system are to:
 - provide responsive desktop, tablet and mobile experiences;
 - enforce authentication and role-based authorization;
 - preserve data integrity across module boundaries;
-- prepare the platform for structured QA and future deployment.
+- complete structured QA, post-QA hardening and controlled release preparation.
 
 ---
 
@@ -373,6 +379,7 @@ An Administrator can:
 - application-submitted email
 - new-application email
 - application-status-change email
+- Report status-change in-app notification
 
 ## 🛡️ Platform Moderation
 
@@ -455,6 +462,9 @@ flowchart TB
     DomainServices --> Brevo
     Controllers --> Errors
 ```
+
+
+> **Post-QA real-time update:** Socket.IO is attached to the existing backend HTTP server for authenticated real-time notification delivery. Each connected user is isolated to a private user room, while notification persistence remains in MongoDB as the durable source of truth.
 
 ---
 
@@ -575,6 +585,7 @@ Examples include:
 | Zod | Schema-based frontend validation |
 | `@hookform/resolvers` | React Hook Form + Zod integration |
 | React Hot Toast | User feedback notifications |
+| Socket.IO Client | Authenticated real-time notification delivery |
 | Lucide React | Consistent interface iconography |
 | ESLint | Static code quality |
 | Prettier | Code formatting |
@@ -611,7 +622,8 @@ Vite                     8.x
 | Brevo SMTP | Email provider |
 | Helmet | HTTP security headers |
 | CORS | Cross-origin controls |
-| Express Rate Limit | Abuse/rate limiting |
+| Express Rate Limit | Abuse/rate limiting, including login throttling |
+| Socket.IO | Authenticated real-time notification transport |
 | Morgan | HTTP request logging |
 | dotenv | Environment configuration |
 | ESLint | Static code analysis |
@@ -997,9 +1009,7 @@ Company deletion is guarded when Jobs still reference the Company.
 
 ---
 
-## 📝 Application APIs
-
-All application routes require a Job Seeker.
+## 📝 Application APIsAll application routes require a Job Seeker.
 
 ```text
 POST /api/v1/applications
@@ -1450,6 +1460,23 @@ Job Details returns a small recommendation set based on compatible Job propertie
 
 ---
 
+## Post-QA Hardening
+
+Formal QA and the recommendation phase added several final improvements:
+
+- Public Job search auto-suggestions with keyboard-accessible combobox/listbox behaviour;
+- Category/Skill suggestion normalization aligned with the shared `categoryName` / `skillName` contracts;
+- client-side Job Detail caching removed so public Job availability always comes from the current backend lifecycle state;
+- backend login rate limiting added to `POST /api/v1/auth/login`;
+- server `429` / `Retry-After` metadata drives the frontend rate-limit countdown;
+- network, server and account-state failures are excluded from the local invalid-credential cooldown;
+- active login cooldown state survives refreshes within the tab through `sessionStorage`;
+- successful authentication clears stored cooldown state.
+
+**QA / post-QA PRs:** PR #113 and PR #117.
+
+---
+
 ## Pull Requests
 
 - PR #3 — Authentication Backend
@@ -1462,6 +1489,8 @@ Job Details returns a small recommendation set based on compatible Job propertie
 - PR #51 — Job Detail Save/Report Actions
 - PR #73 — Admin Routing Integration
 - PR #101 — Public Home Page & Adaptive Job Layout
+- PR #113 — Authentication & Public Job Discovery QA Recommendations
+- PR #117 — Login Rate-Limiting Indicator & Backend Login Limiter
 
 ---
 
@@ -1834,6 +1863,21 @@ The final responsive hardening was completed through PR #103.
 
 ---
 
+## Post-QA Hardening
+
+The QA recommendation phase added final usability and state-safety improvements:
+
+- Newest / Oldest sorting for Application History;
+- bulk-unsave support for Saved Jobs;
+- independent processing of bulk removals so one failed request does not cancel the remaining removals;
+- partial-failure feedback and failed-item retry state;
+- selection reconciliation with the currently visible Saved Jobs to avoid removing hidden filtered items;
+- preservation of the accepted List/Card presentation behaviour.
+
+**QA PR:** PR #114.
+
+---
+
 ## Pull Requests
 
 ### Core Module
@@ -1848,6 +1892,7 @@ The final responsive hardening was completed through PR #103.
 ### Final Responsive Hardening
 
 - PR #103 — Responsive fixes for Saved Jobs, Application History and Application Details
+- PR #114 — Applications & Saved Jobs QA Issues and Recommendations
 
 ---
 
@@ -1997,15 +2042,26 @@ The implementation was aligned with the actual approved business rules rather th
 
 ---
 
-### 9. Shared Sidebar needed role-aware cleanup
-
-Navigation was refined so Job Seeker and Employer layouts do not show unsupported/duplicate entries.
+### 9. Shared Sidebar needed role-aware cleanupNavigation was refined so Job Seeker and Employer layouts do not show unsupported/duplicate entries.
 
 ---
 
 ### 10. UI polish had to avoid functional regression
 
 Animations, hover elevation, shadows and transitions were added as UI-only changes while preserving existing Company APIs and data flow.
+
+---
+
+## Post-QA Hardening
+
+Final QA recommendations improved Employer-facing feedback without changing the approved Company lifecycle:
+
+- clearer feedback and retry handling when Company or dashboard statistics data is unavailable;
+- valid all-zero Employer statistics remain displayed as real `0` values instead of being treated as unavailable data;
+- obsolete dashboard empty-state logic was removed;
+- authenticated non-Job-Seeker accounts receive a native disabled state on the Apply action while the existing role rules remain authoritative.
+
+**QA PR:** PR #111.
 
 ---
 
@@ -2229,6 +2285,20 @@ Final responsive work covered:
 
 ---
 
+## Post-QA Hardening
+
+Job Management QA recommendations added clearer action confirmation while preserving the existing Job lifecycle:
+
+- success feedback for Job creation and Save Draft / Submit actions;
+- success feedback for Job editing and update/submit actions;
+- success feedback for delete, close and reopen actions;
+- success messages are emitted only after the corresponding API operation succeeds;
+- existing error paths remain separate so failures do not show false success feedback.
+
+**QA PR:** PR #110.
+
+---
+
 ## Pull Requests — 15 Development PRs
 
 - PR #4 — Job Model
@@ -2246,6 +2316,7 @@ Final responsive work covered:
 - PR #90 — Manage Jobs Improvements
 - PR #97 — Shared Job Form Refactor
 - PR #100 — Responsive Job Management
+- PR #110 — Job Management QA Issues and Recommendations
 
 ---
 
@@ -2382,6 +2453,20 @@ The Applicant Management handover records:
 
 ---
 
+## Post-QA Hardening
+
+Applicant Management QA recommendations added explicit confirmation feedback for the main Employer actions:
+
+- shortlist confirmation;
+- reject confirmation;
+- general application-status update confirmation;
+- success callbacks use the completed backend response while failure paths remain separate;
+- existing Employer ownership and protected Applicant/CV access remain unchanged.
+
+**QA PR:** PR #112.
+
+---
+
 ## Pull Requests
 
 - PR #10 — Shared Top Navigation
@@ -2393,6 +2478,7 @@ The Applicant Management handover records:
 - PR #74 — Advanced Applicant Filters
 - PR #88 — Notification Integration
 - PR #96 — TopNavbar Keyword Routing
+- PR #112 — Applicant Management QA Recommendations
 
 ---
 
@@ -2578,6 +2664,23 @@ The modal implied profile/Application delisting behaviour that the backend did n
 ### 15. Category/Skill visibility wording did not exactly match backend semantics
 
 **Resolution:** the UI was aligned with the actual active/inactive behaviour of the reference-data APIs.
+
+---
+
+## Post-QA Hardening
+
+The Admin QA phase added and refined several usability improvements while preserving the approved moderation contracts:
+
+- Category and Skill field validation, character counters and search/reset feedback;
+- Employer-management empty states, search reset and verification feedback;
+- Admin Job moderation validation and empty/search-state improvements;
+- User Management search debounce, confirmation flows, empty states and toast feedback;
+- suspension messaging aligned with actual protected-access enforcement;
+- an unapproved Employer verification-revocation action was removed;
+- experimental 30-second Admin Dashboard polling was removed rather than representing polling as the requested WebSocket/SSE approach;
+- the previously accepted Reported Jobs pagination presentation was preserved.
+
+**QA PR:** PR #116.
 
 ---
 
@@ -2795,6 +2898,28 @@ Final corrections included:
 
 ---
 
+## Post-QA Hardening
+
+The Notification QA and post-QA phases introduced the largest final infrastructure improvement in this module:
+
+- authenticated Socket.IO real-time notification delivery;
+- private per-user notification rooms derived from the authenticated account;
+- frontend socket reuse only for the same authentication token;
+- socket cleanup when authentication state changes;
+- periodic account / verification / token-version revalidation;
+- active JWT expiry enforcement for established socket connections;
+- stable dropdown lazy loading using a compound `createdAt + _id` cursor;
+- deterministic `{ createdAt: -1, _id: -1 }` ordering;
+- frontend defensive de-duplication for loaded notification batches;
+- new in-app `report_status_changed` notifications after Admin Report moderation;
+- readable Report status labels such as **Under Review**, **Resolved** and **Dismissed**;
+- navigation from Report notifications to the related Report Details page;
+- Report-status notification creation is best-effort after a successful moderation update so a notification failure cannot falsely report the persisted Admin action as failed.
+
+**QA / post-QA PRs:** PR #115 and PR #118.
+
+---
+
 ## Pull Requests — 16 Module PRs
 
 - PR #6 — Notification Model
@@ -2813,6 +2938,8 @@ Final corrections included:
 - PR #92 — Notification Delete Backend
 - PR #93 — Notification Center Delete Integration
 - PR #98 — Notification Dropdown Clear / Clear All
+- PR #115 — Notifications, Email Events & Statistics QA Issues and Recommendations
+- PR #118 — Report Status Change Notifications
 
 ---
 
@@ -2997,8 +3124,7 @@ flowchart LR
     AUTH --> APPLICANTS
     AUTH --> ADMIN
 
-    COMPANY --> JOBS
-    JOBS --> PUBLIC
+    COMPANY --> JOBSJOBS --> PUBLIC
 
     PUBLIC --> SAVED
     PUBLIC --> APPS
@@ -3227,8 +3353,11 @@ Helmet is included in the backend stack to improve standard HTTP security-header
 
 Rate limiting is applied to sensitive/abuse-prone operations such as:
 
+- login attempts;
 - password-recovery operations;
 - support submissions.
+
+The final login flow uses the backend as the security authority. The login endpoint is protected by an IP-based server limiter, and `429 Too Many Requests` responses expose standard retry metadata that the frontend uses for its countdown indicator. The frontend also provides a separate short UX cooldown for repeated invalid-credential responses, but this does not replace the server-side security control.
 
 ---
 
@@ -3301,7 +3430,7 @@ The shared Email Service reduces duplicated SMTP configuration across different 
 
 # 🔔 Notification System
 
-The notification lifecycle is:
+The final notification architecture combines durable MongoDB persistence with authenticated real-time delivery.
 
 ```mermaid
 flowchart LR
@@ -3310,6 +3439,10 @@ flowchart LR
       --> Service["Notification Service"]
       --> Model["Notification Model"]
       --> DB["MongoDB"]
+
+    Service --> Socket["Socket.IO emitToUser"]
+    Socket --> Room["Private user:<id> room"]
+    Room --> LiveUI["Authenticated UI"]
 
     DB --> API["Notification API"]
     API --> Center["Notification Center"]
@@ -3324,7 +3457,32 @@ flowchart LR
     Delete --> API
 ```
 
-The system supports user-scoped notification operations so one user cannot delete another user's notifications through ID manipulation.
+## Real-Time Delivery
+
+- Socket.IO is attached to the existing backend HTTP server.
+- Connections authenticate with the same JWT/account rules used by protected REST access.
+- Each authenticated user joins only a private user room.
+- Socket sessions track token identity, token version and JWT expiry.
+- Authentication-state changes tear down the previous frontend socket.
+- Notification persistence succeeds independently of best-effort real-time emission.
+
+## Stable Dropdown Pagination
+
+The dropdown uses a deterministic cursor based on:
+
+```text
+createdAt + _id
+```
+
+with matching newest-first ordering. This prevents records with identical timestamps from being skipped while real-time notifications are inserted.
+
+The existing page-based Notification Center contract remains available.
+
+## Report Status Notifications
+
+Admin Report moderation can create an in-app `report_status_changed` notification for the Job Seeker who submitted the Report. The notification stores the related Report ID, displays readable status labels and navigates to the existing Report Details page.
+
+The system keeps user-scoped notification operations so one user cannot read, mutate or delete another user's notifications through identifier manipulation.
 
 ---
 
@@ -3527,139 +3685,60 @@ The following are representative engineering problems resolved during developmen
 
 ---
 
-# 🧪 Testing & Development Verification
+# 🧪 Testing, QA & Verification
 
-Development verification was required before PR approval.
+The project used multiple verification layers across development and formal QA.
 
-This is separate from the upcoming formal QA phase.
+## Development-Stage Verification
 
----
+Before PR approval, relevant modules were checked through a combination of:
 
-## Frontend Verification
-
-Modules were checked for:
-
-- page loading;
-- navigation;
-- forms;
-- buttons;
-- client validation;
-- loading states;
-- error states;
-- empty states;
-- confirmation states;
-- responsive behaviour;
-- browser console errors;
-- frontend/backend integration.
-
----
-
-## Backend Verification
-
-Backend work was tested for:
-
-- successful requests;
-- invalid requests;
-- authentication;
-- authorization;
-- role restrictions;
-- validation;
-- not-found behaviour;
-- duplicate protection;
-- conflict responses;
-- file restrictions;
-- ownership;
-- lifecycle rules.
-
-Postman evidence was used extensively during development.
-
----
-
-## Module-Specific Evidence
-
-### Authentication / Public Jobs
-
-- automated/manual Postman verification;
-- browser flow verification;
-- responsive screenshots;
-- lint/build checks.
-
-### Job Seeker Profile
-
-- API verification;
-- profile CRUD verification;
-- CV security checks;
-- file validation;
+- frontend navigation and browser-flow checks;
+- form and validation checks;
+- loading, error, empty and confirmation states;
 - responsive verification;
-- format/lint/build checks.
+- browser-console checks;
+- backend success and negative API cases;
+- authentication and role authorization;
+- ownership isolation;
+- duplicate/conflict handling;
+- file restrictions and media flows;
+- lifecycle/state transitions;
+- Postman evidence;
+- ESLint, Prettier and production-build checks where applicable.
 
-### Applications / Saved Jobs
+Module-level evidence also included dedicated Playwright/Postman checks for parts of the system such as Applicant Management.
 
-- application API verification;
-- Saved Job verification;
-- status-history checks;
-- responsive breakpoint verification;
-- integration regression checks.
+## Formal QA Phase
 
-### Employer / Company
+Formal QA has now been completed. Backend and frontend QA reports were delivered, reviewed by module owners and used as the source for the post-development correction phase.
 
-Postman evidence includes positive and negative cases such as:
+The QA process included:
 
-```text
-401
-403
-404
-409
-413
-```
+- reviewing backend and frontend QA reports per module;
+- identifying actual failures separately from recommendations;
+- implementing only approved QA fixes/recommendations;
+- re-reviewing each correction PR against the original QA scope;
+- preserving shared API/model/layout contracts during corrections;
+- performing final developer smoke verification on the affected flows.
 
-as applicable.
+## QA / Post-QA Correction PRs
 
-Company verification-reset and delete-guard scenarios were specifically tested.
+| PR | Area | Outcome |
+|---|---|---|
+| #110 | Job Management | QA feedback / confirmation UX completed |
+| #111 | Employer & Company Profile | QA feedback and zero-stat handling completed |
+| #112 | Applicant Management | action confirmation feedback completed |
+| #113 | Authentication & Public Job Discovery | search recommendation and accessibility corrections completed |
+| #114 | Applications & Saved Jobs | sorting and safe bulk-unsave improvements completed |
+| #115 | Notifications / Email Events / Statistics | real-time Socket.IO delivery and stable lazy loading completed |
+| #116 | Admin | QA recommendations and UX corrections completed |
+| #117 | Authentication | backend login rate limiting and frontend indicator completed |
+| #118 | Notifications / Report Integration | Report status change notifications completed |
 
-### Applicant Management
+## Verification Note
 
-Recorded handover evidence includes:
-
-```text
-11 Playwright tests passed
-15 Postman tests passed
-```
-
-### Notifications
-
-- notification mutations;
-- filtering;
-- unread count;
-- delete/delete-all;
-- ownership;
-- Postman verification;
-- lint/Prettier/build checks on relevant PRs.
-
-### Help / Reports
-
-- frontend flow screenshots;
-- Postman Support API verification;
-- Postman Report API verification;
-- MongoDB persistence verification;
-- duplicate-report tests;
-- report lifecycle verification.
-
----
-
-## Formal QA Still Required
-
-Development verification does **not** replace:
-
-- full system testing;
-- comprehensive regression testing;
-- cross-browser certification;
-- performance testing;
-- security testing;
-- deployment-environment testing;
-- user acceptance testing.
-
-Those activities belong to the QA/release phase.
+GitHub automated CI checks were not consistently available across these QA PRs. Release confidence therefore comes from the formal QA reports, code review, documented developer/manual verification and lint/build evidence where provided. Deployment-environment validation remains a separate release activity.
 
 ---
 
@@ -3997,8 +4076,7 @@ A development PR should explain:
 - major files/components/APIs changed;
 - shared dependencies;
 - testing performed;
-- screenshots or evidence where appropriate;
-- known limitations;
+- screenshots or evidence where appropriate;- known limitations;
 - whether shared files were changed.
 
 ---
@@ -4080,133 +4158,48 @@ and verify the affected APIs/functions.
 
 # 🧪 QA Handover
 
-Development has reached the point where the integrated build can move into formal QA.
+The QA handover and correction cycle is **complete**.
 
-## QA Priority Areas
+The integrated `develop` build was handed to QA, backend/frontend reports were reviewed, relevant issues and recommendations were assigned back to the owning developers, and the resulting correction PRs were re-reviewed before acceptance.
 
-### Authentication
+## Final QA Outcome
 
-- registration;
-- duplicate email;
-- verification;
-- invalid/expired verification token;
-- login;
-- unverified login;
-- suspended account;
-- forgot password;
-- reset password;
-- old-token invalidation.
+- ✅ Development completed and integrated into `develop`;
+- ✅ Formal QA reports received and reviewed;
+- ✅ Identified QA bugs corrected;
+- ✅ Approved QA recommendations implemented;
+- ✅ Shared-file and cross-module integration rechecked;
+- ✅ final correction PRs reviewed and approved;
+- ✅ module owners provided final smoke verification for affected flows;
+- ✅ no known merge-blocking QA issue remains in the accepted `develop` state.
 
-### Job Seeker Profile
+## Final Release Gate
 
-- profile CRUD;
-- completion percentage;
-- education;
-- experience;
-- skills;
-- portfolio;
-- CV;
-- profile image;
-- upload limits;
-- ownership.
+The project has therefore moved beyond **QA Ready** status.
 
-### Public Jobs
-
-- pagination;
-- keyword search;
-- location;
-- filter combinations;
-- empty results;
-- Job Details;
-- similar Jobs;
-- view counts.
-
-### Employer / Company
-
-- create/update Company;
-- verification reset;
-- logo management;
-- deletion guard;
-- Employer Dashboard.
-
-### Job Management
-
-- draft;
-- submit for review;
-- Admin approval/rejection;
-- edit restrictions;
-- expired deadlines;
-- salary clearing;
-- close;
-- reopen;
-- automatic expiration;
-- soft delete;
-- preview.
-
-### Applications
-
-- duplicate applications;
-- CV requirement;
-- CV snapshot;
-- history;
-- details;
-- status history;
-- notification creation.
-
-### Applicant Management
-
-- Employer ownership;
-- list/filter/search;
-- details;
-- shortlist;
-- reject;
-- general status update;
-- CV access;
-- withdrawn/restricted cases;
-- notification integration.
-
-### Notifications
-
-- unread count;
-- filtering;
-- read;
-- Mark All;
-- delete;
-- Delete All;
-- pagination;
-- ownership;
-- dropdown synchronization.
-
-### Admin
-
-- account management;
-- Employer verification;
-- Job moderation;
-- Categories;
-- Skills;
-- Reports;
-- deep links;
-- role restrictions.
-
-### Reported Jobs
-
-- Report submission;
-- duplicate active Report;
-- concurrent duplicate attempts;
-- Report history;
-- Report lifecycle;
-- Admin moderation.
-
-### Responsive Regression
-
-At minimum:
+Current progression:
 
 ```text
-Mobile
-Tablet
-Laptop
-Desktop
+Development
+   ✅ Complete
+      ↓
+Formal QA
+   ✅ Complete
+      ↓
+QA Fixes & Recommendations
+   ✅ Complete
+      ↓
+Post-QA Re-Review
+   ✅ Complete
+      ↓
+Promote develop → main
+   🔄 Next
+      ↓
+Deployment Preparation
+   ⏳ Next Phase
 ```
+
+Deployment validation will still need to confirm production environment variables, CORS, SMTP, Cloudinary, WebSocket connectivity, production builds and health checks in the deployed environment.
 
 ---
 
@@ -4258,9 +4251,9 @@ Production/official sender configuration must be independently verified using de
 
 ---
 
-### 5. Formal Project-Wide QA
+### 5. Deployment-Environment Validation
 
-Individual modules contain substantial development-stage verification, but formal whole-system regression/security/performance testing remains part of QA.
+Formal QA and the approved post-QA correction cycle are complete. Production-specific validation is still required after deployment configuration, including environment variables, CORS, SMTP delivery, Cloudinary access, WebSocket connectivity, production builds and service health checks.
 
 ---
 
@@ -4270,9 +4263,9 @@ Any later Admin/Superadmin extensions should be verified end-to-end against the 
 
 ---
 
-### 7. Employer Verification vs Job Creation
+### 7. Business-Rule Changes After Release
 
-QA should explicitly verify the intended business rule concerning whether only a **verified Company** may create/submit Jobs. Any such restriction must be enforced by the backend rather than only through a disabled frontend action.
+Any future change to Employer verification, Job creation eligibility, application lifecycle rules or Admin moderation must continue to be enforced by the backend and reviewed against the established shared contracts before release.
 
 ---
 
@@ -4305,7 +4298,7 @@ Potential future enhancements include:
 - ⚡ caching and performance optimization;
 - 🧪 expanded automated E2E regression suite.
 
-Future features should be introduced only after the MVP remains stable through QA and release.
+Future features should be introduced only through the same controlled review process after the QA-approved MVP has been promoted to `main` and the deployed release is stable.
 
 ---
 
@@ -4347,6 +4340,8 @@ This section provides a development-history overview rather than only documentin
 #51   Job Detail Actions
 #73   Admin Routing Integration
 #101  Public Landing Page & Adaptive Jobs Layout
+#113  Authentication & Public Job Discovery QA Recommendations
+#117  Login Rate-Limiting Indicator & Backend Login Limiter
 ```
 
 ---
@@ -4378,6 +4373,7 @@ This section provides a development-history overview rather than only documentin
 #49   Saved Jobs Frontend
 #57   Application History / Details
 #103  Final Responsive Hardening
+#114  Applications & Saved Jobs QA Issues and Recommendations
 ```
 
 ---
@@ -4396,6 +4392,7 @@ This section provides a development-history overview rather than only documentin
 #72   Company/Dashboard Updates
 #79   Company/Profile/Logo Updates
 #87   Sidebar & Footer Cleanup
+#111  Employer & Company Profile QA Issues and Recommendations
 ```
 
 ---
@@ -4418,6 +4415,7 @@ This section provides a development-history overview rather than only documentin
 #90   Manage Jobs Improvements
 #97   Shared Form Refactor
 #100  Responsive Job Management
+#110  Job Management QA Issues and Recommendations
 ```
 
 ---
@@ -4434,6 +4432,7 @@ This section provides a development-history overview rather than only documentin
 #74   Filters
 #88   Notification Integration
 #96   TopNavbar Keyword Routing
+#112  Applicant Management QA Recommendations
 ```
 
 ---
@@ -4452,6 +4451,7 @@ This section provides a development-history overview rather than only documentin
 #78   Manage Job Posts
 #86   Categories / Skills UI
 #99   Admin Dashboard & Integration
+#116  Admin QA Review Recommendations & UX Enhancements
 ```
 
 ---
@@ -4475,6 +4475,8 @@ This section provides a development-history overview rather than only documentin
 #92   Notification Deletion Backend
 #93   Notification Center Deletion
 #98   Dropdown Clear / Clear All
+#115  Notifications, Email Events & Statistics QA Issues and Recommendations
+#118  Report Status Change Notifications
 ```
 
 ---
@@ -4581,7 +4583,7 @@ Frontend
    ↓
 Vercel
 
-Backend
+Backend + Socket.IO
    ↓
 Render
 
@@ -4598,17 +4600,24 @@ Transactional Email
 Brevo SMTP
 ```
 
-Actual production deployment should occur only after:
+## Current Deployment Status
 
-- formal QA;
-- regression correction;
-- environment-secret configuration;
-- CORS verification;
-- SMTP verification;
-- Cloudinary verification;
-- production build verification;
-- health checks;
-- final company/supervisor approval.
+Deployment has **not** been completed yet. The development and QA phases are complete, and the next release workflow is:
+
+1. finalize the `develop` README and release documentation;
+2. promote the final QA-approved `develop` state to `main`;
+3. verify the `main` branch and update the release-facing `main` README if required;
+4. configure the backend service on Render;
+5. configure the frontend on Vercel;
+6. configure production environment secrets;
+7. configure production CORS and frontend/backend URLs;
+8. verify MongoDB Atlas connectivity;
+9. verify Cloudinary media operations;
+10. verify Brevo transactional email;
+11. verify Socket.IO/WebSocket connectivity through the deployed frontend/backend;
+12. run deployment smoke checks and production health checks.
+
+The deployment phase will be handled separately from this development/QA handover so that production-specific configuration is not mixed with the completed feature history.
 
 ---
 
@@ -4624,35 +4633,37 @@ Until then, the absence of a licence should **not** be interpreted as permission
 
 # ✅ Final Handover Statement
 
-The **Gamage Recruiters Job Portal System** has completed its primary development and integration phase.
+The **Gamage Recruiters Job Portal System** has completed its primary development, integration, formal QA and post-QA recommendation phase.
 
-The `develop` branch represents the consolidated implementation of the approved MVP, including:
+The final accepted `develop` branch represents the consolidated QA-approved MVP, including:
 
-- 🔐 secure authentication;
-- 🔎 public Job discovery;
+- 🔐 secure authentication and backend login throttling;
+- 🔎 public Job discovery with QA-hardened search behaviour;
 - 👤 Job Seeker profiles;
 - 📄 protected CV management;
-- 🔖 Saved Jobs;
+- 🔖 Saved Jobs with safe bulk-unsave handling;
 - 📝 Job Applications;
-- 🕒 Application tracking;
-- 🏢 Company Profiles;
-- 💼 Employer Job Management;
-- 👥 Applicant Management;
-- 🛡️ Admin moderation;
-- 🔔 in-app notifications;
+- 🕒 Application tracking and sorting;
+- 🏢 Company Profiles and Employer Dashboard feedback;
+- 💼 Employer Job Management with clear action confirmation;
+- 👥 Applicant Management with status-action confirmation;
+- 🛡️ Admin moderation and QA-hardened UX;
+- 🔔 persistent and real-time Socket.IO notifications;
 - ✉️ transactional email;
 - 📊 dashboard statistics;
-- 🚩 Job reporting;
+- 🚩 Job reporting and Report status notifications;
 - 💬 support functionality;
 - 📱 responsive interfaces;
 - 🔗 integrated frontend/backend workflows;
-- ✅ module-level development verification.
+- ✅ formal QA review;
+- ✅ approved QA fixes and recommendations;
+- ✅ post-QA code review and integration.
 
-The project now moves from **feature development** into **formal QA, regression testing, bug fixing and deployment preparation**.
+The project now moves from **development and QA** into **release promotion and deployment preparation**. The immediate next step is to promote the final accepted `develop` state to `main`, after which the deployment phase will be carried out using **Vercel** for the frontend and **Render** for the backend.
 
-The development history also demonstrates an important engineering principle followed throughout the project:
+The development and QA history demonstrates an engineering principle followed throughout the project:
 
-> **A feature was not considered complete simply because the first implementation worked. It was reviewed against shared contracts, security rules, ownership boundaries, integration behaviour, responsive requirements and regression risk before being accepted into the integrated system.**
+> **A feature was not considered complete simply because the first implementation worked. It was reviewed against shared contracts, security rules, ownership boundaries, integration behaviour, responsive requirements, QA findings and regression risk before being accepted into the integrated system.**
 
 ---
 
@@ -4662,6 +4673,6 @@ The development history also demonstrates an important engineering principle fol
 
 **Built collaboratively by the Software Engineering Development Team**
 
-**Development Phase: ✅ Complete · Next Phase: 🧪 QA & Release Preparation**
+**Development: ✅ Complete · QA: ✅ Complete · Next Phase: 🚀 Main Promotion & Deployment**
 
 </div>
