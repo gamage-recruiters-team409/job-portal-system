@@ -9,8 +9,10 @@ A full-stack recruitment platform developed for **Gamage Recruiters (PVT) Ltd** 
 ![Development](https://img.shields.io/badge/Development-Complete-brightgreen)
 ![QA](https://img.shields.io/badge/QA-Complete-brightgreen)
 ![Recommendations](https://img.shields.io/badge/QA%20Recommendations-Complete-brightgreen)
-![Phase](https://img.shields.io/badge/Phase-Main%20Promotion%20Ready-blue)
-![Deployment](https://img.shields.io/badge/Deployment-Pending-yellow)
+![Phase](https://img.shields.io/badge/Phase-Development%20%26%20QA%20Baseline-brightgreen)
+![Release](https://img.shields.io/badge/Release-Promoted%20to%20Main-brightgreen)
+![Deployment](https://img.shields.io/badge/Production-Live%20from%20Main-brightgreen)
+![Security](https://img.shields.io/badge/Pre--Deployment%20Audit-Passed-brightgreen)
 ![Frontend](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB)
 ![Backend](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-339933)
 ![Database](https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248)
@@ -24,7 +26,7 @@ A full-stack recruitment platform developed for **Gamage Recruiters (PVT) Ltd** 
 **Team Lead Intern – Software Engineering:** Sithum Buddhika Jayalal
 
 
-`develop` contains the completed, QA-reviewed and post-QA corrected integrated build. Formal QA and the approved QA recommendations are complete, and this branch is now ready for controlled promotion to `main` before deployment preparation.
+`develop` represents the completed development, integration, formal QA and post-QA correction baseline. The accepted QA-approved state was subsequently promoted to `main`, where pre-deployment security hardening, production deployment and representative production smoke verification were completed. `develop` remains the development/QA integration baseline; `main` is the production release source.
 
 </div>
 
@@ -81,7 +83,7 @@ A full-stack recruitment platform developed for **Gamage Recruiters (PVT) Ltd** 
 47. [Pull Request History by Module](#-pull-request-history-by-module)
 48. [Security Notice](#-security-notice)
 49. [Contribution Guidelines](#-contribution-guidelines)
-50. [Deployment Direction](#-deployment-direction)
+50. [Downstream Production Release](#-downstream-production-release)
 51. [Licence](#-licence)
 52. [Final Handover Statement](#-final-handover-statement)
 
@@ -143,11 +145,17 @@ Rather than developing isolated frontend demonstrations, the project was impleme
 | QA Bug Fixes | ✅ Completed |
 | QA Recommendations | ✅ Completed |
 | Post-QA Re-Review & Integration | ✅ Completed |
-| Promotion from `develop` to `main` | 🔄 Next Step |
-| Deployment Preparation | ⏳ Next Phase |
-| Production Deployment | ⏳ Not Started |
+| Promotion from `develop` to `main` | ✅ Completed |
+| Pre-Deployment Dependency Security Review | ✅ Completed on `main` |
+| Deployment Preparation | ✅ Completed on `main` |
+| Backend Deployment — Render | ✅ Live from `main` |
+| Frontend Deployment — Vercel | ✅ Live from `main` |
+| MongoDB Atlas Production Connection | ✅ Connected |
+| Production Superadmin Seeding | ✅ Completed |
+| Production Deployment | ✅ Completed from `main` |
+| Final Production Smoke Verification | ✅ Completed from `main` |
 
-> **Release-candidate status:** The approved MVP has completed development, formal QA review, QA corrections and recommendation implementation on `develop`. The next controlled step is to promote the final QA-approved `develop` state to `main`, then begin deployment preparation for Vercel and Render.
+> **Branch status:** `develop` is the completed development and QA baseline. Its accepted state was promoted to `main`, and the downstream production release was then security-checked, deployed and smoke-verified successfully. Production is sourced from `main`, not directly from `develop`.
 
 ---
 
@@ -2323,7 +2331,7 @@ Job Management QA recommendations added clearer action confirmation while preser
 # 👥 Module 6 — Applicant Management
 
 **Primary Developer:** Kalana Dinuja  
-**Final Status:** ✅ 100% Complete — Ready for QA
+**Final Status:** ✅ Completed — QA Passed
 
 ## Delivered Functionality
 
@@ -2485,7 +2493,7 @@ Applicant Management QA recommendations added explicit confirmation feedback for
 # 🛡️ Module 7 — Admin Management & Moderation
 
 **Primary Developer:** M.A. Sahan Viduranga  
-**Final Status:** ✅ Completed / Ready for QA
+**Final Status:** ✅ Completed — QA Passed
 
 ## Delivered Areas
 
@@ -3738,7 +3746,7 @@ The QA process included:
 
 ## Verification Note
 
-GitHub automated CI checks were not consistently available across these QA PRs. Release confidence therefore comes from the formal QA reports, code review, documented developer/manual verification and lint/build evidence where provided. Deployment-environment validation remains a separate release activity.
+GitHub automated CI checks were not consistently available across these QA PRs. Release confidence therefore comes from the formal QA reports, code review, documented developer/manual verification and lint/build evidence where provided. Production deployment has since confirmed successful frontend and backend builds, a live Render API, a live Vercel frontend, MongoDB Atlas connectivity and authenticated production data access. Final service-level smoke checks remain part of operational verification.
 
 ---
 
@@ -3860,9 +3868,19 @@ http://localhost:5000/api/v1/health
 
 `client/.env`
 
+Local development:
+
 ```env
 VITE_API_BASE_URL=http://localhost:5000/api/v1
 ```
+
+Production on Vercel:
+
+```env
+VITE_API_BASE_URL=https://gamage-recruiters-job-portal-api.onrender.com/api/v1
+```
+
+The Socket.IO client derives the production socket origin from the same API base URL, so a separate socket URL variable is not required by the current implementation.
 
 ---
 
@@ -3900,9 +3918,21 @@ RESET_PASSWORD_EXPIRES_IN=30m
 CLOUDINARY_CLOUD_NAME=<cloud-name>
 CLOUDINARY_API_KEY=<api-key>
 CLOUDINARY_API_SECRET=<api-secret>
+
+SUPERADMIN_NAME=<initial-superadmin-name>
+SUPERADMIN_EMAIL=<initial-superadmin-email>
+SUPERADMIN_PASSWORD=<strong-initial-superadmin-password>
 ```
 
-Additional Admin/bootstrap variables may also appear in the environment template depending on the current integration branch.
+Downstream production notes for the `main` release:
+
+- `NODE_ENV=production` is used on Render;
+- `CLIENT_URL` is set to `https://job-portal-system-xi.vercel.app`;
+- `BREVO_HOST` remains `smtp-relay.brevo.com`;
+- `BREVO_PORT=2525` is used on the Render production service because the deployed environment does not use SMTP port `587`;
+- Render supplies the service `PORT`, so a production port does not need to be hard-coded;
+- the `SUPERADMIN_*` values are used only by the controlled `npm run seed:superadmin` bootstrap flow;
+- production secrets are stored in platform environment settings, not committed to Git.
 
 > ⚠️ **Never copy real production secrets into this README or commit a real `.env` file.**
 
@@ -4193,13 +4223,19 @@ Post-QA Re-Review
    ✅ Complete
       ↓
 Promote develop → main
-   🔄 Next
+   ✅ Complete
       ↓
-Deployment Preparation
-   ⏳ Next Phase
+Pre-Deployment Security Review
+   ✅ Complete
+      ↓
+Production Deployment
+   ✅ Complete
+      ↓
+Final Production Smoke Verification
+   ✅ Complete
 ```
 
-Deployment validation will still need to confirm production environment variables, CORS, SMTP, Cloudinary, WebSocket connectivity, production builds and health checks in the deployed environment.
+The accepted `develop` baseline completed this release gate and was promoted to `main`. Downstream production verification from `main` subsequently confirmed the live frontend and backend builds, Render service startup, MongoDB Atlas connectivity, the production health endpoint, Vercel routing, frontend-to-backend data access, production Superadmin seeding, role-based access, Brevo transactional email, Cloudinary media operations, Applicant/CV flows and Socket.IO real-time notifications.
 
 ---
 
@@ -4245,21 +4281,38 @@ A future permanent deletion model would need an approved strategy such as:
 
 ### 4. Email Delivery
 
-Development SMTP functionality was exercised using Brevo configuration.
-
-Production/official sender configuration must be independently verified using deployment credentials before release.
+Brevo SMTP is configured and verified in the production environment. Production email verification and password-reset delivery were successfully tested using the deployed Vercel frontend URLs. The Render production service uses Brevo SMTP port `2525`.
 
 ---
 
 ### 5. Deployment-Environment Validation
 
-Formal QA and the approved post-QA correction cycle are complete. Production-specific validation is still required after deployment configuration, including environment variables, CORS, SMTP delivery, Cloudinary access, WebSocket connectivity, production builds and service health checks.
+The production deployment and representative production smoke verification are complete.
+
+Verified deployment-level items include:
+
+- Render backend build and startup;
+- Vercel frontend build and deployment;
+- MongoDB Atlas production connectivity;
+- production API health response;
+- production frontend-to-backend data access;
+- production environment configuration;
+- production Superadmin seeding;
+- SPA fallback routing for direct Vercel route refreshes;
+- Superadmin/Admin, Employer and Job Seeker production access;
+- Brevo email-verification and password-reset delivery;
+- Cloudinary-backed media upload/persistence;
+- Job discovery, Saved Jobs and Application flows;
+- Employer Applicant Management and protected CV access;
+- application status updates and cross-role consistency;
+- Socket.IO real-time notifications;
+- reviewed Render production logs with no observed server-side `500` failures in the tested window.
 
 ---
 
 ### 6. Role Contract Verification
 
-Any later Admin/Superadmin extensions should be verified end-to-end against the same backend role constants, authorization middleware and frontend route guards before being treated as a release contract.
+The production Superadmin account has been seeded through the controlled bootstrap script. Representative production smoke testing verified Superadmin/Admin, Employer and Job Seeker routing and authorization against the deployed backend and frontend route protections.
 
 ---
 
@@ -4492,6 +4545,23 @@ This section provides a development-history overview rather than only documentin
 
 ---
 
+## 🚀 Release & Deployment PRs — Team Lead / Integration
+
+```text
+#119  Finalize development and QA README status
+#120  Initial develop → main release PR (superseded after branch-history reconciliation)
+#121  Promote the final QA-approved build to main
+#122  Update main README for deployment phase
+#123  Resolve backend dependency security advisories
+#124  Add Vercel SPA routing configuration
+#125  Finalize production deployment documentation on main
+#126  Finalize production verification and project closure on main
+```
+
+Release preparation also included reconciling the historical divergence between `main` and `develop`, preserving the QA-approved application tree, and preparing a clean production promotion path before deployment.
+
+---
+
 # 🔒 Security Notice
 
 ## 🚨 This Repository Is Public
@@ -4574,50 +4644,132 @@ Before contributing:
 
 ---
 
-# 🚀 Deployment Direction
+# 🚀 Downstream Production Release
 
-The approved deployment direction is:
+The accepted `develop` baseline was promoted to `main`, and the approved production deployment was completed from `main`. This section records the downstream release outcome for development/QA handover traceability; `develop` itself is not the production deployment source.
+
+## Live Production URLs
+
+| Service | Production URL |
+|---|---|
+| Frontend | https://job-portal-system-xi.vercel.app |
+| Backend | https://gamage-recruiters-job-portal-api.onrender.com |
+| REST API Base | https://gamage-recruiters-job-portal-api.onrender.com/api/v1 |
+| Health Endpoint | https://gamage-recruiters-job-portal-api.onrender.com/api/v1/health |
+
+## Production Architecture
+
+The deployed architecture is sourced from the production `main` branch:
 
 ```text
-Frontend
-   ↓
-Vercel
-
-Backend + Socket.IO
-   ↓
-Render
-
-Database
-   ↓
-MongoDB Atlas
-
-Media
-   ↓
-Cloudinary
-
-Transactional Email
-   ↓
-Brevo SMTP
+GitHub `main`
+   │
+   ├── client/
+   │      ↓
+   │    Vercel
+   │      ↓
+   │  Production React/Vite Frontend
+   │      │
+   │      ├── REST API requests
+   │      └── Socket.IO connection
+   │
+   └── server/
+          ↓
+        Render
+          │
+          ├── Node.js / Express REST API
+          ├── Socket.IO real-time server
+          ├── JWT authentication / authorization
+          └── background application services
+                  │
+                  ├── MongoDB Atlas
+                  ├── Cloudinary
+                  └── Brevo SMTP
 ```
 
-## Current Deployment Status
+## Render Backend Configuration
 
-Deployment has **not** been completed yet. The development and QA phases are complete, and the next release workflow is:
+```text
+Branch:            main
+Root Directory:    server
+Runtime:           Node
+Build Command:     npm ci
+Start Command:     npm start
+Health Check Path: /api/v1/health
+```
 
-1. finalize the `develop` README and release documentation;
-2. promote the final QA-approved `develop` state to `main`;
-3. verify the `main` branch and update the release-facing `main` README if required;
-4. configure the backend service on Render;
-5. configure the frontend on Vercel;
-6. configure production environment secrets;
-7. configure production CORS and frontend/backend URLs;
-8. verify MongoDB Atlas connectivity;
-9. verify Cloudinary media operations;
-10. verify Brevo transactional email;
-11. verify Socket.IO/WebSocket connectivity through the deployed frontend/backend;
-12. run deployment smoke checks and production health checks.
+The backend listens on the platform-supplied Render port and hosts both Express and Socket.IO through the same HTTP server.
 
-The deployment phase will be handled separately from this development/QA handover so that production-specific configuration is not mixed with the completed feature history.
+## Vercel Frontend Configuration
+
+```text
+Branch:            main
+Root Directory:    client
+Framework:         Vite
+Install Command:   npm ci
+Build Command:     npm run build
+Output Directory:  dist
+```
+
+`client/vercel.json` provides the SPA rewrite required for React Router direct navigation and refresh behaviour.
+
+Production frontend environment:
+
+```env
+VITE_API_BASE_URL=https://gamage-recruiters-job-portal-api.onrender.com/api/v1
+```
+
+Production backend origin configuration:
+
+```env
+CLIENT_URL=https://job-portal-system-xi.vercel.app
+```
+
+## Downstream Deployment & Production Verification Completed
+
+After promotion of the accepted `develop` baseline to `main`, the following production checks were completed successfully:
+
+- ✅ backend dependency audit completed before deployment;
+- ✅ backend production audit returned 0 known npm vulnerabilities at deployment time;
+- ✅ frontend dependency audit returned 0 known npm vulnerabilities at deployment time;
+- ✅ frontend Vite production build completed successfully;
+- ✅ Render backend build and deployment completed successfully;
+- ✅ MongoDB Atlas connection established from the live Render service;
+- ✅ production API health endpoint responds successfully;
+- ✅ Vercel frontend build and deployment completed successfully;
+- ✅ live frontend loads production data from the Render API;
+- ✅ Superadmin/Admin production authentication and protected Admin access verified;
+- ✅ Employer production authentication and role routing verified;
+- ✅ Job Seeker production authentication, profile and role routing verified;
+- ✅ Cloudinary-backed production profile-image upload and persistence verified;
+- ✅ Brevo SMTP production delivery verified using Render-compatible SMTP port `2525`;
+- ✅ production email-verification workflow verified;
+- ✅ production forgot-password/reset-password workflow verified;
+- ✅ production email links verified against the Vercel frontend URL;
+- ✅ public Job discovery and Job detail loading verified;
+- ✅ Saved Jobs creation and persistence verified;
+- ✅ Job Application submission and Application History verified;
+- ✅ Employer Applicant Management verified;
+- ✅ protected Applicant CV preview/access verified;
+- ✅ Employer shortlist/status action verified;
+- ✅ cross-role Application status consistency verified;
+- ✅ Socket.IO real-time Employer and Job Seeker notification delivery verified;
+- ✅ production Superadmin account seeded through the controlled bootstrap script;
+- ✅ production secrets kept outside Git through platform environment variables;
+- ✅ exposed Brevo SMTP credential was rotated after testing;
+- ✅ final Render log review showed successful production requests with no observed server-side `500` failures in the reviewed test window.
+
+## Production Smoke Verification Result
+
+**Status: ✅ Complete on the `main` production release**
+
+Representative end-to-end production smoke testing was completed against the deployed `main` release across the main user roles and integrated services. The tests covered authentication, protected routing, production data access, Job discovery, Saved Jobs, Applications, Applicant Management, CV access, media upload, transactional email and real-time notifications.
+
+The production log review also confirmed successful `200` / `201` responses for the tested flows. Expected application-level responses such as a duplicate-application `409` and an Employer-without-Company `404` were observed during testing and matched the corresponding test-account state rather than indicating deployment failure.
+
+A non-blocking Mongoose deprecation warning related to the legacy `new` option on `findOneAndUpdate()` / `findOneAndReplace()` was observed in the production logs. It does not block the current release and can be addressed as future maintenance by migrating affected calls to `returnDocument: 'after'`.
+
+Production smoke verification is representative validation of the deployed release; it is not a substitute for continuous monitoring or exhaustive retesting of every possible application scenario.
 
 ---
 
@@ -4633,9 +4785,9 @@ Until then, the absence of a licence should **not** be interpreted as permission
 
 # ✅ Final Handover Statement
 
-The **Gamage Recruiters Job Portal System** has completed its primary development, integration, formal QA and post-QA recommendation phase.
+The **Gamage Recruiters Job Portal System** has completed its primary development, integration, formal QA, post-QA recommendation, release-promotion, production-deployment and production-smoke-verification phases.
 
-The final accepted `develop` branch represents the consolidated QA-approved MVP, including:
+The final accepted `develop` branch represents the consolidated development and QA-approved integration baseline, including:
 
 - 🔐 secure authentication and backend login throttling;
 - 🔎 public Job discovery with QA-hardened search behaviour;
@@ -4657,9 +4809,20 @@ The final accepted `develop` branch represents the consolidated QA-approved MVP,
 - 🔗 integrated frontend/backend workflows;
 - ✅ formal QA review;
 - ✅ approved QA fixes and recommendations;
-- ✅ post-QA code review and integration.
+- ✅ post-QA code review and integration;
+- ✅ pre-deployment dependency security hardening;
+- ✅ controlled promotion to `main`;
+- ✅ production backend deployment on Render;
+- ✅ production frontend deployment on Vercel;
+- ✅ MongoDB Atlas production connectivity;
+- ✅ production Superadmin seeding;
+- ✅ Cloudinary production media verification;
+- ✅ Brevo SMTP, email-verification and password-reset verification;
+- ✅ Socket.IO real-time notification verification;
+- ✅ representative cross-role production workflow verification;
+- ✅ final production log sanity review.
 
-The project now moves from **development and QA** into **release promotion and deployment preparation**. The immediate next step is to promote the final accepted `develop` state to `main`, after which the deployment phase will be carried out using **Vercel** for the frontend and **Render** for the backend.
+The project has now completed **development, QA, release promotion, deployment and production smoke verification**. The accepted `develop` baseline was promoted to `main`; `main` is the production release baseline, with the live frontend on Vercel and the live backend/API on Render. `develop` remains the completed development/QA integration reference. The project is ready for final operational handover and project closure, subject to any normal future maintenance or business-requested enhancements.
 
 The development and QA history demonstrates an engineering principle followed throughout the project:
 
@@ -4673,6 +4836,6 @@ The development and QA history demonstrates an engineering principle followed th
 
 **Built collaboratively by the Software Engineering Development Team**
 
-**Development: ✅ Complete · QA: ✅ Complete · Next Phase: 🚀 Main Promotion & Deployment**
+**Development Baseline: ✅ Complete · QA: ✅ Complete · Promoted to Main: ✅ Complete · Production Release (`main`): ✅ Live & Verified**
 
 </div>
